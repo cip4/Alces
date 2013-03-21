@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Last message, last yellow  preview added, so all previews available now
+-->
+<!-- KVDP Agfa 050311 added ResourceName, removed JobPartID, set PartUsage to Explicit 
+    KVDP 050321 added Part  (suggested by Torsten)
+    KVDP 050404 removed statusses between top and leave  (suggested by Frank)
+   KVDP 050920 more realistic include only one preview at a time
+  KVDP 051208 add exact=true, adapted JobID
+-->
+<JMF SenderID="MISPrepress" TimeStamp="2004-03-18T08:32:30+01:00" Version="1.2" xmlns="http://www.CIP4.org/JDFSchema_1_1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<Command ID="m083208_0201" Type="Resource" xsi:type="CommandResource">
+		<ResourceCmdParams JobID="MISPRE_Platemaking" ResourceName="Preview" Exact="true">
+			<Part SignatureName="SIG1059600001" SheetName="SHT1059600001" Side="Front" Separation="Yellow"/>
+			<!-- all plates for this side are available -->
+			<Part SignatureName="SIG1059600001" SheetName="SHT1059600001" Side="Front"/>
+			<!-- all plates for this sheet are available -->
+			<Part SignatureName="SIG1059600001" SheetName="SHT1059600001"/>
+			<!-- all plates for this signature are available -->
+			<Part SignatureName="SIG1059600001"/>
+			<!-- all plates for this job are available -->
+			<Part/>
+			<Preview Class="Parameter" ID="Preview01" PartIDKeys="SignatureName SheetName Side Separation" PartUsage="Explicit" PreviewUsage="Separation" PreviewFileType="PNG" Compensation="Plate" Status="Available">
+				<Preview SignatureName="SIG1059600001" Status="Available">
+					<Preview SheetName="SHT1059600001" Status="Available">
+						<Preview Side="Front" Status="Available">
+							<Preview Separation="Cyan" Status="Available" URL="file:src/test/data/PreviewTestTest/preview1.png"/>
+                            <Preview Separation="Magenta" Status="Available" URL="file:src/test/data/PreviewTestTest/preview2.png"/>
+                            <Preview Separation="Black" Status="Available" URL="file:src/test/data/PreviewTestTest/preview3.png"/>
+                            <Preview Separation="Yellow" Status="Available" URL="file:src/test/data/PreviewTestTest/preview4.png"/>                            
+						</Preview>
+					</Preview>
+				</Preview>
+			</Preview>
+		</ResourceCmdParams>
+	</Command>
+</JMF>

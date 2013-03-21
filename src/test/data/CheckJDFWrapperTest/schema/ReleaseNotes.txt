@@ -1,0 +1,6 @@
+WARNING: Version V1.3-001 still in progress and likely to change
+
+
+Known issues and bug fix history -- http://www.cip4.org/jira/browse/SCH
+
+Changes -- http://www.cip4.org/viewcvs/viewcvs.cgi/schema/Version_1_3/

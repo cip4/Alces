@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleAllowMixedLocalizations</key>
+	<string>true</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>JavaApplicationStub</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>Alces</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleSignature</key>
+	<string>ALCS</string>
+	<key>CFBundleVersion</key>
+	<string>@major.version@.@build.number@</string>
+	<key>Java</key>
+	<dict>
+		<key>ClassPath</key>
+		<array>
+			<string>../lib/alces.jar</string>
+			<string>../lib/activation-1.0.2.jar</string>
+			<string>../lib/bounce.jar</string>
+			<string>../lib/commons-codec-1.3.jar</string>
+			<string>../lib/commons-httpclient-3.0.1.jar</string>
+			<string>../lib/commons-io-1.2.jar</string>
+			<string>../lib/commons-lang-2.3.jar</string>
+			<string>../lib/commons-logging-1.0.4.jar</string>
+			<string>../lib/commons-vfs-1.0-RC8-SNAPSHOT.jar</string>
+			<string>../lib/concurrent-1.3.4.jar</string>
+			<string>../lib/core-renderer.jar</string>
+			<string>../lib/crimson.jar</string>
+			<string>../lib/javax.servlet.jar</string>
+			<string>../lib/jaxen-1.0-FCS-full.jar</string>
+			<string>../lib/JDFLibJ.jar</string>
+			<string>../lib/jdom-1.0.jar</string>
+			<string>../lib/js.jar</string>
+			<string>../lib/log4j-1.2.8.jar</string>
+			<string>../lib/mail-1.3.3.jar</string>
+			<string>../lib/org.mortbay.jetty.jar</string>
+			<string>../lib/org.mortbay.jmx.jar</string>
+			<string>../lib/saxpath-1.0-FCS.jar</string>
+			<string>../lib/swing-worker-1.2.jar</string>
+			<string>../lib/xalan.jar</string>
+			<string>../lib/xercesImpl.jar</string>
+			<string>../lib/xml-apis.jar</string>
+			<string>../conf</string>
+		</array>
+		<key>JVMVersion</key>
+		<string>1.5*</string>
+		<key>MainClass</key>
+		<string>org.cip4.elk.alces.swingui.Alces</string>
+		<key>WorkingDirectory</key>
+		<string>$APP_PACKAGE/../bin/</string>
+	</dict>
+</dict>
+</plist>

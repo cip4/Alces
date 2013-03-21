@@ -1,0 +1,8 @@
+<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    SenderID="Alces"
+    TimeStamp="2004-08-30T17:23:00+01:00" Version="1.2">
+    <Command ID="M001" Type="ReturnQueueEntry" xsi:type="CommandReturnQueueEntry">
+        <ReturnQueueEntryParams QueueEntryID="1" URL="/Users/clabu/Documents/workarea/Alces/src/test/data/jdf/Elk_Approval.jdf"/>        
+    </Command>
+</JMF>

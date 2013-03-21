@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    SenderID="Alces"
+    TimeStamp="2007-01-01T00:00:00+01:00"
+    Version="1.3">
+    <Command ID="M001" Type="ResubmitQueueEntry" xsi:type="CommandResubmitQueueEntry">
+        <ResubmissionParams 
+            URL="WILL BE SET BY ALCES"
+            QueueEntryID="WILL BE SET BY ALCES"/>
+    </Command>
+</JMF>
