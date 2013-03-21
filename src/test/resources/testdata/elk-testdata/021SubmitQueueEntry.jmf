@@ -1,0 +1,7 @@
+<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1" SenderID="org.cip4.elk.controller"
+    TimeStamp="2004-08-30T17:23:00+01:00" Version="1.2">
+    <Command ID="M001" Type="SubmitQueueEntry">
+        <QueueSubmissionParams URL="http://localhost:8080/elk/testdata/Approval.jdf"/>
+    </Command>
+</JMF>
+<!--"file::C:\program1\jakarta-tomcat-5.0.28\webapps\samples"/> -->

@@ -1,0 +1,254 @@
+<?xml version="1.0"?>
+<project name="Alces" default="dist" basedir=".">
+	<description>Builds the Alces JMF test tool.</description>
+	<!-- Initializes -->
+	<target name="-init" description="Initializes the build. This task is
+        automatically run before building.">
+		<echo>Initializing. Using build settings from ./build.properties...</echo>
+		<!-- Sets properties -->
+		<tstamp />
+		<condition property="isMacOs">
+			<os family="mac" />
+		</condition>
+		<property file="version.properties"/>
+		<property name="src.dir" value="./src" />
+		<property name="java.src.dir" value="${src.dir}/java" />
+		<property name="test.src.dir" value="${src.dir}/test" />
+		<property name="lib.dir" value="./src/lib" />
+		<property name="bin.dir" value="./bin" />
+		<property name="dist.dir" value="./dist" />
+		<property name="javadoc.dir" value="docs" />
+		<property name="build.debug" value="true" />
+		<property name="base.filename" value="alces-${major.version}" />
+		<property name="jar.filename" value="alces.jar" />
+		<property name="dist.bin.dir" value="${dist.dir}/${base.filename}" />
+		<property name="dist.src.dir" value="${dist.dir}/${base.filename}-src" />
+		<property name="verbose" value="true" />
+		<!-- Sets class path -->
+		<path id="project.class.path">
+			<pathelement path="${java.class.path}" />
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar" />
+			</fileset>
+		</path>
+		<!-- Creates directories -->
+		<mkdir dir="${bin.dir}" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+	<target name="compile" depends="-init" description="Compiles the Alces
+        source code.">
+		<echo>Compiling...</echo>
+		<javac destdir="${bin.dir}" debug="${build.debug}" target="1.5" source="1.5">
+			<src path="${java.src.dir}" />
+			<classpath refid="project.class.path" />
+			<include name="**/*.java" />
+		</javac>
+		<copy todir="${bin.dir}">
+			<fileset dir="${java.src.dir}">
+				<include name="**/*.properties" />
+				<include name="**/*.xml" />
+				<include name="org/cip4/elk/alces/swingui/icons/*.*" />
+				<include name="org/cip4/elk/alces/icons/*.*" />
+			</fileset>
+		</copy>
+	</target>
+	<target name="jar" depends="compile">
+		<jar destfile="${dist.dir}/${jar.filename}" basedir="${bin.dir}">
+			<manifest>
+				<attribute name="Main-Class" value="org.cip4.elk.alces.swingui.Alces" />
+				<attribute name="Bundle-Name" value="Alces ${major.version}.${build.number}" />
+				<attribute name="Bundle-Vendor" value="CIP4" />
+			</manifest>
+		</jar>
+	</target>
+	<target name="clean" depends="-init" description="Cleans the build.">
+		<echo>Cleaning...</echo>
+		<delete dir="${bin.dir}" />
+		<delete dir="${dist.dir}" />
+		<delete dir="${bin.dir}" />
+	</target>
+	<target name="dist" depends="srcdist,bindist"/>
+	<target name="bindist" depends="jar" description="Builds a binary distribution of
+        Alces.">
+		<echo>Building Alces binary distribution...</echo>
+		<!-- Create dist directories -->
+		<mkdir dir="${dist.dir}" />
+		<mkdir dir="${dist.bin.dir}" />
+		<mkdir dir="${dist.bin.dir}/bin" />
+		<mkdir dir="${dist.bin.dir}/conf" />
+		<mkdir dir="${dist.bin.dir}/lib" />
+		<mkdir dir="${dist.bin.dir}/testdata" />
+		<!-- Copy files to dist directories -->
+		<copy todir="${dist.bin.dir}/bin">
+			<fileset dir="${src.dir}/bin">
+				<include name="**/*" />
+				<exclude name="Info.plist"/>
+			</fileset>
+		</copy>
+		<copy todir="${dist.bin.dir}/conf">
+			<fileset dir="${src.dir}/conf">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy todir="${dist.bin.dir}/lib">
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar" />
+				<include name="**/*.license" />
+			</fileset>
+			<fileset file="${dist.dir}/${jar.filename}"/>
+		</copy>
+		<copy todir="${dist.bin.dir}/testdata">
+			<fileset dir="${src.dir}/testdata">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+		<copy file="src/README.txt" todir="${dist.bin.dir}" />
+		<copy file="src/LICENSE.txt" todir="${dist.bin.dir}" />
+		<copy file="src/alces.sh" todir="${dist.bin.dir}" />
+		<copy file="src/alces.bat" todir="${dist.bin.dir}" />
+		<buildnumber />
+		<!-- Generate Javadoc -->
+		<javadoc access="public" author="true" 
+			classpathref="project.class.path" 
+			destdir="${dist.bin.dir}/${javadoc.dir}" 
+			doctitle="Alces ${major.version}" maxmemory="768M" 
+			nodeprecated="false" nodeprecatedlist="false" 
+			noindex="false" nonavbar="false" notree="false" 
+			source="1.5" sourcepath="${java.src.dir}" 
+			splitindex="true" use="true" version="true" 
+			windowtitle="Alces ${major.version}"
+			overview="src/java/org/cip4/elk/alces/overview.html">
+			<packageset dir="${java.src.dir}" defaultexcludes="yes">
+				<include name="org/cip4/elk/**"/>
+			</packageset>
+		</javadoc>
+		<!-- Update build number and timestamp -->
+		<replace file="${dist.bin.dir}/conf/alces.properties">
+			<replacefilter token="@major.version@" value="${major.version}" />
+			<replacefilter token="@build.number@" value="${build.number}" />
+		</replace>
+		<replace file="${dist.bin.dir}/README.txt">
+			<replacefilter token="@major.version@" value="${major.version}" />
+			<replacefilter token="@build.number@" value="${build.number}" />
+		</replace>
+		<fixcrlf srcdir="${dist.bin.dir}" includes="README.txt" eol="dos"/>
+		<fixcrlf srcdir="${dist.bin.dir}/bin" eol="dos" includes="**/*.bat" />
+		<fixcrlf srcdir="${dist.bin.dir}/bin" eol="unix" includes="**/*.sh" />
+		<chmod dir="${dist.bin.dir}" perm="ugo+rx" includes="**/*.sh" />
+		<antcall target="appledist"/>
+		<zip destfile="${dist.dir}/${base.filename}.zip" basedir="${dist.bin.dir}">
+			<zipfileset dir="${dist.bin.dir}" includes="**/*.sh" filemode="755" />
+			<zipfileset dir="${dist.bin.dir}" includes="Alces.app/Contents/MacOS/JavaApplicationStub" filemode="755" />
+		</zip>
+		<echo>Build number: ${build.number}</echo>
+	</target>
+
+	<target name="srcdist" depends="compile" description="Builds a source distribution of
+		        Alces.">
+		<echo>Building Alces source distribution...</echo>
+		<!-- Create dist directories -->
+		<mkdir dir="${dist.src.dir}" />
+		<copy todir="${dist.src.dir}">
+			<fileset dir=".">
+				<include name="src/testdata/**/*" />
+				<include name="src/conf/**/*" />
+				<include name="src/lib/**/*" />
+				<include name="src/java/**/*" />
+				<include name="src/test/**/*" />
+				<include name="src/bin/**/*" />
+				<include name="src/alces.sh" />
+				<include name="src/alces.bat" />
+				<include name="src/README.txt" />
+				<include name="src/LICENSE.txt" />
+				<include name="build.xml" />
+				<include name="version.properties" />
+			</fileset>
+		</copy>
+		<copy file="src/README.txt" todir="${dist.src.dir}" />
+		<copy file="src/LICENSE.txt" todir="${dist.src.dir}" />
+		<buildnumber />
+		<replace file="${dist.src.dir}/README.txt">
+			<replacefilter token="@build.number@" value="${build.number}" />
+			<replacefilter token="@build.timestamp@" value="${DSTAMP}" />
+		</replace>
+		<fixcrlf srcdir="${dist.src.dir}" includes="README.txt" eol="dos" />
+		<fixcrlf srcdir="${dist.src.dir}/src/bin" eol="dos" includes="**/*.bat" />
+		<fixcrlf srcdir="${dist.src.dir}/src/bin" eol="unix" includes="**/*.sh" />
+		<chmod dir="${dist.src.dir}/src" perm="ugo+rx" includes="**/*.sh" />
+		<zip destfile="${dist.dir}/${base.filename}-src.zip" basedir="${dist.src.dir}" />
+		<echo>Build number: ${build.number}</echo>
+	</target>
+	<target name="test" description="Runs JUnit tests." depends="compile">
+		<property name="test.bin.dir" value="${bin.dir}/test" />
+		<mkdir dir="${test.bin.dir}" />
+		<property name="test.reports.dir" value="${bin.dir}/test-reports" />
+		<mkdir dir="${test.reports.dir}" />
+		<!-- Compile test cases -->
+		<echo>Compiling unit tests...</echo>
+		<javac destdir="${test.bin.dir}" debug="${build.debug}" target="1.5" source="1.5">
+			<src path="${test.src.dir}" />
+			<classpath refid="project.class.path" />
+			<classpath path="${bin.dir}" />
+			<include name="**/*" />
+		</javac>
+		<!-- Run test cases -->
+		<echo>Running unit tests...</echo>
+		<junit fork="no" timeout="120000" dir="." tempdir="${test.bin.dir}" failureproperty="test.failure" errorproperty="test.error" printsummary="yes">
+			<formatter type="plain" />
+			<formatter type="xml" />
+			<classpath>
+				<pathelement path="${java.class.path}" />
+				<fileset dir="${lib.dir}">
+					<include name="**/*.jar" />
+				</fileset>
+				<pathelement path="${bin.dir}" />
+				<pathelement path="${src.dir}/conf" />
+				<pathelement path="${test.bin.dir}" />
+				<pathelement path="${test.src.dir}/data" />
+			</classpath>
+			<batchtest fork="yes" todir="${test.reports.dir}">
+				<fileset dir="${test.bin.dir}">
+					<include name="**/*Test.class" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<echo>Tests reports have been written to: ${test.reports.dir}</echo>
+	</target>
+	<!-- For special app bundle on the Mac -->
+	<target name="appledist" if="isMacOs"
+      description="Assembles stand alone Macintosh Bundle. Must build on a Mac (>= 10.2).">
+		<echo>Building Mac OS X application bundle...</echo>
+		<!-- make all the dirs -->
+		<property name="bundle.dir" value="${dist.bin.dir}/Alces.app" />
+		<mkdir dir="${bundle.dir}" />
+		<property name="contents.dir" value="${bundle.dir}/Contents" />
+		<mkdir dir="${contents.dir}" />
+		<property name="MacOS.dir" value="${contents.dir}/MacOS" />
+		<mkdir dir="${MacOS.dir}" />
+		<!-- copy files into place -->
+		<copy file="src/bin/Info.plist" tofile="${contents.dir}/Info.plist"/>
+		<replace file="${contents.dir}/Info.plist">
+			<replacefilter token="@build.number@" value="${build.number}" />
+			<replacefilter token="@major.version@" value="${major.version}" />
+		</replace>
+		<!-- create package identifier -->
+		<echo file="${contents.dir}/PkgInfo" append="false">APPLALCS</echo>
+		<exec executable="ln" spawn="false">
+			<arg value="-s"/>
+			<arg value="/System/Library/Frameworks/JavaVM.framework/Versions/A/Resources/MacOS/JavaApplicationStub"/>
+			<arg value="${MacOS.dir}/JavaApplicationStub" />
+		</exec>
+	</target>
+	<target name="dmgappledist" depends="appledist" 
+      description="Creates Disk Image for Apple Dist. Must build on a Mac (>= 10.2).">
+		<echo>Package appledist</echo>
+		<exec executable="hdiutil" spawn="false">
+			<arg value="create"/>
+			<arg value="-srcfolder"/>
+			<arg value="${bundle.dir}"/>
+			<arg value="-volname"/>
+			<arg value="Alces"/>
+			<arg value="${dist.dir}/bin/Alces.dmg"/>
+		</exec>
+	</target>
+</project>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JMF SenderID="No sender ID configured"
+  TimeStamp="2005-05-09T20:26:39+02:00" Version="1.2"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Comment>This is a test</Comment>
+    <Query
+    ID="Link63199743_000000" Type="KnownMessages" xsi:type="QueryKnownMessages"/></JMF>

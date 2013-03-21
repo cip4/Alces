@@ -1,0 +1,7 @@
+<JMF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.CIP4.org/JDFSchema_1_1" SenderID="Alces"
+    TimeStamp="2004-08-30T17:23:00+01:00" Version="1.2">
+    <Command ID="stopCommand" Type="StopPersistentChannel" xsi:type="CommandStopPersistentChannel">
+       <StopPersChParams URL="http://127.0.0.1:9090/alces/jmf"/>
+    </Command>
+</JMF>

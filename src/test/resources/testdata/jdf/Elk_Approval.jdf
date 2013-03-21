@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<JDF xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://www.CIP4.org/JDFSchema_1_1" Activation="Active"
+    ID="elk-0001" JobID="0001" JobPartID="1" Status="Waiting" Template="false"
+    Version="1.2" Type="Approval">
+    <AuditPool>
+        <Created TimeStamp="2004-09-07T13:49:00+01:00" ref="elk-0001"/>
+    </AuditPool>
+    <ResourcePool>
+        <RunList Class="Parameter" ID="RL001" Status="Available">
+            <LayoutElement>
+                <FileSpec
+                    URL="http://cog.itn.liu.se/~clabu/files/elk/elk-0001/file1.pdf"
+                    MimeType="application/pdf"/>
+            </LayoutElement>
+        </RunList>
+        <RunList Class="Parameter" ID="RL002" Status="Available">
+            <LayoutElement>
+                <FileSpec
+                    URL="http://cog.itn.liu.se/~clabu/files/elk/elk-0001/file2.pdf"
+                    MimeType="application/pdf"/>
+            </LayoutElement>
+        </RunList>
+        <RunList Class="Parameter" ID="RL003" Status="Available">
+            <LayoutElement>
+                <FileSpec
+                    URL="http://cog.itn.liu.se/~clabu/files/elk/elk-0001/file3.pdf"
+                    MimeType="application/pdf"/>
+            </LayoutElement>
+        </RunList>
+        <ApprovalParams Class="Parameter" ID="AP001" MinApprovals="1"
+            Status="Available">
+            <ApprovalPerson ApprovalRole="Obligated">
+                <ContactRef rRef="C001"/>
+            </ApprovalPerson>
+        </ApprovalParams>
+        <Contact Class="Parameter" ID="C001" ContactTypes="Approver"
+            Status="Available">
+            <Person FamilyName="Buckwalter" FirstName="Claes">
+                <ComChannel ChannelType="Email"
+                    Locator="mailto:clabu@itn.liu.se"/>
+            </Person>
+        </Contact>
+        <ApprovalSuccess Class="Parameter" ID="AS001" Status="Unavailable"/>
+        <!--
+        <RunList Class="Parameter" ID="RL004" Status="Unavailable"/>
+        <RunList Class="Parameter" ID="RL005" Status="Unavailable"/>
+        <RunList Class="Parameter" ID="RL006" Status="Unavailable"/>
+        -->
+    </ResourcePool>
+    <ResourceLinkPool>
+        <RunListLink rRef="RL001" Usage="Input"/>
+        <RunListLink rRef="RL002" Usage="Input"/>
+        <RunListLink rRef="RL003" Usage="Input"/>
+        <ApprovalParamsLink rRef="AP001" Usage="Input"/>
+        <!--
+        <RunListLink rRef="RL004" Usage="Output"/>
+        <RunListLink rRef="RL005" Usage="Output"/>
+        <RunListLink rRef="RL006" Usage="Output"/>
+        -->
+        <ApprovalSuccessLink rRef="AS001" Usage="Output"/>
+    </ResourceLinkPool>
+</JDF>

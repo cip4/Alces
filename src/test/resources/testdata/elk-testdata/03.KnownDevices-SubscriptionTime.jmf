@@ -1,0 +1,9 @@
+<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    SenderID="org.cip4.elk.controller" TimeStamp="2004-08-30T17:23:00+01:00"
+    Version="1.2">
+    <Query ID="Q1000" Type="KnownDevices" xsi:type="QueryKnownDevices">
+        <DeviceFilter DeviceDetails="None"/>
+        <Subscription RepeatTime="2.0" URL="http://127.0.0.1:9090/alces/jmf"/>
+    </Query>
+</JMF>
