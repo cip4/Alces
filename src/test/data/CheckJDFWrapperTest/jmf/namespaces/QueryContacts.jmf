@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1" SenderID="MIS" TimeStamp="2000-07-25T11:38:23+02:00" Version="1.2" xmlns:agfadelano="http://www.agfa.com/w3c/gs/jdf/agfadelano.xsd">
-        <Query ID="custInfoQuery01" Type="agfadelano:CustomerInfo">
-		<agfadelano:ContactInfoParams PersonLevel="CPYLVL" UseMisId="true" />
-	</Query>
-</JMF>
