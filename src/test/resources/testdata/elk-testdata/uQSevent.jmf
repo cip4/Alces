@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    SenderID="org.cip4.elk.controller" TimeStamp="2004-08-30T17:23:00+01:00" Version="1.2">
-    <Command ID="stopCommand" Type="StopPersistentChannel" xsi:type="CommandStopPersistentChannel">
-       <StopPersChParams URL="http://elk.itn.liu.se/elk/logJmf" ChannelID="Q1001" />
-    </Command>
-</JMF>
