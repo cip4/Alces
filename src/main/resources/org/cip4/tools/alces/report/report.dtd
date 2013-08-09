@@ -1,0 +1,16 @@
+<!ELEMENT suite (session+)>
+<!ATTLIST suite timestamp CDATA #IMPLIED>
+<!ELEMENT session (message*)>
+<!ATTLIST session url CDATA #IMPLIED>
+<!ELEMENT message (header, body, tests, messages*)>
+<!ATTLIST message type CDATA #IMPLIED>
+<!ELEMENT header (#PCDATA)>
+<!ELEMENT tests (test*)>
+<!ATTLIST test description CDATA #IMPLIED>
+<!ELEMENT test (log)>
+<!ATTLIST test passed CDATA #IMPLIED>
+<!ATTLIST test type CDATA #IMPLIED>
+<!ELEMENT log (#PCDATA)>
+<!ELEMENT body (#PCDATA)>
+<!ATTLIST body url CDATA #IMPLIED>
+<!ELEMENT messages (message*)>

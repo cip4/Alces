@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JDF xmlns="http://www.CIP4.org/JDFSchema_1_1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="1.2" MaxVersion="1.2" ICSVersions="Base_L1-1.0 MIS_L1-1.0 MISPRE_L1-1.0" Type="Product" xsi:type="Product" Status="Waiting" ID="ID_ImpoProof_PlateMaking" JobID="MISPRE_ImpoProof_PlateMaking" JobPartID="MISPRE_ImpoProof_PlateMaking" 
+DescriptiveName="MISPRE ICS sample ImpoProof_PlateMaking v19">
+	<!-- History: 
+		2004-09-19 v10: minor, JobID in Subscription was not in sync with the root JobID
+									added Paper Brand
+									removed SeparationPart for ExposedMediaLink
+		2004-09-28 v11: minor, JobID inline with other samples
+		2005-01-21 v12: adapted for finale ICS, 
+			ROOT
+			 correct ICS versions x
+			 added MaxVersion x
+   			 add NodeInfo with Employee and Roles x
+         	ALL NODES
+			 added AuditPool x
+			 xsi:type added x
+			SPECIFIC
+			 added CMYK values for process colors x
+			 Component Dimensions added
+		     JMF added Classes
+		2005-01-25 v13: correct country code, added MediaRef in Layout, removed Part
+		2005-03-01 v14: added RunList reference to Platemaking brochure. It is not realistic for an MIS to insert it but helps the testing 2005-03-07 xsi:type was missing for one node
+		2005-04-04 v15: sync with changes in PlateMaking sample v11
+		2005-07-12 v16: minor: adjusted attributes and order according to PlateMaking sample v12
+		2005-08-17 v17	replaced RunList Incomplete status with Unavailable to match ICS
+									set JobPriority from 100 to 50 to match default
+									added Status Query subscription, added Query IDs
+									adapted JobID and DescriptiveName of process group to indicate the samplename
+		2005-09-08	v18 minor changed JDF/@Status from Ready to Waiting, renamed to ImpoProofPlateMaking because we have PageProofPlateMaking too, removed DescriptiveName of ImpositionProof in case PRECPS gets this, renamed for clarity
+		2005-12-06	v19 minor changed added @ProductID to proof too; added Proofer device
+-->
+	<CustomerInfo CustomerID="100002" CustomerJobName="GB1" CustomerOrderID="GB1">
+		<Contact ContactTypes="Customer Administrator">
+			<Address City="Izegem" Country="Belgium" CountryCode="BE" PostalCode="8870" Street="Grote Moerstraat 88"/>
+			<Company OrganizationName="DIOXINUS BV"/>
+			<Person FamilyName="MESTDAGH" FirstName="Andre" JobTitle="Produktie-direkteur">
+				<ComChannel ChannelType="Phone" Locator="051-41.36.15"/>
+			</Person>
+			<ComChannel ChannelType="Phone" Locator="051-41.36.35"/>
+		</Contact>
+	</CustomerInfo>
+	<Comment Name="JobDescription">6 page brochure MISPrepress-ICS-ImpoProof PlateMaking v19</Comment>
+	<NodeInfo>
+		<!-- added for MIS to store Employee -->
+		<Employee Roles="CSR" PersonalID="Always on the phone"/>
+		<!-- only for level2 ICS, according to MIS this JMF here is optional, could be hardwired or persistent subscription too (which is better supported) -->
+		<!-- This subscription will send signal back all changed output resources (Previews/ExposedMedias) to MIS (or press controller) -->
+		<JMF TimeStamp="2005-01-21T12:00:00Z" Version="1.2" SenderID="MISPrepress" xmlns="http://www.CIP4.org/JDFSchema_1_1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+			<Query Type="Resource" xsi:type="QueryResource" ID="QUERY_Resource_ImpoProof_Platemaking">
+				<ResourceQuParams Classes="Consumable Handling Parameter" Usage="Output" Exact="true" JobID="MISPRE_ImpoProof_PlateMaking"/>
+				<Subscription URL="http://www.misprepress.org/jmfserver"/>
+			</Query>
+			<!-- KVDP 20050815 added Status Query -->
+			<Query Type="Status" xsi:type="QueryStatus" ID="QUERY_Status_ImpoProof_Platemaking">
+				<Subscription URL="http://www.misprepress.org/jmfserver"/>
+			</Query>
+		</JMF>
+	</NodeInfo>
+	<AuditPool>
+		<Created Author="Miss Prepress" TimeStamp="2005-01-21T12:00:00+01:00" AgentName="MIS" AgentVersion="v1.0"/>
+	</AuditPool>
+	<ResourcePool>
+		<ColorPool Class="Parameter" ID="ColorPool" DescriptiveName="Colors for the job" Status="Available">
+			<Color Name="Cyan" CMYK="1 0 0 0"/>
+			<Color Name="Magenta" CMYK="0 1 0 0"/>
+			<Color Name="Yellow" CMYK="0 0 1 0"/>
+			<Color Name="Black" CMYK="0 0 0 1"/>
+		</ColorPool>
+		<ColorantControl Class="Parameter" ID="ColorantControl" DescriptiveName="Colors of the job" Status="Available">
+			<ColorantParams>
+				<SeparationSpec Name="Cyan"/>
+				<SeparationSpec Name="Magenta"/>
+				<SeparationSpec Name="Yellow"/>
+				<SeparationSpec Name="Black"/>
+			</ColorantParams>
+			<ColorPoolRef rRef="ColorPool"/>
+		</ColorantControl>
+		<Component Class="Quantity" ID="CompID_040052_G" ComponentType="FinalProduct Sheet" ProductType="Brochure" Dimensions="1474 1020 0" IsWaste="false" Status="Unavailable"/>
+		<Device Class="Implementation" ID="PRS5340" DeviceID="5340" DescriptiveName="A3--4" FriendlyName="SM 36x52 V" Status="Available"/>
+		<Device Class="Implementation" ID="PLA1001" DeviceID="PLA1001" DescriptiveName="Platemaker 01" FriendlyName="Platemaker 01" Status="Available"/>
+     <Device Class="Implementation" DescriptiveName="Proofer 01" DeviceID="PRO1001" FriendlyName="Proofer 01" ID="PRO1001" Status="Available"/>
+		<!-- MIS doesn't care about proofing paper so it is empty -->
+		<Media Class="Consumable" ID="PAP351052N2HA" ProductID="PAP351052N2HA" DescriptiveName="Machinegestreken gesatineerd houtvrij WIT 520x360 mm 100 grs" Brand="Machinegestreken gesatineerd houtvrij WIT" MediaType="Paper" Status="Available" Dimension="1474 1020" GrainDirection="LongEdge" Weight="100" MediaUnit="Sheet" Grade="1" FrontCoatings="Coated" BackCoatings="Coated" Thickness="110"/>
+		<Media Class="Consumable" ID="ImpoProof01" DescriptiveName="ImpoProof" MediaType="Paper" Status="Available"/>
+		<Media Class="Consumable" ID="Plate000001" ProductID="Plate000001" DescriptiveName="Plate" Brand="SuperPlates" MediaType="Plate" Status="Available" Dimension="1874 1420" Thickness="200"/>
+		<!--		MIS need to create the structure (signature/sheet/side), each part needs to have its own Layout -->
+		<Layout Class="Parameter" ID="LAY000" Status="Unavailable" Name="CoverLayout">
+			<Signature Name="SIG1059600001">
+				<Sheet Name="SHT1059600001">
+					<MediaRef rRef="PAP351052N2HA"/>
+					<Surface Side="Front"/>
+				</Sheet>
+			</Signature>
+		</Layout>
+		<ExposedMedia Class="Handling" PartIDKeys="SignatureName SheetName Side" ID="ImpositionProof" Status="Unavailable">
+			<MediaRef rRef="ImpoProof01"/>
+			<ExposedMedia SignatureName="SIG1059600001">
+				<ExposedMedia SheetName="SHT1059600001">
+					<ExposedMedia ProductID="P0001" Side="Front">
+					</ExposedMedia>
+				</ExposedMedia>
+			</ExposedMedia>
+		</ExposedMedia>
+		<ExposedMedia Class="Handling" PartIDKeys="SignatureName SheetName Side Separation" ID="ExposedMedia" Status="Unavailable" PartUsage="Explicit">
+			<MediaRef rRef="Plate000001"/>
+			<ExposedMedia SignatureName="SIG1059600001">
+				<ExposedMedia SheetName="SHT1059600001">
+					<ExposedMedia Side="Front">
+						<ExposedMedia Separation="Cyan" ProductID="0001"/>
+						<ExposedMedia Separation="Magenta" ProductID="0002"/>
+						<ExposedMedia Separation="Yellow" ProductID="0003"/>
+						<ExposedMedia Separation="Black" ProductID="0004"/>
+					</ExposedMedia>
+				</ExposedMedia>
+			</ExposedMedia>
+		</ExposedMedia>
+		<Preview Class="Parameter" PartIDKeys="SignatureName SheetName Side Separation" ID="Preview01" DescriptiveName="Preview" Status="Incomplete" PreviewUsage="Separation">
+			<Preview SignatureName="SIG1059600001">
+				<Preview SheetName="SHT1059600001">
+					<Preview Side="Front">
+						<Preview Separation="Cyan"/>
+						<Preview Separation="Magenta"/>
+						<Preview Separation="Yellow"/>
+						<Preview Separation="Black"/>
+					</Preview>
+				</Preview>
+			</Preview>
+		</Preview>
+	</ResourcePool>
+	<ResourceLinkPool>
+		<ComponentLink rRef="CompID_040052_G" Usage="Output"/>
+	</ResourceLinkPool>
+	<JDF ID="PRE000" JobPartID="PRE000" Type="ProcessGroup" Category="PrePress" Status="Waiting" DescriptiveName="6 page brochure CIP4 proofplatemaking sample">
+		<AuditPool>
+			<Created Author="Miss Prepress" TimeStamp="2005-01-21T12:00:00+01:00" AgentName="MIS" AgentVersion="v1.0"/>
+		</AuditPool>
+		<ResourcePool>
+			<Assembly Class="Parameter" ID="ASM000" Status="Available" BindingSide="Left"/>
+			<BinderySignature Class="Parameter" ID="BIS000000014" Status="Available" FoldCatalog="F6-1"/>
+			<!-- Information on paper used is usefull for prepress color corrections/ color books -->
+			<InterpretingParams Class="Parameter" ID="REPPAP351052N2HAPlate000001" Status="Available">
+				<MediaRef rRef="PAP351052N2HA"/>
+				<MediaRef rRef="Plate000001"/>
+			</InterpretingParams>
+			<RunList Class="Parameter" ID="RNL000_D" Status="Unavailable"/>
+			<RunList Class="Parameter" ID="RNL000_M" Status="Unavailable"/>
+			<RunList Class="Parameter" ID="RNL000" Status="Available" NPage="6">
+				<!--Added a direct reference to the PDF file be used with this sample. It is however UNREALISTIC that an MIS would supply this. They stick with NPage -->
+				<LayoutElement>
+					<FileSpec URL="Content/PlateMakingBrochure.pdf" MimeType="application/pdf"/>
+				</LayoutElement>
+			</RunList>
+			<StrippingParams Status="Available" Class="Parameter" ID="STP000" PartIDKeys="SignatureName SheetName">
+				<StrippingParams SignatureName="SIG1059600001">
+					<StrippingParams SheetName="SHT1059600001" SectionList="0" WorkStyle="WorkAndTurn">
+						<StripCellParams BleedFace="5.66929" BleedSpine="0.000" BleedFoot="5.66929" BleedHead="5.66929" TrimFace="0.00000" Spine="0.00000" TrimHead="0.00000" TrimFoot="0.00000" FrontOverfold="0.00000" BackOverfold="0.00000" MillingDepth="0.00000" TrimSize="280.62992 595.27559"/>
+						<BinderySignatureRef rRef="BIS000000014"/>
+						<DeviceRef rRef="PRS5340"/>
+						<MediaRef rRef="PAP351052N2HA"/>
+						<MediaRef rRef="Plate000001"/>
+						<Position RelativeBox="0.00000 0.00000 0.50000 1.00000" Orientation="Rotate90" MarginLeft="14.17323" MarginRight="0.00000" MarginTop="36.85039" MarginBottom="28.34646"/>
+						<Position RelativeBox="0.50000 0.00000 1.00000 1.00000" Orientation="Flip270" MarginLeft="0.00000" MarginRight="14.17323" MarginTop="36.85039" MarginBottom="28.34646"/>
+					</StrippingParams>
+				</StrippingParams>
+			</StrippingParams>
+		</ResourcePool>
+		<JDF ID="PPP000" JobPartID="PPP000" Type="ProcessGroup" xsi:type="ProcessGroup" Types="PrePressPreparation" Category="PrePressPreparation" DescriptiveName="GB PrePressPreparation" Status="Waiting">
+			<AuditPool>
+				<Created Author="Miss Prepress" TimeStamp="2005-01-21T12:00:00+01:00" AgentName="MIS" AgentVersion="v1.0"/>
+			</AuditPool>
+			<ResourceLinkPool>
+				<RunListLink rRef="RNL000" ProcessUsage="Document" Usage="Input"/>
+				<RunListLink rRef="RNL000_D" ProcessUsage="Document" Usage="Output"/>
+			</ResourceLinkPool>
+		</JDF>
+		<JDF ID="STR000" JobPartID="STR000" Type="ProcessGroup" xsi:type="ProcessGroup" Types="ImpositionPreparation" Category="ImpositionPreparation" DescriptiveName="GB ImpositionPreparation" Status="Waiting">
+			<AuditPool>
+				<Created Author="Miss Prepress" TimeStamp="2005-01-21T12:00:00+01:00" AgentName="MIS" AgentVersion="v1.0"/>
+			</AuditPool>
+			<NodeInfo JobPriority="50" Start="2005-02-17T15:24:09+01:00" End="2005-02-17T15:24:09+01:00" TotalDuration="P0DT0H0M0S"/>
+			<ResourceLinkPool>
+				<StrippingParamsLink rRef="STP000" Usage="Input"/>
+				<AssemblyLink rRef="ASM000" Usage="Input"/>
+				<LayoutLink rRef="LAY000" Usage="Output"/>
+				<RunListLink rRef="RNL000_M" ProcessUsage="Marks" Usage="Output"/>
+			</ResourceLinkPool>
+		</JDF>
+		<!-- approval will happen after creating the imposition proof before starting the platemaking, this is not described for level 1 -->
+		<JDF ID="IMP000" JobPartID="IMP000" Type="ProcessGroup" xsi:type="ProcessGroup" Types="Imposition ProofImaging" Category="ProofImaging" DescriptiveName="GB ImpositionProofing" Status="Waiting">
+			<AuditPool>
+				<Created Author="Miss Prepress" TimeStamp="2005-01-21T12:00:00+01:00" AgentName="MIS" AgentVersion="v1.0"/>
+			</AuditPool>
+			<NodeInfo JobPriority="50" Start="2005-02-17T15:24:09+01:00" End="2005-02-17T15:24:09+01:00" TotalDuration="P0DT0H0M0S"/>
+			<ResourceLinkPool>
+				<RunListLink rRef="RNL000_D" ProcessUsage="Document" Usage="Input"/>
+				<RunListLink rRef="RNL000_M" ProcessUsage="Marks" Usage="Input"/>
+        <DeviceLink Usage="Input" rRef="PRO1001"/>
+				<LayoutLink rRef="LAY000" Usage="Input"/>
+				<ColorantControlLink rRef="ColorantControl" Usage="Input"/>
+				<InterpretingParamsLink rRef="REPPAP351052N2HAPlate000001" Usage="Input"/>
+				<MediaLink rRef="ImpoProof01" Usage="Input"/>
+				<ExposedMediaLink rRef="ImpositionProof" Usage="Output">
+					<Part SignatureName="SIG1059600001" SheetName="SHT1059600001"/>
+				</ExposedMediaLink>
+			</ResourceLinkPool>
+		</JDF>
+		<JDF ID="IMS000" JobPartID="IMS000" Type="ProcessGroup" xsi:type="ProcessGroup" Types="Imposition RIPing PreviewGeneration ImageSetting" Category="FinalImaging" DescriptiveName="GB PlateMaking" Status="Waiting">
+			<AuditPool>
+				<Created Author="Miss Prepress" TimeStamp="2005-01-21T12:00:00+01:00" AgentName="MIS" AgentVersion="v1.0"/>
+			</AuditPool>
+			<NodeInfo JobPriority="50" Start="2005-02-17T15:24:09+01:00" End="2005-02-17T15:24:09+01:00" TotalDuration="P0DT0H0M0S"/>
+			<ResourceLinkPool>
+				<RunListLink rRef="RNL000_D" ProcessUsage="Document" Usage="Input"/>
+				<RunListLink rRef="RNL000_M" ProcessUsage="Marks" Usage="Input"/>
+				<LayoutLink rRef="LAY000" Usage="Input"/>
+				<ColorantControlLink rRef="ColorantControl" Usage="Input"/>
+				<InterpretingParamsLink rRef="REPPAP351052N2HAPlate000001" Usage="Input"/>
+				<MediaLink rRef="Plate000001" Usage="Input"/>
+				<DeviceLink rRef="PLA1001" Usage="Input"/>
+				<ExposedMediaLink rRef="ExposedMedia" Usage="Output">
+					<Part SignatureName="SIG1059600001" SheetName="SHT1059600001"/>
+				</ExposedMediaLink>
+				<PreviewLink rRef="Preview01" Usage="Output">
+					<Part SignatureName="SIG1059600001" SheetName="SHT1059600001"/>
+				</PreviewLink>
+			</ResourceLinkPool>
+		</JDF>
+	</JDF>
+</JDF>

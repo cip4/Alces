@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSPY v5 rel. 2 U (http://www.xmlspy.com) by Martin Bailey (Global Graphics) -->
+<JDF Activation="Active" CommentURL="http://www.foo.com/jobcomment.html"
+  DescriptiveName="Golden Ticket for BASE ICS" ICSVersions="Base_L0-1.0" ID="BASE_GT_01-ID"
+  JobID="BASE_GT_01-JID" JobPartID="BASE_GT_01-JPID" MaxVersion="1.2" Status="Waiting"
+  Template="false" Type="Imposition" Version="1.2" xmlns="http://www.CIP4.org/JDFSchema_1_1"
+  xmlns:jdftyp="http://www.CIP4.org/JDFSchema_1_1_Types"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.CIP4.org/JDFSchema_1_1 C:\users\martinb\Standards\Cip4\JDF\Schema_1.2\JDF.xsd"
+  xsi:type="Imposition">
+  <AuditPool>
+    <Created AgentName="Hand-written" AgentVersion="Hands v1"
+      Author="Martin Bailey, Global Graphics Software" ID="Created_01"
+      TimeStamp="2005-05-26T09:21:00+01:00"/>
+    <Modified AgentName="Hand-written" AgentVersion="Hands v1" Author="Rainer Prosi, Heidelberg"
+      ID="Modified_01" TimeStamp="2006-03-08T09:21:00+01:00"/>
+  </AuditPool>
+  <NodeInfo JobPriority="50"/>
+  <ResourcePool>
+    <Layout Automated="false" Class="Parameter" ID="Layout_01" LockOrigins="false" Locked="false"
+      MaxDocOrd="1" MaxSetOrd="1" NoOp="false" PartUsage="Explicit" SpawnStatus="NotSpawned"
+      Status="Available">
+      <MediaRef rRef="Media_01"/>
+      <TransferCurvePoolRef rRef="TransferCurvePool_01"/>
+      <Signature>
+        <Sheet Class="Parameter" LockOrigins="false" Name="Sheet-1"
+          SurfaceContentsBox="0 0 1296 900">
+          <Surface Class="Parameter" Side="Front" SurfaceContentsBox="0 0 1296 900">
+            <MarkObject CTM="1 0 0 1 0 0" ClipBox="0 0 1296 100" HalfTonePhaseOrigin="0.0E1 0.0E1"
+              Ord="0" SourceClipPath="0 0 m 600 0 l 1200 100 l 0 100 l h"/>
+            <ContentObject CTM="0 1 -1 0 877 39" ClipBox="30 34 882 639"
+              HalfTonePhaseOrigin="0.0E1 0.0E1" Ord="0"
+              SourceClipPath="0 0 m 595 842 l 0 842 l 20 400 l h"/>
+            <ContentObject CTM="-1 0 0 -1 1260 881" ClipBox="660 34 1265 886"
+              HalfTonePhaseOrigin="0.0E1 0.0E1" Ord="1"/>
+            <MarkObject CTM="1 0 0 1 0 0" ClipBox="0 0 1296 900" HalfTonePhaseOrigin="0.0E1 0.0E1"
+              Ord="1"/>
+          </Surface>
+        </Sheet>
+      </Signature>
+    </Layout>
+    <Media Class="Consumable" Dimension="1296 900" HoleType="None" ID="Media_01" Locked="false"
+      MediaType="Plate" MediaUnit="Sheet" PartUsage="Explicit" PrePrinted="false"
+      SpawnStatus="NotSpawned" Status="Available"/>
+    <TransferCurvePool Class="Parameter" ID="TransferCurvePool_01" Locked="false" NoOp="false"
+      PartUsage="Explicit" SpawnStatus="NotSpawned" Status="Available">
+      <TransferCurveSet CTM="1 0 0 1 15 15" Name="Film"/>
+      <TransferCurveSet CTM="1 0 0 -1 18 900" Name="Plate"/>
+      <TransferCurveSet CTM="-1 0 0 -1 1300 920" Name="Press"/>
+      <TransferCurveSet CTM="1 0 0 1 -20 -20" Name="Paper"/>
+    </TransferCurvePool>
+    <RunList Class="Parameter" ComponentGranularity="Document" DocCopies="1" ID="RunList_01"
+      IsPage="true" Locked="false" NoOp="false" PageCopies="1" PartIDKeys="Run" PartUsage="Explicit"
+      SetCopies="1" SpawnStatus="NotSpawned" Status="Available">
+      <RunList Run="0">
+        <LayoutElement Class="Parameter" IgnorePDLCopies="false" IgnorePDLImposition="true">
+          <FileSpec Class="Parameter" Compression="None" MimeType="application/pdf"
+            URL="./ContentFiles/BrochEngFinal.pdf"/>
+        </LayoutElement>
+      </RunList>
+      <RunList NPage="1" Run="1" RunTag="1">
+        <LayoutElement Class="Parameter" IgnorePDLCopies="false" IgnorePDLImposition="true"
+          IsBlank="true"/>
+      </RunList>
+    </RunList>
+    <RunList Class="Parameter" ComponentGranularity="Document" DocCopies="1" ID="RunList_02"
+      IsPage="true" Locked="false" NoOp="false" PageCopies="1" PartIDKeys="Run" PartUsage="Explicit"
+      SetCopies="1" SpawnStatus="NotSpawned" Status="Available">
+      <RunList Run="0">
+        <LayoutElement Class="Parameter" IgnorePDLCopies="false" IgnorePDLImposition="true">
+          <FileSpec Class="Parameter" Compression="None" MimeType="application/pdf"
+            URL="./MarkFiles/Brochure.pdf"/>
+        </LayoutElement>
+      </RunList>
+      <RunList Run="1">
+        <LayoutElementRef rRef="LayoutElement_02"/>
+      </RunList>
+    </RunList>
+    <LayoutElement Class="Parameter" ID="LayoutElement_02" IgnorePDLCopies="false"
+      IgnorePDLImposition="true" Locked="false" NoOp="false" PartUsage="Explicit"
+      SpawnStatus="NotSpawned" Status="Available">
+      <FileSpec Class="Parameter" Compression="None" MimeType="application/pdf"
+        URL="./MarkFiles/Brochure2.pdf"/>
+    </LayoutElement>
+    <RunList Class="Parameter" ComponentGranularity="Document" DocCopies="1" ID="RunList_03"
+      IsPage="true" Locked="false" NoOp="false" PageCopies="1" PartUsage="Explicit" SetCopies="1"
+      SpawnStatus="NotSpawned" Status="Unavailable">
+      <LayoutElement Class="Parameter" IgnorePDLCopies="false" IgnorePDLImposition="true">
+        <FileSpec Class="Parameter" Compression="None" URL="file://Host/Share/outputFile"/>
+      </LayoutElement>
+    </RunList>
+    <Device Class="Implementation" DeviceID="MyDevice_007" ID="Device_01" Locked="false"
+      PartUsage="Explicit" SpawnStatus="NotSpawned" Status="Available"/>
+  </ResourcePool>
+  <ResourceLinkPool>
+    <LayoutLink Usage="Input" rRef="Layout_01"/>
+    <RunListLink ProcessUsage="Document" Usage="Input" rRef="RunList_01"/>
+    <RunListLink ProcessUsage="Marks" Usage="Input" rRef="RunList_02"/>
+    <RunListLink Usage="Output" rRef="RunList_03"/>
+    <DeviceLink Usage="Input" rRef="Device_01"/>
+  </ResourceLinkPool>
+  <StatusPool Status="Waiting">
+    <PartStatus Status="InProgress">
+      <Part/>
+    </PartStatus>
+  </StatusPool>
+  <AncestorPool>
+    <Ancestor NodeID="BASE_GT_01-ID" FileName="Testjdf4.jdf"/>
+  </AncestorPool>
+</JDF>

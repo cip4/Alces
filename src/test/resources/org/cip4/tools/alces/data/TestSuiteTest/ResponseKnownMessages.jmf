@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JMF SenderID="Elk" TimeStamp="2005-04-24T00:56:37-04:00" Version="1.2"
+    xmlns="http://www.CIP4.org/JDFSchema_1_1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <Response ID="RQ001" ReturnCode="0" Type="KnownMessages" refID="Q001">
+        <MessageService Persistent="true" Query="true" Type="SubmissionMethods"/>
+        <MessageService Persistent="true" Query="true" Type="KnownDevices"/>
+        <MessageService Command="true" Type="StopPersistentChannel"/>
+        <MessageService Command="true" Type="HoldQueue"/>
+        <MessageService Command="true" Type="SubmitQueueEntry"/>
+        <MessageService Command="true" Type="CloseQueue"/>
+        <MessageService Command="true" Type="RemoveQueueEntry"/>
+        <MessageService Command="true" Type="OpenQueue"/>
+        <MessageService Persistent="true" Query="true" Type="Status"/>
+        <MessageService Persistent="true" Query="true" Type="Events"/>
+        <MessageService Query="true" Type="QueueStatus"/>
+        <MessageService Command="true" Type="ResumeQueue"/>
+        <MessageService Persistent="true" Query="true" Type="KnownMessages"/>
+    </Response>
+</JMF>
