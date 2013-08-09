@@ -90,7 +90,7 @@
 								</goals>
 								<configuration>
 									<descriptors>
-										<descriptor>src/main/assemble/windows/assembly-jar.xml</descriptor>
+										<descriptor>src/main/assemble/windows/assembly_jar.xml</descriptor>
 									</descriptors>
 								</configuration>
 							</execution>
