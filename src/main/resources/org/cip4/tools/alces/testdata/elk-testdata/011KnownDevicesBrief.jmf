@@ -1,6 +1,0 @@
-<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1" SenderID="org.cip4.elk.controller"
-    TimeStamp="2004-08-30T17:23:00+01:00" Version="1.2">
-    <Query ID="M001" Type="KnownDevices">
-        <DeviceFilter DeviceDetails="Brief" />            
-    </Query>
-</JMF>
