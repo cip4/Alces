@@ -9,7 +9,8 @@
     <ResourcePool>
         <RunList Class="Parameter" ID="RL001" Status="Available">
             <LayoutElement>
-                <FileSpec
+            	<!-- Error in Node -->
+                <FileSpec_eror
                     URL="http://cog.itn.liu.se/~clabu/files/tools/elk-0001/file1.pdf" MimeType="application/pdf"/>
             </LayoutElement>
         </RunList>

@@ -7,7 +7,6 @@ import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.message.InMessage;
 import org.cip4.tools.alces.message.InMessageImpl;
 import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.tests.CheckJDFTest;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
@@ -18,7 +17,7 @@ public class CheckJDFTestTest extends AlcesTestCase {
 		String jdf = getTestFileAsString("Elk_Approval.jdf");
 		InMessage msg = new InMessageImpl(null, jdf, true);
 		CheckJDFTest test = new CheckJDFTest();
-		TestResult result = test.runTest(msg);		
+		TestResult result = test.runTest(msg);
 		assertTrue(result.isPassed());
 	}
 
@@ -26,7 +25,8 @@ public class CheckJDFTestTest extends AlcesTestCase {
 		String jdf = getTestFileAsString("Elk_Approval_invalid.jdf");
 		InMessage msg = new InMessageImpl(null, jdf, true);
 		CheckJDFTest test = new CheckJDFTest();
-		TestResult result = test.runTest(msg);		
+		TestResult result = test.runTest(msg);
+		System.out.println(result);
 		assertFalse(result.isPassed());
 	}
 
@@ -80,7 +80,7 @@ public class CheckJDFTestTest extends AlcesTestCase {
 				true);
 		CheckJDFTest test = new CheckJDFTest();
 		TestResult result = test.runTest(msg);
-		assertFalse(result.isPassed());		
+		assertFalse(result.isPassed());
 	}
 
 	public void testInvalidElement() {
