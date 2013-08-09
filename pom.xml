@@ -77,23 +77,10 @@
 					<argLine>-Xmx512m -Dfile.encoding=UTF-8</argLine>
 				</configuration>
 			</plugin>
-		</plugins>
-	</build>
-	
-	<profiles>
-		<profile>
-			<id>Windows</id>
-			<activation>
-				<os>
-					<family>Windows</family>
-				</os>
-			</activation>
-			<build>
-				<plugins>
-					<plugin>
+			<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-assembly-plugin</artifactId>
-						<version>2.4</version>
+						<version>2.2.2</version>
 						<executions>
 							<execution>
 								<id>assembly</id>
@@ -103,16 +90,16 @@
 								</goals>
 								<configuration>
 									<descriptors>
-										<descriptor>src/main/assemble/windows/assembly-windows.xml</descriptor>
+										<descriptor>src/main/assemble/windows/assembly-jar.xml</descriptor>
 									</descriptors>
 								</configuration>
 							</execution>
 						</executions>
 					</plugin>
 					<plugin>
-						<groupId>org.bluestemsoftware.open.maven.plugin</groupId>
-						<artifactId>launch4j-plugin</artifactId>
-						<version>1.5.0.0</version>
+						<groupId>com.akathist.maven.plugins.launch4j</groupId>
+						<artifactId>launch4j-maven-plugin</artifactId>
+						<version>1.5.2</version>
 						<executions>
 							<execution>
 								<id>l4j-gui</id>
@@ -125,7 +112,7 @@
 									<outfile>target/${project.build.finalName}.exe</outfile>
 									<jar>target/${project.build.finalName}-app.jar</jar>
 									<errTitle>encc</errTitle>
-									<icon>src/main/assemble/windows/Alces.ico</icon>
+									<icon>src/main/assemble/windows/alces.ico</icon>
 									<classPath>
 										<mainClass>org.cip4.tools.alces.swingui.Alces</mainClass>
 										<addDependencies>true</addDependencies>
@@ -151,10 +138,8 @@
 							</execution>
 						</executions>
 					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+		</plugins>
+	</build>
 
 	<dependencies>
 		<!-- CIP4 -->
