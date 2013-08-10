@@ -3,7 +3,6 @@
  */
 package org.cip4.tools.alces.test.tests;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -99,8 +98,8 @@ public class SubmitQueueEntryTest extends ConfigurableTest {
 					String jdfUrl = getJDFURL(jmfCommand);
 					result = Result.getPassed(validateJDF(jdfUrl, testLog));
 				}
-				File xslFile = new File(CheckJDFTest.class.getResource(RES_REPORT_XSL_FILE).getFile());
-				testResult = new XsltTestResult(xslFile, this, message, result, testLog.toString());
+				InputStream isXslFile = CheckJDFTest.class.getResourceAsStream(RES_REPORT_XSL_FILE);
+				testResult = new XsltTestResult(isXslFile, this, message, result, testLog.toString());
 			}
 		}
 		return testResult;

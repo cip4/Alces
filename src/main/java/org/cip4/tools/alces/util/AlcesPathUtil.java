@@ -307,6 +307,7 @@ public class AlcesPathUtil {
 
 		// set alces user directory
 		String pathDir = FilenameUtils.concat(ALCES_ROOT_DIR, "Logs");
+		pathDir = FilenameUtils.separatorsToUnix(pathDir);
 		new File(pathDir).mkdirs();
 
 		// return path

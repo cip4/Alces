@@ -3,7 +3,9 @@
  */
 package org.cip4.tools.alces.test.tests;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
@@ -27,7 +29,7 @@ public class XsltTestResult extends TestResultImpl {
 
 	private static Logger LOGGER = Logger.getLogger(XsltTestResult.class);
 
-	private final File xslFile;
+	private final InputStream isXslFile;
 
 	private String transformResult = null;
 
@@ -39,9 +41,10 @@ public class XsltTestResult extends TestResultImpl {
 	 * @param message
 	 * @param passedTest
 	 * @param logMessage
+	 * @throws FileNotFoundException
 	 */
-	public XsltTestResult(String xslFilePath, Test test, Message message, Result result, String logMessage) {
-		this(new File(xslFilePath), test, message, result, logMessage);
+	public XsltTestResult(String xslFilePath, Test test, Message message, Result result, String logMessage) throws FileNotFoundException {
+		this(new FileInputStream(xslFilePath), test, message, result, logMessage);
 	}
 
 	/**
@@ -53,9 +56,9 @@ public class XsltTestResult extends TestResultImpl {
 	 * @param passedTest
 	 * @param logMessage
 	 */
-	public XsltTestResult(File xslFile, Test test, Message message, Result result, String logMessage) {
+	public XsltTestResult(InputStream isXslFile, Test test, Message message, Result result, String logMessage) {
 		super(test, message, result, logMessage);
-		this.xslFile = xslFile;
+		this.isXslFile = isXslFile;
 	}
 
 	/**
@@ -72,8 +75,8 @@ public class XsltTestResult extends TestResultImpl {
 		if (transformResult == null) {
 			try {
 				LOGGER.debug("Peforming XSLT transform...");
-				LOGGER.debug("XSL stylesheet file: " + xslFile.getAbsolutePath());
-				Source xslSource = new StreamSource(xslFile);
+				// LOGGER.debug("XSL stylesheet file: " + xslFile.getAbsolutePath());
+				Source xslSource = new StreamSource(isXslFile);
 				TransformerFactory factory = TransformerFactory.newInstance();
 				Transformer transformer = factory.newTransformer(xslSource);
 				if (LOGGER.isDebugEnabled()) {

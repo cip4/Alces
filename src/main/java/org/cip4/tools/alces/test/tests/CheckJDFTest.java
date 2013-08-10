@@ -3,7 +3,7 @@
  */
 package org.cip4.tools.alces.test.tests;
 
-import java.io.File;
+import java.io.InputStream;
 import java.util.Properties;
 
 import org.cip4.tools.alces.message.Message;
@@ -51,8 +51,8 @@ public class CheckJDFTest extends ConfigurableTest {
 			StringBuffer xmlReport = new StringBuffer();
 			boolean passedTest = CheckJDFWrapper.validateCommandLine(commandLine, message.getContentType(), message.getBody(), xmlReport);
 			logMsg.append(xmlReport);
-			File xslFile = new File(CheckJDFTest.class.getResource(RES_REPORT_XSL_FILE).getFile());
-			result = new XsltTestResult(xslFile, this, message, Result.getPassed(passedTest), logMsg.toString());
+			InputStream isXslFile = CheckJDFTest.class.getResourceAsStream(RES_REPORT_XSL_FILE);
+			result = new XsltTestResult(isXslFile, this, message, Result.getPassed(passedTest), logMsg.toString());
 		} catch (Exception e) {
 			logMsg.append("An error occurred while validating the message body. Maybe the" + " message body does not contain a JDF instance or a JMF message?");
 			LOGGER.error("Could not validate message: ", e);
