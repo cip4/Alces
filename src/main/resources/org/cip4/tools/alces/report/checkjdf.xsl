@@ -481,10 +481,88 @@
                         <xsl:with-param name="string" select="'title'"/>
                     </xsl:call-template>
                 </title>
+                <style type="text/css" media="all"> 
+                <xsl:comment>
+                body {
+				 margin-top: 0.5em;
+				 margin-left: 0.5em;
+				 font-family: verdana, sans-serif;
+				 font-size: small;
+				 background-color: white;
+				}
+				
+				strong {
+				 font-weight: bold;
+				}
+				
+				.schema {
+				 border-bottom-style: solid;
+				 border-top-style: solid;
+				 border-color: #CCCCCC;
+				 border-width: 1px;
+				 padding-bottom: 0.5em;
+				}
+				
+				.checkjdf {
+				 border-bottom-style: solid;
+				 border-color: #CCCCCC;
+				 border-width: 1px;
+				 padding-bottom: 0.5em;
+				}
+				
+				.valid {
+				 color: #00ff00;
+				}
+				
+				.invalid {
+				 color: #ff0000;
+				}
+				
+				.jdf {
+				 font-weight: bold;
+				}
+				
+				h1 {
+				 margin-top: 0;
+				}
+				
+				h2,h3 {
+				 font-weight: bold;
+				 margin-bottom: 0.5em;
+				}
+				
+				h4,h5 {
+				 font-size: small;
+				 font-weight: normal;
+				 margin-top: 0;
+				 margin-bottom: 0;
+				}
+				
+				ul {
+				 margin-left: 1em;
+				 margin-top: 0;
+				}
+				
+				li {
+				 margin-bottom: 0.5em;
+				}
+				
+				code {
+				 font-family: monospace;
+				/* font-weight: bold; */
+				 color: #000000;
+				 padding: 2px;
+				 background-color: #CCCCCC;
+				}
+				</xsl:comment>
+                </style>
+                
+                <!-- 
                 <link rel="stylesheet" type="text/css" media="all"
                     href="../conf/report/checkjdf.css"/>
+                     -->
             </head>
-            <body>
+            <body bgcolor="#CCFFFF">
                 <xsl:comment>#include
                     virtual="/global/navigation/menue_switch.php?section=support" </xsl:comment>
                 <h1>
