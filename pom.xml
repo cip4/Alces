@@ -266,5 +266,34 @@
 				</plugins>
 			</build>
 		</profile>
+		<profile>
+			<id>macos</id>
+			<activation>
+				<os>
+					<family>mac</family>
+				</os>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>osxappbundle-maven-plugin</artifactId>
+						<version>1.0-alpha-2</version>
+						<configuration>
+							<mainClass>org.cip4.tools.alces.swingui.Alces</mainClass>
+							<iconFile>${basedir}/src/main/assemble/macosx/alces.icns</iconFile>
+						</configuration>
+						<executions>
+							<execution>
+								<phase>package</phase>
+								<goals>
+									<goal>bundle</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 	</profiles>
 </project>

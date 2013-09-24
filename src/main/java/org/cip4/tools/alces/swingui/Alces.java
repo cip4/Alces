@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -220,6 +221,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 */
 	public Alces() throws Exception {
 		super();
+		setIconImage(Toolkit.getDefaultToolkit().getImage(Alces.class.getResource("/org/cip4/tools/alces/alces.png")));
 
 		_confHand = ConfigurationHandler.getInstance();
 		_confHand.loadConfiguration(_confHand.getProp(ConfigurationHandler.PROPERTIES_FILE));
@@ -429,6 +431,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	}
 
 	public static void main(String[] args) throws Exception {
+
+		// set system properties
+		System.setProperty("apple.laf.useScreenMenuBar", "true");
+		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "BambiApp");
 
 		// init logging
 		initLogging();
