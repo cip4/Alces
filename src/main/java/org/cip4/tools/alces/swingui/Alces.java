@@ -432,10 +432,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	public static void main(String[] args) throws Exception {
 
-		// set system properties
-		System.setProperty("apple.laf.useScreenMenuBar", "true");
-		System.setProperty("com.apple.mrj.application.apple.menu.about.name", "BambiApp");
-
 		// init logging
 		initLogging();
 
