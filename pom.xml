@@ -201,7 +201,6 @@
 			      </property>
 			</activation>
 			<build>
-				<finalName>${project.name} ${project.version}</finalName>
 				<plugins>
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
