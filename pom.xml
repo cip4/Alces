@@ -14,6 +14,7 @@
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+		<buildDirectory>${project.basedir}/target</buildDirectory>
 	</properties>
 	<scm>
 		<url>http://svn.cip4.org/svnroot/trunk/Alces</url>
@@ -45,6 +46,7 @@
 	</developers>
 
 	<build>
+		<directory>${buildDirectory}</directory>
 		<finalName>${project.name} ${project.version}</finalName>
 		<resources>
 			<resource>
@@ -76,6 +78,13 @@
 					<outputEncoding>UTF-8</outputEncoding>
 					<argLine>-Xmx512m -Dfile.encoding=UTF-8</argLine>
 				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+	                <goals>install</goals>
+	            </configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -134,7 +143,7 @@
 		<dependency>
 			<groupId>org.cip4.lib.jdf</groupId>
 			<artifactId>JDFLibJ</artifactId>
-			<version>2.1.4a.75-SNAPSHOT</version>
+			<version>2.1.4a.75</version>
 		</dependency>
 		
 		<dependency>
@@ -234,8 +243,8 @@
 								</goals>
 								<configuration>
 									<headerType>gui</headerType>
-									<outfile>target/${project.build.finalName}.exe</outfile>
-									<jar>target/${project.build.finalName}-app.jar</jar>
+									<outfile>${buildDirectory}/${project.build.finalName}.exe</outfile>
+									<jar>${buildDirectory}/${project.build.finalName}-app.jar</jar>
 									<errTitle>encc</errTitle>
 									<icon>src/main/assemble/windows/alces.ico</icon>
 									<classPath>
