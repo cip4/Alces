@@ -229,7 +229,7 @@ public class JMFPreprocessor implements Preprocessor {
 		}
 
 		/**
-		 * Converts a byte array to hex. Bytes take on values from �128 to 127, inclusive. This byte-to-hex converter first converts to decimal and then to
+		 * Converts a byte array to hex. Bytes take on values from 128 to 127, inclusive. This byte-to-hex converter first converts to decimal and then to
 		 * hex.where:
 		 * 
 		 * <pre>

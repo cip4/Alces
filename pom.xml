@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>2.3-SNAPSHOT</version>
+	<version>2.2-SNAPSHOT</version>
 	<name>CIP4 Alces</name>
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
