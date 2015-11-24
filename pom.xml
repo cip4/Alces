@@ -307,7 +307,7 @@
 										
 										<!-- create app file-->
 										<taskdef name="bundleapp" classname="com.oracle.appbundler.AppBundlerTask" classpath="${basedir}/src/main/assemble/macosx/lib/appbundler-1.0.jar" />
-										<bundleapp outputdirectory="${project.build.directory}/dmg" name="${project.build.finalName}" displayname="My Java Mac OS X App" identifier="org.cip4.tools.alces.swingui.Alces" icon="${basedir}/src/main/assemble/macosx/alces.icns" shortversion="1.0" applicationCategory="public.app-category.developer-tools" mainclassname="org.cip4.tools.alces.swingui.Alces">
+										<bundleapp outputdirectory="${project.build.directory}/dmg" name="${pom.name}" displayname="${pom.name}" identifier="org.cip4.tools.alces.swingui.Alces" icon="${basedir}/src/main/assemble/macosx/alces.icns" shortversion="${pom.version}" applicationCategory="public.app-category.developer-tools" mainclassname="org.cip4.tools.alces.swingui.Alces">
 									        <classpath file="${project.build.directory}/${project.build.finalName}-app.jar" />
 									    </bundleapp>
 									    
