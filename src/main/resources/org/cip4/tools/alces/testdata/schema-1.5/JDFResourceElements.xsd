@@ -1,0 +1,511 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The CIP4 Software License, Version 1.0 Copyright (c) 2001-2014 The International Cooperation for 
+	the Integration of Processes in Prepress, Press and Postpress (CIP4). All rights reserved. Redistribution 
+	and use in source and binary forms, with or without modification, are permitted provided that the following 
+	conditions are met: 1. Redistributions of source code must retain the above copyright notice, this list 
+	of conditions and the following disclaimer. 2. Redistributions in binary form must reproduce the above 
+	copyright notice, this list of conditions and the following disclaimer in the documentation and/or other 
+	materials provided with the distribution. 3. The end-user documentation included with the redistribution, 
+	if any, must include the following acknowledgment: &quot;This product includes software developed by 
+	the The International Cooperation for the Integration of Processes in Prepress, Press and Postpress (www.cip4.org)&quot; 
+	Alternately, this acknowledgment may appear in the software itself, if and wherever such third-party 
+	acknowledgments normally appear. 4. The names &quot;CIP4&quot; and &quot;The International Cooperation 
+	for the Integration of Processes in Prepress, Press and Postpress&quot; must not be used to endorse or 
+	promote products derived from this software without prior written permission. For written permission, 
+	please contact info@cip4.org 5. Products derived from this software may not be called &quot;CIP4&quot;, 
+	nor may &quot;CIP4&quot; appear in their name, without prior written permission of the CIP4 organization 
+	&quot;CIP4&quot; and &quot;The International Cooperation for the Integration of Processes in Prepress, 
+	Press and Postpress&quot; are trademarks of The International Cooperation for the Integration of Processes 
+	in Prepress, Press and Postpress (CIP4). All other names and brands are the property of their respective 
+	owners. THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT 
+	LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. 
+	CIP4 AND ITS CONTRIBUTORS MAKE NO REPRESENTATION THAT THE USE OF THIS SOFTWARE OR DATA WILL NOT INFRINGE 
+	ANY PATENTS, COPYRIGHTS, TRADEMARKS, OR OTHER RIGHTS. IN NO EVENT SHALL CIP4 OR ITS CONTRIBUTORS BE LIABLE 
+	FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT 
+	LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) 
+	HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+	NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+	OF SUCH DAMAGE. ==================================================================== This software consists 
+	of voluntary contributions made by many individuals on behalf of the The International Cooperation for 
+	the Integration of Processes in Prepress, Press and Postpress and was originally based on software some 
+	of which contributed by and copyrighted by Adobe Systems and Man Roland. copyright (c) 2000-2001, Adobe 
+	Systems copyright (c) 2001-2001, Man Roland For more information on The International Cooperation for 
+	the Integration of Processes in Prepress, Press and Postpress , please see &lt;http://www.cip4.org/&gt;. -->
+<xs:schema xmlns:jdftyp="http://www.CIP4.org/JDFSchema_1_5_Types" xmlns:jdf="http://www.CIP4.org/JDFSchema_1_1"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.CIP4.org/JDFSchema_1_1"
+	elementFormDefault="qualified" attributeFormDefault="unqualified" version="V1.5-001">
+	<xs:import namespace="http://www.CIP4.org/JDFSchema_1_5_Types" schemaLocation="JDFTypes.xsd"/>
+	<xs:include schemaLocation="JDFCore.xsd"/>
+
+	<xs:attributeGroup name="ColorSpaceConversionOpAttribs_c">
+		<xs:attribute name="IgnoreEmbeddedICC" type="jdftyp:boolean" use="optional"/>
+		<xs:attribute name="ObjectTags" type="jdftyp:NMTOKENS" use="optional"/>
+		<xs:attribute name="Operation" type="jdftyp:eOperation_" use="optional"/>
+		<xs:attribute name="SourceCS" type="jdftyp:eSourceCSs_" use="optional"/>
+		<xs:attribute name="SourceRenderingIntent" type="jdftyp:eRenderingIntent1_" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="ColorSpaceConversionOpAttribs_r">
+		<xs:attributeGroup ref="jdf:ColorSpaceConversionOpAttribs_c"/>
+		<xs:attribute name="PreserveBlack" type="jdftyp:boolean" default="false"/>
+		<xs:attribute name="RenderingIntent" type="jdftyp:eRenderingIntent1_" default="ColorSpaceDependent"/>
+		<xs:attribute name="RGBGray2Black" type="jdftyp:boolean" default="false"/>
+		<xs:attribute name="RGBGray2BlackThreshold" type="jdftyp:double" default="1"/>
+		<xs:attribute name="SourceObjects" type="jdftyp:eSourceObjects_" default="All"/>
+	</xs:attributeGroup>
+	<xs:complexType name="ColorSpaceConversionOp_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="@IgnoreEmbeddedICC" Last="1.3"/>
+				<Version Path="@ObjectTags" First="1.4"/>
+				<Version Path="@PreserveBlack" First="1.1"/>
+				<Version Path="@RGBGray2BlackThreshold" First="1.2"/>
+				<Version Path="@SourceRenderingIntent" First="1.2"/>
+				<Version Path="DeviceNSpace" First="1.2"/>
+				<Version Path="DeviceNSpaceRef" First="1.2"/>
+				<Version Path="FileSpec[@ResourceUsage='AbstractProfile']" First="1.2"/>
+				<Version Path="SeparationSpec" First="1.2"/>
+				<Constraint Path="DeviceNSpace" minOccurs="0" maxOccurs="1"/>
+				<Constraint Path="DeviceNSpaceRef" minOccurs="0" maxOccurs="1"/>
+				<Constraint Path="FileSpec[@ResourceUsage='AbstractProfile']" minOccurs="0"
+					maxOccurs="1"/>
+				<Constraint Path="FileSpec[@ResourceUsage='SourceProfile']" minOccurs="0" maxOccurs="1"/>
+				<Constraint Path="FileSpecRef" minOccurs="0" maxOccurs="2"/>
+				<Constraint Path="SeparationSpec" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+					<xs:element name="DeviceNSpace" type="jdf:DeviceNSpace_re" minOccurs="0"/>
+<!-- 					<xs:element ref="jdf:DeviceNSpaceRef" minOccurs="0"/> -->
+					<xs:element name="FileSpec" type="jdf:FileSpec_re" minOccurs="0"/>
+					<xs:element ref="jdf:FileSpecRef" minOccurs="0"/>
+					<xs:element name="SeparationSpec" type="jdf:SeparationSpec_re" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:ColorSpaceConversionOpAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="ConvertingConfigAttribs_c">
+		<xs:attribute name="MarginBottom" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="MarginLeft" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="MarginRight" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="MarginTop" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="SheetHeight" type="jdftyp:DoubleRange" use="optional"/>
+		<xs:attribute name="SheetWidth" type="jdftyp:DoubleRange" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="ConvertingConfigAttribs_r">
+		<xs:attributeGroup ref="jdf:ConvertingConfigAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="ConvertingConfig_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="." First="1.4"/>
+				<Version Path="Media" First="1.5"/>
+				<Version Path="MediaRef" First="1.5"/>
+				<Constraint Path="Device" minOccurs="0" maxOccurs="1"/>
+				<Constraint Path="DeviceRef" minOccurs="0" maxOccurs="1"/>
+				<Constraint Path="Media" minOccurs="0" maxOccurs="1"/>
+				<Constraint Path="MediaRef" minOccurs="0" maxOccurs="1"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+					<xs:element name="Device" type="jdf:Device_re" minOccurs="0"/>
+					<xs:element ref="jdf:DeviceRef" minOccurs="0"/>
+					<xs:element name="Media" type="jdf:Media_re" minOccurs="0"/>
+					<xs:element ref="jdf:MediaRef" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:ConvertingConfigAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="CostCenterAttribs_c">
+		<xs:attribute name="Name" type="jdftyp:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="CostCenterAttribs_r">
+		<xs:attributeGroup ref="jdf:CostCenterAttribs_c"/>
+		<xs:attribute name="CostCenterID" type="jdftyp:shortString" use="required"/>
+	</xs:attributeGroup>
+	<xs:complexType name="CostCenter_re" mixed="false">
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:CostCenterAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="CreaseAttribs_c">
+		<xs:attribute name="Depth" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="RelativeStartPosition" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="RelativeWorkingPath" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="StartPosition" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="WorkingPath" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="WorkingDirection" type="jdftyp:eWorkingDirection_" use="optional"/>
+		<xs:attribute name="Travel" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="RelativeTravel" use="optional">
+			<xs:simpleType>
+				<xs:restriction base="jdftyp:double">
+					<xs:minInclusive value="0"/>
+					<xs:maxInclusive value="1"/>
+				</xs:restriction>
+			</xs:simpleType>
+		</xs:attribute>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="CreaseAttribs_r">
+		<xs:attributeGroup ref="jdf:CreaseAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="Crease_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="@Depth" First="1.2"/>
+				<Version Path="@RelativeTravel" First="1.2"/>
+				<Version Path="@RelativeStartPosition" First="1.2"/>
+				<Version Path="@RelativeWorkingPath" First="1.2"/>
+				<Version Path="@Travel" First="1.2"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:CreaseAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="CutAttribs_c">
+		<xs:attribute name="CutWidth" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="LowerRibbonName" type="jdftyp:NMTOKEN" use="optional"/>
+		<xs:attribute name="RelativeStartPosition" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="RelativeWorkingPath" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="StartPosition" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="UpperRibbonName" type="jdftyp:NMTOKEN" use="optional"/>
+		<xs:attribute name="WorkingPath" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="WorkingDirection" type="jdftyp:eWorkingDirection_" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="CutAttribs_r">
+		<xs:attributeGroup ref="jdf:CutAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="Cut_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="@CutWidth" First="1.4"/>
+				<Version Path="@LowerRibbonName" First="1.5"/>
+				<Version Path="@RelativeStartPosition" First="1.2"/>
+				<Version Path="@RelativeWorkingPath" First="1.2"/>
+				<Version Path="@UpperRibbonName" First="1.5"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:CutAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="DisjointingAttribs_c">
+		<xs:attribute name="Number" type="jdftyp:Integer" use="optional"/>
+		<xs:attribute name="Offset" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="OffsetAmount" type="jdftyp:Integer" use="optional"/>
+		<xs:attribute name="OffsetDirection" type="jdftyp:eDisjointingOffsetDirection_" use="optional"/>
+		<xs:attribute name="OffsetUnits" type="jdftyp:NMTOKEN" use="optional"/>
+		<xs:attribute name="Overfold" type="jdftyp:double" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="DisjointingAttribs_r">
+		<xs:attributeGroup ref="jdf:DisjointingAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="Disjointing_re" mixed="false">
+    <xs:annotation>
+      <xs:appinfo>
+        <Version Path="@OffsetUnits" First="1.5"/>
+        <Version Path="@Overfold" Last="1.0"/>
+        <Constraint Path="InsertSheet" minOccurs="0" maxOccurs="1"/>
+        <Constraint Path="InsertSheetRef" minOccurs="0" maxOccurs="1"/>
+        <Constraint Path="IdentificationField" minOccurs="0" maxOccurs="unbounded"/>
+      </xs:appinfo>
+    </xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+					<xs:element name="IdentificationField" type="jdf:IdentificationField_re" minOccurs="0"/>
+					<xs:element name="InsertSheet" type="jdf:InsertSheet_re" minOccurs="0"/>
+					<xs:element ref="jdf:InsertSheetRef" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:DisjointingAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="DispositionAttribs_c">
+		<xs:attribute name="DispositionUsage" type="jdftyp:eUsage_" use="optional"/>
+		<xs:attribute name="ExtraDuration" type="jdftyp:duration" use="optional"/>
+		<xs:attribute name="MinDuration" type="jdftyp:duration" use="optional"/>
+		<xs:attribute name="Until" type="jdftyp:dateTime" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="DispositionAttribs_r">
+		<xs:attributeGroup ref="jdf:DispositionAttribs_c"/>
+		<xs:attribute name="DispositionAction" type="jdftyp:eDispositionAction_" default="Delete"/>
+		<xs:attribute name="Priority" type="jdftyp:Integer" default="0"/>
+	</xs:attributeGroup>
+	<xs:complexType name="Disposition_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="." First="1.2"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:DispositionAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="MarkColorAttribs_c">
+	</xs:attributeGroup>
+	<xs:attributeGroup name="MarkColorAttribs_r">
+		<xs:attributeGroup ref="jdf:MarkColorAttribs_c"/>
+		<xs:attribute name="Name" type="jdftyp:string" use="required"/>
+		<xs:attribute name="Tint" type="jdftyp:double" use="required"/>
+	</xs:attributeGroup>
+	<xs:complexType name="MarkColor_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="." First="1.5"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:MarkColorAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="MediaLayersAttribs_c">
+	</xs:attributeGroup>
+	<xs:attributeGroup name="MediaLayersAttribs_r">
+	</xs:attributeGroup>
+	<xs:complexType name="MediaLayers_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="." First="1.3"/>
+				<Constraint Path="GlueLine" minOccurs="0" maxOccurs="unbounded"/>
+				<Constraint Path="GlueLineRef" minOccurs="0" maxOccurs="unbounded"/>
+				<Constraint Path="Media" minOccurs="0" maxOccurs="unbounded"/>
+				<Constraint Path="MediaRef" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+					<xs:element name="GlueLine" type="jdf:GlueLine_re" minOccurs="0"/>
+					<xs:element name="Media" type="jdf:Media_re" minOccurs="0"/>
+					<xs:element ref="jdf:MediaRef" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:MediaLayersAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="MetadataMapAttribs_c">
+        <xs:attribute name="ValueFormat" type="jdftyp:string" use="optional"/>
+        <xs:attribute name="ValueTemplate" type="jdftyp:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="MetadataMapAttribs_r">
+ 		<xs:attributeGroup ref="jdf:MetadataMapAttribs_c"/>
+        <xs:attribute name="Context" type="jdftyp:eContext_MDM" default="PagePool"/>
+        <xs:attribute name="DataType" type="jdftyp:eMetaDataMapDataType" use="required"/>
+        <xs:attribute name="Name" type="jdftyp:NMTOKEN" use="required"/>
+	</xs:attributeGroup>
+	<xs:complexType name="MetadataMap_re" mixed="false">
+	<xs:annotation>
+			<xs:appinfo>
+				<Version Path="." First="1.4"/>
+				<Constraint Path="Expr" minOccurs="0" maxOccurs="unbounded"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+					<xs:element name="Expr" type="jdf:MetaDataMap_Expr_lr" minOccurs="1" maxOccurs="unbounded"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:MetadataMapAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	<xs:complexType name="MetaDataMap_Expr_lr" mixed="true">
+		<xs:complexContent mixed="true">
+			<xs:extension base="jdf:BaseElement_">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:element ref="jdf:AbstractTerms" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attribute name="Name" type="jdftyp:NMTOKEN" use="optional"/>
+				<xs:attribute name="Path" type="jdftyp:XPath" use="optional"/>
+				<xs:attribute name="Value" type="jdftyp:string" use="optional"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+	
+	<xs:attributeGroup name="MISDetailsAttribs_c">
+		<xs:attribute name="CostType" type="jdftyp:eCostType_" use="optional"/>
+		<xs:attribute name="DeviceOperationMode" type="jdftyp:eDeviceOperationMode_" use="optional"/>
+		<xs:attribute name="WorkType" type="jdftyp:eWorkType_" use="optional"/>
+		<xs:attribute name="WorkTypeDetails" type="jdftyp:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="MISDetailsAttribs_r">
+		<xs:attributeGroup ref="jdf:MISDetailsAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="MISDetails_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="." First="1.2"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:MISDetailsAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="PerforateAttribs_c">
+		<xs:attribute name="Depth" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="RelativeStartPosition" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="RelativeWorkingPath" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="StartPosition" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="WorkingPath" type="jdftyp:XYPair" use="optional"/>
+		<xs:attribute name="WorkingDirection" type="jdftyp:eWorkingDirection_" use="optional"/>
+		<xs:attribute name="TeethPerDimension" type="jdftyp:double" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="PerforateAttribs_r">
+		<xs:attributeGroup ref="jdf:PerforateAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="Perforate_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="@Depth" First="1.2"/>
+				<Version Path="@RelativeStartPosition" First="1.2"/>
+				<Version Path="@RelativeWorkingPath" First="1.2"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:PerforateAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="RefAnchorAttribs_c">
+		<xs:attribute name="Anchor" type="jdftyp:eAnchor_" use="optional"/>
+		<xs:attribute name="AnchorType" type="jdftyp:eAnchorType_" use="optional"/>
+		<xs:attribute name="rRef" type="jdftyp:IDREF" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="RefAnchorAttribs_r">
+		<xs:attributeGroup ref="jdf:RefAnchorAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="RefAnchor_re" mixed="false">
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:RefAnchorAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="ScreenSelectorAttribs_c">
+		<xs:attribute name="Angle" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="AngleMap" type="jdftyp:string" use="optional"/>
+		<xs:attribute name="DotSize" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="Frequency" type="jdftyp:double" use="optional"/>
+		<xs:attribute name="ObjectTags" type="jdftyp:NMTOKENS" use="optional"/>
+		<xs:attribute name="ScreeningFamily" type="jdftyp:string" use="optional"/>
+		<xs:attribute name="ScreeningType" type="jdftyp:eScreeningType_" use="optional"/>
+		<xs:attribute name="SourceFrequency" type="jdftyp:DoubleRange" use="optional"/>
+		<xs:attribute name="SpotFunction" type="jdftyp:NMTOKEN" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="ScreenSelectorAttribs_r">
+		<xs:attributeGroup ref="jdf:ScreenSelectorAttribs_c"/>
+		<xs:attribute name="Separation" type="jdftyp:string" default="All"/>
+		<xs:attribute name="SourceObjects" type="jdftyp:eSourceObjects_" default="All"/>
+	</xs:attributeGroup>
+	<xs:complexType name="ScreenSelector_re" mixed="false">
+		<xs:annotation>
+			<xs:appinfo>
+				<Version Path="@AngleMap" First="1.1"/>
+				<Version Path="@DotSize" First="1.1"/>
+				<Version Path="@ObjectTags" First="1.4"/>
+			</xs:appinfo>
+		</xs:annotation>
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:ScreenSelectorAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+	<xs:attributeGroup name="SeparationSpecAttribs_c">
+		<xs:attribute name="Name" type="jdftyp:string" use="optional"/>
+	</xs:attributeGroup>
+	<xs:attributeGroup name="SeparationSpecAttribs_r">
+		<xs:attributeGroup ref="jdf:SeparationSpecAttribs_c"/>
+	</xs:attributeGroup>
+	<xs:complexType name="SeparationSpec_re" mixed="false">
+		<xs:complexContent mixed="false">
+			<xs:extension base="jdf:ResourceElement">
+				<xs:sequence minOccurs="0" maxOccurs="unbounded">
+					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
+					<xs:group ref="jdf:GenericResourceElements" minOccurs="0"/>
+				</xs:sequence>
+				<xs:attributeGroup ref="jdf:SeparationSpecAttribs_r"/>
+			</xs:extension>
+		</xs:complexContent>
+	</xs:complexType>
+
+</xs:schema>
