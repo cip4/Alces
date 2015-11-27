@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>Paris-15.10</version>
+	<version>Paris-15.10.1-SNAPSHOT</version>
 	<name>CIP4 Alces</name>
 	<properties>
 		<timestamp>${maven.build.timestamp}</timestamp>
@@ -14,7 +14,7 @@
         <url>https://stash.cip4.org/scm/tool/alces.git</url>
         <developerConnection>scm:git:https://stash.cip4.org/scm/tool/alces.git</developerConnection>
         <connection>scm:git:https://stash.cip4.org/scm/tool/alces.git</connection>
-      <tag>Alces-Paris-15.10</tag>
+      <tag>HEAD</tag>
   </scm>
     <repositories>
         <repository>
