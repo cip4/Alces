@@ -174,7 +174,7 @@ public class TestRunner {
 	 */
 	public TestSession startTestSession(OutMessage outMessage, File jdfFile, PreprocessorContext context, String targetUrl, boolean asMime) {
 		// Preprocess message
-		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, _confHand.getProp(ConfigurationHandler.SENDER_ID));
+		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, ConfigurationHandler.getSenderId());
 		context.addAttribute(URLPreprocessor.URL_ATTR, _confHand.getServerJmfUrl());
 		boolean mjmDetected = outMessage.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
 		if (mjmDetected) {
@@ -354,7 +354,7 @@ public class TestRunner {
 	 */
 	public InMessage sendMessage(OutMessage message, String targetUrl) throws IOException {
 		PreprocessorContext context = new PreprocessorContext();
-		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, _confHand.getProp(ConfigurationHandler.SENDER_ID));
+		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, ConfigurationHandler.getSenderId());
 		boolean mjmDetected = message.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
 		if (mjmDetected) {
 			preprocessMIME(message, context);

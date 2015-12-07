@@ -425,7 +425,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				quitAlces();
 			}
 		});
-		this.setTitle(_confHand.getProp(ConfigurationHandler.SENDER_ID) + "  -  " + _confHand.getServerJmfUrl());
+		this.setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
 		this.setVisible(true);
 		connectButton.requestFocusInWindow();
 	}
@@ -1264,7 +1264,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			return;
 		} else if (actionCommand.equals(ACTION_SHOW_PREFERENCES)) {
 			new PreferencesDialog(this, "Preferences");
-			setTitle(_confHand.getProp(ConfigurationHandler.SENDER_ID) + "  -  " + _confHand.getServerJmfUrl());
+			setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
 		}
 	}
 

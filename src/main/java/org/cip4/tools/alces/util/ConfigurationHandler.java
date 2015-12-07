@@ -86,8 +86,6 @@ public class ConfigurationHandler {
 
 	public final static String OUTGOING_TESTS = "alces.outgoing.tests";
 
-	public final static String SENDER_ID = "alces.sender.id";
-
 	public final static String PROPERTIES_FILE = "alces.properties.path";
 
 	public final static String WIN_WIDTH = "gui.window.width";
@@ -189,8 +187,6 @@ public class ConfigurationHandler {
 		DEFAULT_PROPERTIES.put(SESSION_DURATION, "15000");
 
 		DEFAULT_PROPERTIES.put(LAST_DIR, System.getProperty("user.dir"));
-
-		DEFAULT_PROPERTIES.put(SENDER_ID, "Alces");
 
 		DEFAULT_PROPERTIES.put(REPLACE_URLS_IN_JDF, "none");
 
@@ -312,12 +308,19 @@ public class ConfigurationHandler {
 	}
 
 	/**
+	 * Returns the sender ID.
+	 * @return The sender ID.
+     */
+	public static String getSenderId() {
+		return BuildPropsUtil.getAppName() + " " + BuildPropsUtil.getAppVersion();
+	}
+
+	/**
 	 * Returns the URL used for receiving JMF messages. The URL is built from the hostname, port, and context properties.
 	 * 
 	 * @return the server URL, for example http://localhost:9090/alces/jmf
 	 * @see #getServerHost()
 	 * @see #getServerPort()
-	 * @see #getServerContextPath()
 	 */
 	public String getServerJmfUrl() {
 		return "http://" + getServerHost() + ":" + getServerPort() + getServerJmfContextPath();

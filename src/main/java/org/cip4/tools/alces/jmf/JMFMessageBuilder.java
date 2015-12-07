@@ -202,8 +202,7 @@ public class JMFMessageBuilder {
 			JDFComment comment = not.appendComment();
 			comment.setText("Alces has received and processed your message.");
 		}
-		jmf.setSenderID(ConfigurationHandler.getInstance().getProp(
-				ConfigurationHandler.SENDER_ID));
+		jmf.setSenderID(ConfigurationHandler.getSenderId());
 		return jmf;
 	}
 
@@ -229,8 +228,7 @@ public class JMFMessageBuilder {
 			JDFComment comment = not.appendComment();
 			comment.setText("Alces has received and logged your messages but does not know how to process the message.");
 		}
-		jmf.setSenderID(ConfigurationHandler.getInstance().getProp(
-				ConfigurationHandler.SENDER_ID));
+		jmf.setSenderID(ConfigurationHandler.getSenderId());
 		return jmf;
 	}
 
