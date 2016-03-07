@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>Montreal-16.03-SNAPSHOT</version>
+	<version>Montreal-16.03</version>
 	<name>CIP4 Alces</name>
 
 	<properties>
