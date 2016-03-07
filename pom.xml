@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>Montreal-16.03.1-SNAPSHOT</version>
+	<version>Montreal-16.03</version>
 	<name>CIP4 Alces</name>
 
 	<properties>
@@ -15,7 +15,7 @@
         <url>https://bitbucket.cip4.org/scm/tool/alces.git</url>
         <developerConnection>scm:git:https://bitbucket.cip4.org/scm/tool/alces.git</developerConnection>
         <connection>scm:git:https://bitbucket.cip4.org/scm/tool/alces.git</connection>
-      <tag>HEAD</tag>
+      <tag>Alces-Montreal-16.03</tag>
   </scm>
     <repositories>
         <repository>
