@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>DRUPA-16.05-SNAPSHOT</version>
+	<version>DRUPA-16.05</version>
 	<name>CIP4 Alces</name>
 
 	<properties>
@@ -15,7 +15,7 @@
         <url>https://bitbucket.cip4.org/scm/tool/alces.git</url>
         <developerConnection>scm:git:https://bitbucket.cip4.org/scm/tool/alces.git</developerConnection>
         <connection>scm:git:https://bitbucket.cip4.org/scm/tool/alces.git</connection>
-      <tag>Alces-Montreal-16.03</tag>
+      <tag>Alces-DRUPA-16.05</tag>
   </scm>
     <repositories>
         <repository>
