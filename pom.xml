@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>Cambridge-17.03</version>
+	<version>Cambridge-17.03-SNAPSHOT</version>
 	<name>CIP4 Alces</name>
 
 	<properties>
