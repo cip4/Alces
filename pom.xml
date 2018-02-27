@@ -10,6 +10,7 @@
 		<timestamp>${maven.build.timestamp}</timestamp>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 		<buildDirectory>${project.basedir}/target</buildDirectory>
+		<additionalparam>-Xdoclint:none</additionalparam>
 	</properties>
     <scm>
         <url>https://bitbucket.cip4.org/scm/tool/alces.git</url>
