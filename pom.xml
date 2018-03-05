@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>Bologna-18.03</version>
+	<version>Boulder-18.10-SNAPSHOT</version>
 	<name>CIP4 Alces</name>
 
 	<properties>
@@ -16,7 +16,7 @@
         <url>https://bitbucket.cip4.org/scm/tool/alces.git</url>
         <developerConnection>scm:git:https://bitbucket.cip4.org/scm/tool/alces.git</developerConnection>
         <connection>scm:git:https://bitbucket.cip4.org/scm/tool/alces.git</connection>
-      <tag>Alces-Bologna-18.03</tag>
+      <tag>Alces-Cambridge-17.03</tag>
   </scm>
     <repositories>
         <repository>
