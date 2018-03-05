@@ -3,7 +3,7 @@
 
 	<groupId>org.cip4.tools.alces</groupId>
 	<artifactId>Alces</artifactId>
-	<version>Bologna-18.03-SNAPSHOT</version>
+	<version>Boulder-18.10-SNAPSHOT</version>
 	<name>CIP4 Alces</name>
 
 	<properties>
