@@ -1,6 +1,71 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:jdftyp="http://www.CIP4.org/JDFSchema_1_3_Types" xmlns:jdf="http://www.CIP4.org/JDFSchema_1_1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.CIP4.org/JDFSchema_1_1" elementFormDefault="qualified" attributeFormDefault="unqualified" version="V1.3-002">
-	<xs:import namespace="http://www.CIP4.org/JDFSchema_1_3_Types" schemaLocation="JDFTypes.xsd"/>
+<!--	
+              JDF Schema for JDF 1.7 - very preliminary
+
+
+
+    The CIP4 Software License, Version 1.0
+	
+	
+	Copyright (c) 2001-2019 The International Cooperation for the Integration of 
+	Processes in Prepress, Press and Postpress (CIP4). All rights reserved.
+	
+	Redistribution and use in source and binary forms, with or without modification, 
+	are permitted provided that the following conditions are met:
+	
+	1. Redistributions of source code must retain the above copyright notice, this 
+	list of conditions and the following disclaimer.
+	
+	2. Redistributions in binary form must reproduce the above copyright notice, 
+	this list of conditions and the following disclaimer in the documentation and/or 
+	other materials provided with the distribution.
+	
+	3. The end-user documentation included with the redistribution, if any, must 
+	include the following acknowledgment: &quot;This product includes software developed 
+	by the The International Cooperation for the Integration of Processes in 
+	Prepress, Press and Postpress (www.cip4.org)&quot; Alternately, this acknowledgment 
+	may appear in the software itself, if and wherever such third-party 
+	acknowledgments normally appear.
+	
+	4. The names &quot;CIP4&quot; and &quot;The International Cooperation for the Integration of 
+	Processes in Prepress, Press and Postpress&quot; must not be used to endorse or 
+	promote products derived from this software without prior written permission. 
+	For written permission, please contact info@cip4.org
+	
+	5. Products derived from this software may not be called &quot;CIP4&quot;, nor may &quot;CIP4&quot; 
+	appear in their name, without prior written permission of the CIP4 organization
+	
+	&quot;CIP4&quot; and &quot;The International Cooperation for the Integration of Processes in 
+	Prepress, Press and Postpress&quot; are trademarks of The International Cooperation 
+	for the Integration of Processes in Prepress, Press and Postpress (CIP4).  All 
+	other names and brands are the property of their respective owners.
+	
+	THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED WARRANTIES, 
+	INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+	FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. CIP4 AND ITS CONTRIBUTORS MAKE 
+	NO REPRESENTATION THAT THE USE OF THIS SOFTWARE OR DATA WILL NOT INFRINGE ANY 
+	PATENTS, COPYRIGHTS, TRADEMARKS, OR OTHER RIGHTS. IN NO EVENT SHALL CIP4 OR ITS 
+	CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, 
+	OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING 
+	IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY 
+	OF SUCH DAMAGE. 
+	====================================================================
+	
+	This software consists of voluntary contributions made by many individuals on 
+	behalf of the The International Cooperation for the Integration of Processes in 
+	Prepress, Press and Postpress and was originally based on software some of which 
+	contributed by and copyrighted by Adobe Systems and Man Roland. copyright (c) 
+	2000-2001, Adobe Systems copyright (c) 2001-2001, Man Roland
+	
+	For more information on The International Cooperation for the Integration of 
+	Processes in Prepress, Press and Postpress , please see &lt;http://www.cip4.org/&gt;.
+	
+-->
+<xs:schema xmlns:jdftyp="http://www.CIP4.org/JDFSchema_1_7_Types" xmlns:jdf="http://www.CIP4.org/JDFSchema_1_1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.CIP4.org/JDFSchema_1_1" elementFormDefault="qualified" attributeFormDefault="unqualified" version="V1.7-001">
+	<xs:import namespace="http://www.CIP4.org/JDFSchema_1_7_Types" schemaLocation="JDFTypes.xsd"/>
 	<xs:complexType name="DeviceCap_re" mixed="false">
 		<xs:annotation>
 			<xs:appinfo>
@@ -59,7 +124,7 @@
 		<xs:attribute name="Types" type="jdftyp:NMTOKENS" use="optional"/>
 	</xs:attributeGroup>
 	<xs:attributeGroup name="DeviceCapAttribs_r">
-		<xs:attribute name="CombinedMethod" type="jdftyp:eCombinedMethod_" default="None"/>
+		<xs:attribute name="CombinedMethod" type="jdftyp:eCombinedMethods_" default="None"/>
 		<xs:attribute name="ExecutionPolicy" type="jdftyp:eExecutionPolicy" default="AllFound"/>
 		<xs:attributeGroup ref="jdf:DeviceCapAttribs_c"/>
 	</xs:attributeGroup>
@@ -121,7 +186,7 @@
 				</xs:sequence>
 				<xs:attribute name="Availability" type="jdftyp:eAvailability_" default="Installed"/>
 				<xs:attribute name="Context" type="jdftyp:eContext" default="Resource"/>
-				<xs:attribute name="DevCapRef" type="jdftyp:IDREF" use="optional"/>
+				<xs:attribute name="DevCapRef" type="jdftyp:IDREFS" use="optional"/>
 				<xs:attribute name="DevNS" type="jdftyp:URI" default="http://www.CIP4.org/JDFSchema_1_1"/>
 				<xs:attribute name="ID" type="jdftyp:ID" use="optional"/>
 				<xs:attribute name="LinkUsage" type="jdftyp:eUsage_" use="optional"/>
@@ -801,7 +866,6 @@
 		<xs:annotation>
 			<xs:appinfo>
 				<Version Path="." First="1.3"/>
-				<!-- Should all constraints be added? OLA -->
 			</xs:appinfo>
 		</xs:annotation>
 		<xs:complexContent>
@@ -868,6 +932,8 @@
 	<xs:complexType name="BasicPreflightTest" mixed="false">
 		<xs:annotation>
 			<xs:appinfo>
+				<Version Path="@Classes" First="1.4"/>
+				<Version Path="@ClassName" First="1.4"/>
 				<Constraint Path="PreflightArgument" minOccurs="0" maxOccurs="1"/>
 				<Constraint Path="PreflightArgument/BoxArgument" minOccurs="0" maxOccurs="1"/>
 				<Constraint Path="PreflightArgument/BoxToBoxDifference" minOccurs="0" maxOccurs="1"/>
@@ -879,11 +945,13 @@
 					<xs:group ref="jdf:GenericElements" minOccurs="0"/>
 					<xs:element name="PreflightArgument" type="jdf:PreflightArgument" minOccurs="0"/>
 				</xs:sequence>
+				<xs:attribute name="Classes" type="jdftyp:NMTOKENS" use="optional"/>
+				<xs:attribute name="ClassName" type="jdftyp:NMTOKEN" use="optional"/>
 				<xs:attribute name="DevNS" type="jdftyp:URI" default="http://www.CIP4.org/JDFSchema_1_1"/>
-				<xs:attribute name="ListType" type="jdftyp:eListType_" use="optional"/>
+				<xs:attribute name="ListType" type="jdftyp:eListType_" default="SingleValue"/>
 				<xs:attribute name="MaxOccurs" type="jdftyp:Integer" default="1"/>
 				<xs:attribute name="MinOccurs" type="jdftyp:Integer" default="1"/>
-				<xs:attribute name="Name" type="jdftyp:NMTOKEN" use="optional"/>
+				<xs:attribute name="Name" type="jdftyp:NMTOKEN" use="required"/>
 			</xs:extension>
 		</xs:complexContent>
 	</xs:complexType>
@@ -1130,6 +1198,7 @@
 		</xs:annotation>
 		<xs:complexContent mixed="false">
 			<xs:extension base="jdf:AbstractTerm">
+				<xs:attribute name="Path" type="jdftyp:XPath" use="optional"/>
 				<xs:attribute name="rRef" type="jdftyp:IDREF" use="optional"/>
 			</xs:extension>
 		</xs:complexContent>
