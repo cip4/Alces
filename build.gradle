@@ -1,0 +1,75 @@
+import org.apache.tools.ant.filters.ReplaceTokens
+
+plugins {
+    id 'java'
+    id 'application'
+    id 'edu.sc.seis.launch4j' version '2.4.6'
+    id 'edu.sc.seis.macAppBundle' version '2.3.0'
+}
+
+if (project.hasProperty('projectVersion')) {
+    version = project.projectVersion
+} else {
+    version = 'development'
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots"
+    }
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.cip4.tools.alces.swingui.Alces'
+    }
+    from {
+        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+processResources {
+    filesMatching('**/*.properties') {
+        filter(ReplaceTokens, tokens:  [
+                'name': project.properties['name'],
+                'version': project.properties['version'],
+                'timestamp': new Date().format('yyyy-MM-dd HH:mm:ss')
+        ])
+    }
+}
+
+test {
+    exclude '**/**'
+}
+
+application {
+    mainClass = 'org.cip4.tools.alces.swingui.Alces'
+}
+
+launch4j {
+    mainClassName = 'org.cip4.tools.alces.swingui.Alces'
+    icon = "${projectDir}/src/main/dist/alces.ico"
+    outfile = project.name + '-' + project.version + '.exe'
+}
+
+macAppBundle {
+    mainClassName = 'org.cip4.tools.alces.swingui.Alces'
+    icon = "${projectDir}/src/main/dist/alces.icns"
+    javaProperties.put("apple.laf.useScreenMenuBar", "true")
+}
+
+dependencies {
+    compile 'org.cip4.lib.jdf:JDFLibJ:2.1.6.x-SNAPSHOT'
+    compile 'jdom:jdom:1.1'
+    compile 'org.xhtmlrenderer:core-renderer:R8pre2'
+    compile 'concurrent:concurrent:1.3.4'
+    compile 'commons-vfs:commons-vfs:1.0'
+    compile 'org.mozilla:rhino:1.7R4'
+    compile 'commons-httpclient:commons-httpclient:3.1'
+    compile 'jetty:jetty:5.1.10'
+    compile 'jetty:org.mortbay.jmx:5.1.10'
+    compile 'jaxen:jaxen:1.1.5'
+
+    testCompile 'junit:junit:4.11'
+}
