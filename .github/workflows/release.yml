@@ -14,14 +14,11 @@ jobs:
         with:
           java-version: 8
 
-      - name: Debug ProjectVersion
-        run: echo %GITHUB_REF:*/=%
-
       - name: Check out sources...
         uses: actions/checkout@v2
 
       - name: Build with Gradle
-        run: ./gradlew build launch4j -PprojectVersion=%GITHUB_REF:*/=%
+        run: ./gradlew build launch4j -PprojectVersion=%GITHUB_REF:*heads/=%
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
