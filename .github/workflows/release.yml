@@ -14,6 +14,9 @@ jobs:
         with:
           java-version: 8
 
+      - name: Debug ProjectVersion
+        run: echo %GITHUB_REF:*/=%
+
       - name: Check out sources...
         uses: actions/checkout@v2
 
