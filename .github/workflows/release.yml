@@ -17,9 +17,6 @@ jobs:
       - name: Check out sources...
         uses: actions/checkout@v2
 
-      - name: Debug ProjectVersion
-        run: echo %GITHUB_REF%
-
       - name: Build with Gradle
         run: ./gradlew build launch4j -PprojectVersion=%GITHUB_REF:*tags/=%
 
