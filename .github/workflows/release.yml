@@ -21,7 +21,7 @@ jobs:
         run: echo %GITHUB_REF%
 
       - name: Build with Gradle
-        run: ./gradlew build launch4j -PprojectVersion=%GITHUB_REF:*heads/=%
+        run: ./gradlew build launch4j -PprojectVersion=%GITHUB_REF:*tags/=%
 
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
