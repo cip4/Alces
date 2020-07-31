@@ -14,6 +14,9 @@ if (project.hasProperty('projectVersion')) {
     version = 'development'
 }
 
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
 repositories {
     mavenCentral()
     maven {
@@ -23,10 +26,16 @@ repositories {
 
 jar {
     manifest {
-        attributes 'Main-Class': 'org.cip4.tools.alces.swingui.Alces'
+        attributes(
+                'Main-Class': "org.cip4.tools.alces.swingui.Alces"
+        )
     }
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    } {
+        exclude "META-INF/*.SF"
+        exclude "META-INF/*.DSA"
+        exclude "META-INF/*.RSA"
     }
 }
 
@@ -49,9 +58,9 @@ application {
 }
 
 launch4j {
-    mainClassName = 'org.cip4.tools.alces.swingui.Alces'
     icon = "${projectDir}/src/main/dist/alces.ico"
     outfile = project.name + '-' + project.version + '.exe'
+    headerType = 'gui'
 }
 
 macAppBundle {
