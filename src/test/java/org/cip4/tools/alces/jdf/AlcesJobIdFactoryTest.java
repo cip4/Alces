@@ -3,24 +3,25 @@
  */
 package org.cip4.tools.alces.jdf;
 
-import org.cip4.tools.alces.jdf.AlcesJobIDFactory;
+import org.junit.Assert;
+import org.junit.Test;
 
-import junit.framework.TestCase;
+public class AlcesJobIdFactoryTest {
 
-public class AlcesJobIdFactoryTest extends TestCase {
+    @Test
+    public void testNewJobID() {
+        AlcesJobIDFactory factory = new AlcesJobIDFactory();
+        String jobId = factory.newJobID();
+        Assert.assertNotNull(jobId);
+    }
 
-	public void testNewJobID() {
-		AlcesJobIDFactory factory = new AlcesJobIDFactory();
-		String jobId = factory.newJobID();
-		assertNotNull(jobId);
-	}
-
-	public void testNewJobIDString() {
-		String oldJobId = "This is a long string that is longer than 63 characters. Yes, it is longer than 63 characters.";
-		assertTrue(oldJobId.length() > 63);
-		AlcesJobIDFactory factory = new AlcesJobIDFactory();
-		String jobId = factory.newJobID(oldJobId);
-		assertNotNull(jobId);
-		assertEquals(63, jobId.length());
-	}
+    @Test
+    public void testNewJobIDString() {
+        String oldJobId = "This is a long string that is longer than 63 characters. Yes, it is longer than 63 characters.";
+        Assert.assertTrue(oldJobId.length() > 63);
+        AlcesJobIDFactory factory = new AlcesJobIDFactory();
+        String jobId = factory.newJobID(oldJobId);
+        Assert.assertNotNull(jobId);
+        Assert.assertEquals(63, jobId.length());
+    }
 }

@@ -49,10 +49,6 @@ processResources {
     }
 }
 
-test {
-    exclude '**/**'
-}
-
 application {
     mainClass = 'org.cip4.tools.alces.swingui.Alces'
 }

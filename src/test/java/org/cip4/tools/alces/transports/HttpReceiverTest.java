@@ -3,22 +3,22 @@
  */
 package org.cip4.tools.alces.transports;
 
-import junit.framework.TestCase;
-
 import org.apache.log4j.Logger;
+import org.junit.Test;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
  */
-public class HttpReceiverTest extends TestCase {
+public class HttpReceiverTest {
 
-	private static Logger LOGGER = Logger.getLogger(HttpReceiverTest.class);
+    private static Logger LOGGER = Logger.getLogger(HttpReceiverTest.class);
 
-	public void testHttpReceiver() throws Exception {
-		/*
-		 * HttpReceiver http = new HttpReceiver(null); http.startServer(9090); assertTrue(http.isStarted()); Thread.sleep(50000); http.stopServer();
-		 * assertFalse(http.isStarted());
-		 */
-	}
+    @Test
+    public void testHttpReceiver() throws Exception {
+        /*
+         * HttpReceiver http = new HttpReceiver(null); http.startServer(9090); assertTrue(http.isStarted()); Thread.sleep(50000); http.stopServer();
+         * assertFalse(http.isStarted());
+         */
+    }
 
 }

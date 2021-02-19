@@ -3,52 +3,53 @@
  */
 package org.cip4.tools.alces.message.util.mime;
 
+import org.cip4.tools.alces.junit.AlcesTestCase;
+import org.junit.Assert;
+import org.junit.Before;
+import org.junit.Test;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-import org.cip4.tools.alces.junit.AlcesTestCase;
-import org.cip4.tools.alces.message.util.mime.MimePackageException;
-import org.cip4.tools.alces.message.util.mime.MimeReader;
-
 /**
- * 
  * @author Claes Buckwalter (clabu@itn.liu.se)
  * @version $Id$
  */
 public class MimeReaderTest extends AlcesTestCase {
 
+    @Before
     public void setUp() throws Exception {
-        super.setUp();
     }
 
     /**
      * Extracts a JMF and a JDF from a MIME package.
      */
+    @Test
     public void testParseMime_JMF_JDF() throws IOException, MimePackageException, URISyntaxException {
         // Setup path to MIME package
-        String mimeResource = "SubmitQueueEntry.jmf_Approval.jdf.mjm";        
+        String mimeResource = "SubmitQueueEntry.jmf_Approval.jdf.mjm";
         // Setup output dir
         File outputDir = File.createTempFile("MimeReaderTest", "-output");
         outputDir.deleteOnExit();
-        assertTrue(outputDir.delete());
-        assertTrue(outputDir.mkdir());
+        Assert.assertTrue(outputDir.delete());
+        Assert.assertTrue(outputDir.mkdir());
         outputDir.deleteOnExit();
-        assertTrue(outputDir.exists());
+        Assert.assertTrue(outputDir.exists());
         String outputDirUrl = outputDir.toURL().toExternalForm();
-        assertTrue("Output dir URL does not exists: " + outputDirUrl, new File(new URI(outputDirUrl)).exists());
+        Assert.assertTrue("Output dir URL does not exists: " + outputDirUrl, new File(new URI(outputDirUrl)).exists());
         // Extract files form MIME package
         InputStream mimeStream = getTestFileAsStream(mimeResource);
-        assertNotNull("Input stream was null for file: " + mimeResource, mimeStream);
+        Assert.assertNotNull("Input stream was null for file: " + mimeResource, mimeStream);
         MimeReader mimeReader = new MimeReader();
         String[] fileUrls = mimeReader.extractMimePackage(mimeStream,
-            outputDir.toURI().toURL().toExternalForm());
-        assertTrue(fileUrls.length == 2);
-        for (int i=0; i<fileUrls.length; i++) {
+                outputDir.toURI().toURL().toExternalForm());
+        Assert.assertTrue(fileUrls.length == 2);
+        for (int i = 0; i < fileUrls.length; i++) {
             File mimePart = new File(new URI(fileUrls[i]));
-            assertTrue("Extracted MIME part does not exist: " + mimePart.getCanonicalPath(), mimePart.exists());
+            Assert.assertTrue("Extracted MIME part does not exist: " + mimePart.getCanonicalPath(), mimePart.exists());
             mimePart.deleteOnExit();
         }
     }

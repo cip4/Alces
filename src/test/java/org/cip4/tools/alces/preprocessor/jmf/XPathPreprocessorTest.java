@@ -3,19 +3,21 @@
  */
 package org.cip4.tools.alces.preprocessor.jmf;
 
-import java.util.Map;
-import java.util.Properties;
-
 import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.message.OutMessageImpl;
-import org.cip4.tools.alces.preprocessor.jmf.XPathPreprocessor;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.util.Map;
+import java.util.Properties;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
  */
 public class XPathPreprocessorTest extends AlcesTestCase {
 
+    @Test
     public void testPreprocess() throws Exception {
         XPathPreprocessor pp;
         Message jmf = new OutMessageImpl(null,
@@ -30,7 +32,7 @@ public class XPathPreprocessorTest extends AlcesTestCase {
         String m0 = jmf.getBody();
         jmf = pp.preprocess(jmf);
         System.out.println("After:\n" + jmf + "\n");
-        assertNotSame(m0, jmf.getBody());
+        Assert.assertNotSame(m0, jmf.getBody());
     }
 
 }
