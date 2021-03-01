@@ -24,13 +24,13 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v1
         with:
-          name: Alces-SNAPSHOT-${{ github.run_number }}.zip
+          name: binaries
           path: build/distributions/Alces-development.zip
 
       - name: Upload tar
         uses: actions/upload-artifact@v1
         with:
-          name: Alces-SNAPSHOT-${{ github.run_number }}.tar
+          name: binaries
           path: build/distributions/Alces-development.tar
 
 #  macos-build:
@@ -50,13 +50,13 @@ jobs:
 #      - name: Upload MacOS App
 #        uses: actions/upload-artifact@v1
 #        with:
-#          name: Alces-SNAPSHOT-${{ github.run_number }}.dmg
+#          name: binaries
 #          path: build/distributions/Alces-development.dmg
 #
 #      - name: Upload JAR
 #        uses: actions/upload-artifact@v1
 #        with:
-#          name: Alces-SNAPSHOT-${{ github.run_number }}.jar
+#          name: binaries
 #          path: build/libs/Alces-development.jar
 
   windows-build:
@@ -73,14 +73,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew createExe
 
+      - name: Rename binaries
+        run: mv build/launch4j/Alces-development.exe build/launch4j/Alces-SNAPSHOT-${{ github.run_number }}.exe
+
       - name: Debug
         run: ls -l build/launch4j
 
       - name: Upload EXE
         uses: actions/upload-artifact@v1
         with:
-          name: Alces-SNAPSHOT-${{ github.run_number }}.exe
-          path: build/launch4j/Alces-development.exe
+          name: binaries
+          path: build/launch4j/Alces-SNAPSHOT-${{ github.run_number }}.exe
 
   publish-snapshot:
     needs:
@@ -102,10 +105,11 @@ jobs:
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v2
         with:
-          path: artifacts
+          name: binaries
+          path: binaries
       - name: Display structure of downloaded files
         run: ls -R
-        working-directory: artifacts
+        working-directory: binaries
       - name: Upload artifacts to confluence
         run: python ../scripts/confluence-attachments-update.py "5309106" "alces-snapshot" "snapshot"
         working-directory: artifacts
