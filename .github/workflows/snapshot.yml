@@ -21,17 +21,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assembleDist
 
-      - name: Upload zip
-        uses: actions/upload-artifact@v1
-        with:
-          name: binaries
-          path: build/distributions/Alces-development.zip
+      - name: Rename binaries
+        run: mv build/distributions/Alces-development.zip build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.zip
+
+      - name: Rename binaries
+        run: mv build/distributions/Alces-development.tar build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.tar
 
       - name: Upload tar
         uses: actions/upload-artifact@v1
         with:
           name: binaries
-          path: build/distributions/Alces-development.tar
+          path: build/distributions/Alces-SNAPSHOT-*.*
 
 #  macos-build:
 #    runs-on: macos-latest
@@ -112,7 +112,7 @@ jobs:
         working-directory: binaries
       - name: Upload artifacts to confluence
         run: python ../scripts/confluence-attachments-update.py "5309106" "alces-snapshot" "snapshot"
-        working-directory: artifacts
+        working-directory: binaries
         env:
           CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
           CONFLUENCE_PASSWORD: ${{ secrets.CONFLUENCE_PASSWORD }}
