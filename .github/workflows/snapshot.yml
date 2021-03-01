@@ -35,7 +35,9 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: binaries
-          path: build/distributions/Alces-SNAPSHOT-*.*
+          path: |
+            build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.tar
+            build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.zip
 
 #  macos-build:
 #    runs-on: macos-latest
