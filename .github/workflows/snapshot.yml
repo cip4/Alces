@@ -54,9 +54,6 @@ jobs:
       - name: Rename .DMG
         run: mv build/distributions/Alces-development.dmg build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.dmg
 
-      - name: Rename .JAR
-        run: mv build/distributions/Alces-development.jar build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.jar
-
       - name: Upload Binaries
         uses: actions/upload-artifact@v2
         with:
