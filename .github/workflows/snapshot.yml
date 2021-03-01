@@ -81,3 +81,31 @@ jobs:
         with:
           name: exe file
           path: build/launch4j/Alces-development.exe
+
+  publish-snapshot:
+    needs:
+      - linux-build
+      - macos-build
+      - windows-build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Checkout Scripts
+        uses: actions/checkout@v2
+        with:
+          repository: cip4/scripts
+          path: scripts
+      - name: Download all workflow run artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Upload artifacts to confluence
+        run: ../scripts/confluence-attachments-update.py 5309106 alces-snapshot
+        working-directory: artifacts
+        env:
+          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
+          CONFLUENCE_PASSWORD: ${{ secrets.CONFLUENCE_PASSWORD }}
+
