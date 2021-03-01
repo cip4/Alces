@@ -32,12 +32,10 @@ jobs:
         working-directory: build/distributions
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: binaries
-          path: |
-            build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.tar
-            build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.zip
+          path: build/distributions/Alces-SNAPSHOT-*.*
 
 #  macos-build:
 #    runs-on: macos-latest
@@ -60,7 +58,7 @@ jobs:
 #        run: mv build/distributions/Alces-development.jar build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.jar
 #
 #      - name: Upload Binaries
-#        uses: actions/upload-artifact@v1
+#        uses: actions/upload-artifact@v2
 #        with:
 #          name: binaries
 #          path: build/distributions/Alces-SNAPSHOT-*.dmg
@@ -86,7 +84,7 @@ jobs:
         run: ls -l build/launch4j
 
       - name: Upload EXE
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: binaries
           path: build/launch4j/Alces-SNAPSHOT-${{ github.run_number }}.exe
