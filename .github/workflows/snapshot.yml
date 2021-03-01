@@ -21,13 +21,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assembleDist
 
-      - name: Rename binaries
+      - name: Rename .ZIP
         run: mv build/distributions/Alces-development.zip build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.zip
 
-      - name: Rename binaries
+      - name: Rename .TAR
         run: mv build/distributions/Alces-development.tar build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.tar
 
-      - name: Upload tar
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: build/distributions
+
+      - name: Upload binaries
         uses: actions/upload-artifact@v1
         with:
           name: binaries
@@ -47,17 +51,17 @@ jobs:
 #      - name: Build with Gradle
 #        run: ./gradlew createDmg
 #
-#      - name: Upload MacOS App
-#        uses: actions/upload-artifact@v1
-#        with:
-#          name: binaries
-#          path: build/distributions/Alces-development.dmg
+#      - name: Rename .DMG
+#        run: mv build/distributions/Alces-development.dmg build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.dmg
 #
-#      - name: Upload JAR
+#      - name: Rename .JAR
+#        run: mv build/distributions/Alces-development.jar build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.jar
+#
+#      - name: Upload Binaries
 #        uses: actions/upload-artifact@v1
 #        with:
 #          name: binaries
-#          path: build/libs/Alces-development.jar
+#          path: build/distributions/Alces-SNAPSHOT-*.dmg
 
   windows-build:
     runs-on: windows-latest
