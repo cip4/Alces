@@ -104,7 +104,7 @@ jobs:
         with:
           path: artifacts
       - name: Upload artifacts to confluence
-        run: ../scripts/confluence-attachments-update.py 5309106 alces-snapshot
+        run: python ../scripts/confluence-attachments-update.py 5309106 alces-snapshot
         working-directory: artifacts
         env:
           CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
