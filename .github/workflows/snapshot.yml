@@ -24,13 +24,13 @@ jobs:
       - name: Upload zip
         uses: actions/upload-artifact@v1
         with:
-          name: Alces-SNAPSHOT-${{GITHUB_RUN_ID}}.zip
+          name: Alces-SNAPSHOT-$GITHUB_RUN_ID.zip
           path: build/distributions/Alces-development.zip
 
       - name: Upload tar
         uses: actions/upload-artifact@v1
         with:
-          name: Alces-SNAPSHOT-${{GITHUB_RUN_ID}}.tar
+          name: Alces-SNAPSHOT-$GITHUB_RUN_ID.tar
           path: build/distributions/Alces-development.tar
 
 #  macos-build:
@@ -50,13 +50,13 @@ jobs:
 #      - name: Upload MacOS App
 #        uses: actions/upload-artifact@v1
 #        with:
-#          name: Alces-SNAPSHOT-${{GITHUB_RUN_ID}}.dmg
+#          name: Alces-SNAPSHOT-$GITHUB_RUN_ID.dmg
 #          path: build/distributions/Alces-development.dmg
 #
 #      - name: Upload JAR
 #        uses: actions/upload-artifact@v1
 #        with:
-#          name: Alces-SNAPSHOT-${{GITHUB_RUN_ID}}.jar
+#          name: Alces-SNAPSHOT-$GITHUB_RUN_ID.jar
 #          path: build/libs/Alces-development.jar
 
   windows-build:
@@ -79,7 +79,7 @@ jobs:
       - name: Upload EXE
         uses: actions/upload-artifact@v1
         with:
-          name: Alces-SNAPSHOT-${{GITHUB_RUN_ID}}.exe
+          name: Alces-SNAPSHOT-$GITHUB_RUN_ID.exe
           path: build/launch4j/Alces-development.exe
 
   publish-snapshot:
