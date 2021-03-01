@@ -21,17 +21,21 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew assembleDist
 
-      - name: Upload zip
-        uses: actions/upload-artifact@v1
-        with:
-          name: zip package
-          path: build/distributions/Alces-development.zip
+      - name: Rename .ZIP
+        run: mv build/distributions/Alces-development.zip build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.zip
 
-      - name: Upload tar
-        uses: actions/upload-artifact@v1
+      - name: Rename .TAR
+        run: mv build/distributions/Alces-development.tar build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.tar
+
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: build/distributions
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
         with:
-          name: tar package
-          path: build/distributions/Alces-development.tar
+          name: binaries
+          path: build/distributions/Alces-SNAPSHOT-*.*
 
   macos-build:
     runs-on: macos-latest
@@ -47,17 +51,14 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew createDmg
 
-      - name: Upload MacOS App
-        uses: actions/upload-artifact@v1
-        with:
-          name: macosx app file
-          path: build/distributions/Alces-development.dmg
+      - name: Rename .DMG
+        run: mv build/distributions/Alces-development.dmg build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.dmg
 
-      - name: Upload JAR
-        uses: actions/upload-artifact@v1
+      - name: Upload Binaries
+        uses: actions/upload-artifact@v2
         with:
-          name: jar file
-          path: build/libs/Alces-development.jar
+          name: binaries
+          path: build/distributions/Alces-SNAPSHOT-*.*
 
   windows-build:
     runs-on: windows-latest
@@ -73,14 +74,17 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew createExe
 
+      - name: Rename binaries
+        run: mv build/launch4j/Alces-development.exe build/launch4j/Alces-SNAPSHOT-${{ github.run_number }}.exe
+
       - name: Debug
         run: ls -l build/launch4j
 
       - name: Upload EXE
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
-          name: exe file
-          path: build/launch4j/Alces-development.exe
+          name: binaries
+          path: build/launch4j/Alces-SNAPSHOT-*.exe
 
   publish-snapshot:
     needs:
@@ -89,24 +93,20 @@ jobs:
       - windows-build
     runs-on: ubuntu-latest
     steps:
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: 2.7
-      - name: Checkout Scripts
-        uses: actions/checkout@v2
-        with:
-          repository: cip4/scripts
-          path: scripts
-          token: ${{ secrets.REPOS_TOKEN }}
       - name: Download all workflow run artifacts
         uses: actions/download-artifact@v2
         with:
-          path: artifacts
-      - name: Upload artifacts to confluence
-        run: python ../scripts/confluence-attachments-update.py "5309106" "alces-snapshot" ""
-        working-directory: artifacts
-        env:
-          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
-          CONFLUENCE_PASSWORD: ${{ secrets.CONFLUENCE_PASSWORD }}
-
+          name: binaries
+          path: binaries
+      - name: Display structure of downloaded files
+        run: ls -R
+        working-directory: binaries
+      - name: Confluence Upload
+        uses: cip4/action-confluence-upload@master
+        with:
+          url: 'https://confluence.cip4.org'
+          username: ${{ secrets.CONFLUENCE_USER }}
+          password: ${{ secrets.CONFLUENCE_PASSWORD }}
+          contentId: 5309106
+          label: 'alces-snapshot,snapshot'
+          filePattern: 'binaries/**/Alces-SNAPSHOT-*.*'
