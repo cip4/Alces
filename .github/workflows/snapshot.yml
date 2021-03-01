@@ -111,10 +111,12 @@ jobs:
       - name: Display structure of downloaded files
         run: ls -R
         working-directory: binaries
-      - name: Upload artifacts to confluence
-        run: python ../scripts/confluence-attachments-update.py "5309106" "alces-snapshot" "snapshot"
-        working-directory: binaries
-        env:
-          CONFLUENCE_USER: ${{ secrets.CONFLUENCE_USER }}
-          CONFLUENCE_PASSWORD: ${{ secrets.CONFLUENCE_PASSWORD }}
-
+  - name: Confluence Upload
+    uses: cip4/action-confluence-upload@main
+    with:
+      url: 'https://confluence.cip4.org'
+      username: ${{ secrets.CONFLUENCE_USER }}
+      password: ${{ secrets.CONFLUENCE_PASSWORD }}
+      contentId: 5309106
+      label: 'alces-snapshot,snapshot'
+      filePattern: 'binaries/**/Alces-SNAPSHOT-*.*'
