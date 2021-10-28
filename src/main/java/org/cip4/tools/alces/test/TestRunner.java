@@ -9,7 +9,6 @@ import javax.mail.Multipart;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.JDFDoc;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.node.JDFNode;
@@ -30,6 +29,8 @@ import org.cip4.tools.alces.transport.HttpReceiver;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.NotDirFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This is the class in the Alces framework that is responsible for creating test sessions during which JMF messages are sent, received, and tested. Example
@@ -49,7 +50,7 @@ import org.cip4.tools.alces.util.NotDirFilter;
  */
 public class TestRunner {
 
-	private static Logger LOGGER = Logger.getLogger(TestRunner.class);
+	private static Logger log = LoggerFactory.getLogger(TestRunner.class);
 
 	private TestSuite _suite = null;
 
@@ -96,10 +97,10 @@ public class TestRunner {
 		// Loads test files
 		File[] testFiles = loadTestData(testDataDir);
 
-		LOGGER.info("Running tests...");
+		log.info("Running tests...");
 		int testDelay = Integer.parseInt(_confHand.getProp(ConfigurationHandler.SEND_DELAY));
 		for (int i = 0; i < testFiles.length; i++) {
-			LOGGER.info("Posting '" + testFiles[i].getAbsolutePath() + "' to " + targetUrl + "...");
+			log.info("Posting '" + testFiles[i].getAbsolutePath() + "' to " + targetUrl + "...");
 			startTestSession(testFiles[i], targetUrl);
 			try {
 				// Sleep between tests
@@ -110,11 +111,11 @@ public class TestRunner {
 		// Wait for asynchronous messages for the entire test duration
 		try {
 			int sleepTime = Integer.parseInt(_confHand.getProp(ConfigurationHandler.SESSION_DURATION));
-			LOGGER.info("Waiting " + sleepTime + " millis for incoming messages...");
+			log.info("Waiting " + sleepTime + " millis for incoming messages...");
 			Thread.sleep(sleepTime);
 		} catch (InterruptedException ie) {
 		}
-		LOGGER.info("Finished running tests.");
+		log.info("Finished running tests.");
 	}
 
 	/**
@@ -194,14 +195,14 @@ public class TestRunner {
 
 		// Configure and start test session
 		synchronized (_suite) {
-			LOGGER.debug("Configuring test session...");
+			log.debug("Configuring test session...");
 			final TestSession session = _suite.createTestSession(targetUrl);
 			_suite.addTestSession(session);
 			// Configure tests
 			_confHand.configureIncomingTests(session);
 			_confHand.configureOutgoingTests(session);
 			// Send message
-			LOGGER.debug("Starting test session and sending message...");
+			log.debug("Starting test session and sending message...");
 			session.sendMessage(outMessage, _dispatcher);
 			return session;
 		}
@@ -234,7 +235,7 @@ public class TestRunner {
 			// null
 			mimeMessage = loadMessage(mjmFile);
 		} catch (IOException e) {
-			LOGGER.error("Could not write MIME package: " + e.getMessage(), e);
+			log.error("Could not write MIME package: " + e.getMessage(), e);
 		}
 		return mimeMessage;
 	}
@@ -261,7 +262,7 @@ public class TestRunner {
 				proxyPort = -1;
 			}
 			String proxyHost = _confHand.getProp(ConfigurationHandler.PROXY_HOST);
-			LOGGER.info("Using proxy: " + proxyHost + ":" + proxyPort);
+			log.info("Using proxy: " + proxyHost + ":" + proxyPort);
 			dispatcher = new HttpDispatcher(proxyHost, proxyPort, _confHand.getProp(ConfigurationHandler.PROXY_USER), _confHand.getProp(ConfigurationHandler.PROXY_PASSWORD), maxConnections,
 					maxConnections);
 		} else {
@@ -278,7 +279,7 @@ public class TestRunner {
 	 */
 	private File[] loadTestData(String testdataPath) {
 		File testDir = new File(testdataPath);
-		LOGGER.info("Loading test data from '" + testDir.getAbsolutePath() + "'...");
+		log.info("Loading test data from '" + testDir.getAbsolutePath() + "'...");
 		final File[] testFiles;
 		// Checks that the directory exists
 		if (testDir.isDirectory()) {
@@ -286,7 +287,7 @@ public class TestRunner {
 		} else {
 			testFiles = new File[] { new File(testdataPath) };
 		}
-		LOGGER.info("Test data loaded (" + testFiles.length + " files).");
+		log.info("Test data loaded (" + testFiles.length + " files).");
 		return testFiles;
 	}
 
@@ -301,26 +302,26 @@ public class TestRunner {
 	 * @see #destroy()
 	 */
 	public void init() throws Exception {
-		LOGGER.debug("Initializing test environment...");
+		log.debug("Initializing test environment...");
 		try {
 			// Configure web server for receiving messages
 			final String url = _confHand.getServerJmfUrl();
 			final String host = _confHand.getServerHost();
 			final int port = _confHand.getServerPort();
 			final String contextPath = _confHand.getServerJmfContextPath();
-			LOGGER.info("Starting HTTP server on " + url + "...");
+			log.info("Starting HTTP server on " + url + "...");
 			final String resourceBase = _confHand.getProp(ConfigurationHandler.RESOURCE_BASE);
 			_httpReceiver = new HttpReceiver(_suite);
 			_httpReceiver.startServer(host, port, contextPath, resourceBase);
 			// Configure message dispatcher
 			_dispatcher = configureHttpDispatcher();
-			LOGGER.debug("Test environment initialized.");
+			log.debug("Test environment initialized.");
 		} catch (Exception e) {
-			LOGGER.error("Could not initialize test environment.", e);
+			log.error("Could not initialize test environment.", e);
 			try {
 				_httpReceiver.stopServer();
 			} catch (InterruptedException e1) {
-				LOGGER.warn("Could not stop HTTP receiver while aborting test environment initialization.", e1);
+				log.warn("Could not stop HTTP receiver while aborting test environment initialization.", e1);
 			}
 			_httpReceiver = null;
 			_dispatcher = null;
@@ -334,13 +335,13 @@ public class TestRunner {
 	 * @see #init()
 	 */
 	public void destroy() throws Exception {
-		LOGGER.debug("Cleaning up test environment...");
+		log.debug("Cleaning up test environment...");
 		if (_httpReceiver != null) {
 			_httpReceiver.stopServer();
 			_httpReceiver = null;
 		}
 		_dispatcher = null;
-		LOGGER.debug("Cleaned up test environment.");
+		log.debug("Cleaned up test environment.");
 	}
 
 	/**
@@ -371,7 +372,7 @@ public class TestRunner {
 	 * @return
 	 */
 	public OutMessage loadMessage(File file) {
-		LOGGER.debug("Loading message from file '" + file.getAbsolutePath() + "'...");
+		log.debug("Loading message from file '" + file.getAbsolutePath() + "'...");
 		String contentType = null;
 		String header = null;
 		String body = null;
@@ -391,10 +392,10 @@ public class TestRunner {
 			}
 			body = IOUtils.toString(new FileInputStream(file));
 		} catch (IOException ioe) {
-			LOGGER.error("Could not send message because it could not be loaded from file.", ioe);
+			log.error("Could not send message because it could not be loaded from file.", ioe);
 			return null;
 		}
-		LOGGER.debug("Loaded message from file.");
+		log.debug("Loaded message from file.");
 
 		OutMessage message = _suite.createOutMessage(contentType, header, body, true); // new
 		// OutMessageImpl(contentType,
@@ -477,7 +478,7 @@ public class TestRunner {
 		} else if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_DISABLED)) {
 			baseUrl = null;
 		} else {
-			LOGGER.warn("Unknown configuration option for replacing relative URLs in JDF files. " + "Using property value as base URL: " + replaceUrls);
+			log.warn("Unknown configuration option for replacing relative URLs in JDF files. " + "Using property value as base URL: " + replaceUrls);
 			baseUrl = replaceUrls;
 		}
 		return startTestSessionWithSubmitQueueEntry(jdfFile, targetUrl, preprocessJdf, asMime, baseUrl);
@@ -569,7 +570,7 @@ public class TestRunner {
 		} else if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_DISABLED)) {
 			baseUrl = null;
 		} else {
-			LOGGER.warn("Unknown configuration option for replacing relative URLs in JDF files. " + "Using property value as base URL: " + replaceUrls);
+			log.warn("Unknown configuration option for replacing relative URLs in JDF files. " + "Using property value as base URL: " + replaceUrls);
 			baseUrl = replaceUrls;
 		}
 		return startTestSessionWithResubmitQueueEntry(jdfFile, queueEntryId, jobId, targetUrl, baseUrl, preprocessJdf, asMime);
@@ -582,7 +583,7 @@ public class TestRunner {
 	 * @return the published JDF file
 	 */
 	public File publishJDF(File jdfFile) {
-		LOGGER.debug("Publishing JDF '" + jdfFile.getAbsolutePath() + "' to web server ...");
+		log.debug("Publishing JDF '" + jdfFile.getAbsolutePath() + "' to web server ...");
 		if (!jdfFile.exists()) {
 			throw new IllegalArgumentException("The JDF file '" + jdfFile.getAbsolutePath() + "' cannot be published because the file does not exist.");
 		}
@@ -596,7 +597,7 @@ public class TestRunner {
 		try {
 			FileUtils.copyFile(jdfFile, publicJdfFile);
 		} catch (IOException e) {
-			LOGGER.error("The JDF file '" + jdfFile + "' could not be published to '" + publicJdfFile + "'.", e);
+			log.error("The JDF file '" + jdfFile + "' could not be published to '" + publicJdfFile + "'.", e);
 		}
 		return publicJdfFile;
 	}
@@ -673,12 +674,12 @@ public class TestRunner {
 	 */
 	private OutMessage preprocessJMF(OutMessage message, PreprocessorContext context) {
 		Preprocessor[] preprocessors = _confHand.getJMFPreprocessors();
-		LOGGER.debug("Preprocessing message with " + preprocessors.length + " preprocessors...");
+		log.debug("Preprocessing message with " + preprocessors.length + " preprocessors...");
 		for (int i = 0; i < preprocessors.length; i++) {
 			try {
 				preprocessors[i].preprocess(message, context);
 			} catch (Exception e) {
-				LOGGER.warn("Preprocessing message failed.", e);
+				log.warn("Preprocessing message failed.", e);
 			}
 		}
 		return message;
@@ -697,12 +698,12 @@ public class TestRunner {
 
 		JDFDoc jdfDoc = new JDFParser().parseFile(jdfFile.getAbsolutePath());
 		if (jdfDoc == null) {
-			LOGGER.warn("Could not parse JDF file '" + jdfFile.getAbsolutePath() + "' for preprocessing.");
+			log.warn("Could not parse JDF file '" + jdfFile.getAbsolutePath() + "' for preprocessing.");
 			return null;
 		}
 		JDFNode jdf = preprocessJDF(jdfDoc.getJDFRoot(), context);
 		if (!jdf.getOwnerDocument_KElement().write2File(jdfFile.getAbsolutePath(), 2, true)) {
-			LOGGER.warn("Could not write preprocessed JDF back to file '" + jdfFile.getAbsolutePath() + "'.");
+			log.warn("Could not write preprocessed JDF back to file '" + jdfFile.getAbsolutePath() + "'.");
 			return null;
 		}
 		return jdf;
@@ -719,12 +720,12 @@ public class TestRunner {
 			return jdf;
 		}
 		JDFPreprocessor[] preprocessors = _confHand.getJDFPreprocessors();
-		LOGGER.debug("Preprocessing JDF with " + preprocessors.length + " preprocessors...");
+		log.debug("Preprocessing JDF with " + preprocessors.length + " preprocessors...");
 		for (int i = 0; i < preprocessors.length; i++) {
 			try {
 				preprocessors[i].preprocess(jdf, context);
 			} catch (Exception e) {
-				LOGGER.warn("Preprocessing message failed.", e);
+				log.warn("Preprocessing message failed.", e);
 			}
 		}
 		return jdf;

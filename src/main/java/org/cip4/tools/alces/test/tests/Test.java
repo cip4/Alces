@@ -1,8 +1,9 @@
 package org.cip4.tools.alces.test.tests;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.test.TestResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A test for testing <code>Message</code>s.
@@ -11,7 +12,6 @@ import org.cip4.tools.alces.test.TestResult;
  */
 public abstract class Test {
 
-	protected static Logger LOGGER = Logger.getLogger(Test.class);
 	protected String description = null;
 
 	public Test() {

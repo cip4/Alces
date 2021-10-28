@@ -6,8 +6,8 @@ package org.cip4.tools.alces.preprocessor.jmf;
 import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.message.OutMessageImpl;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
@@ -20,7 +20,7 @@ public class JMFPreprocessorTest extends AlcesTestCase {
     @Test
     public void testJMFTransformer() throws Exception {
         JMFPreprocessor t = new JMFPreprocessor();
-        Assert.assertEquals(t.getSenderId(), JMFPreprocessor.DEFAULT_SENDER_ID);
+        Assertions.assertEquals(t.getSenderId(), JMFPreprocessor.DEFAULT_SENDER_ID);
     }
 
     /*
@@ -29,7 +29,7 @@ public class JMFPreprocessorTest extends AlcesTestCase {
     @Test
     public void testJMFTransformerString() throws Exception {
         JMFPreprocessor t = new JMFPreprocessor("Alces");
-        Assert.assertEquals(t.getSenderId(), "Alces");
+        Assertions.assertEquals(t.getSenderId(), "Alces");
     }
 
     /*
@@ -47,7 +47,7 @@ public class JMFPreprocessorTest extends AlcesTestCase {
         System.out.println("Before:\n" + jmf + "\n");
 
         jmf = pp.preprocess(jmf);
-        Assert.assertNotSame(m0, jmf.getBody());
+        Assertions.assertNotSame(m0, jmf.getBody());
         System.out.println("After:\n" + jmf + "\n");
     }
 

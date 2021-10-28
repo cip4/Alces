@@ -14,10 +14,11 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.swingui.tree.message.AbstractMessageNode;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An action that saves the selected message sub-tree to disk.
@@ -26,7 +27,7 @@ import org.cip4.tools.alces.util.JDFConstants;
  * @since 0.9.9.3
  */
 public class ActionSaveRequestsResponcesToDisk extends AbstractAction {
-	private static Logger LOGGER = Logger.getLogger(ActionSaveRequestsResponcesToDisk.class);
+	private static Logger log = LoggerFactory.getLogger(ActionSaveRequestsResponcesToDisk.class);
 
 	private JTree tree;
 	private TreePath path;
@@ -62,7 +63,7 @@ public class ActionSaveRequestsResponcesToDisk extends AbstractAction {
 					folder = outputDirDate + ".--." + folder;
 
 					folder = updateString(folder);
-					LOGGER.info("Folder name = " + folder);
+					log.info("Folder name = " + folder);
 					findReqRes(n, folder);
 				}
 
@@ -93,9 +94,9 @@ public class ActionSaveRequestsResponcesToDisk extends AbstractAction {
 
 					String fileName = updateString(messageNode.toString().trim());
 					fileName += extension;
-					LOGGER.info("File name = " + fileName);
-					LOGGER.info("file content type = " + messageNode.getContentType());
-					LOGGER.info("file content = " + messageNode.getBody());
+					log.info("File name = " + fileName);
+					log.info("file content type = " + messageNode.getContentType());
+					log.info("file content = " + messageNode.getBody());
 					save(folderName, fileName, messageNode.getBody());
 				}
 				findReqRes(n, folderName);

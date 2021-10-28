@@ -16,9 +16,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.test.TestResultImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A <code>TestResult</code> that transforms the test result string using an XSLT transformation.
@@ -27,7 +28,7 @@ import org.cip4.tools.alces.test.TestResultImpl;
  */
 public class XsltTestResult extends TestResultImpl {
 
-	private static Logger LOGGER = Logger.getLogger(XsltTestResult.class);
+	private static Logger log = LoggerFactory.getLogger(XsltTestResult.class);
 
 	private final InputStream isXslFile;
 
@@ -74,13 +75,13 @@ public class XsltTestResult extends TestResultImpl {
 		String result;
 		if (transformResult == null) {
 			try {
-				LOGGER.debug("Peforming XSLT transform...");
+				log.debug("Peforming XSLT transform...");
 				// LOGGER.debug("XSL stylesheet file: " + xslFile.getAbsolutePath());
 				Source xslSource = new StreamSource(isXslFile);
 				TransformerFactory factory = TransformerFactory.newInstance();
 				Transformer transformer = factory.newTransformer(xslSource);
-				if (LOGGER.isDebugEnabled()) {
-					LOGGER.debug("XSLT transform input:\n" + super.getResultString());
+				if (log.isDebugEnabled()) {
+					log.debug("XSLT transform input:\n" + super.getResultString());
 				}
 				Source xmlSource = new StreamSource(new StringReader(super.getResultString()));
 				Writer stringWriter = new StringWriter();
@@ -88,7 +89,7 @@ public class XsltTestResult extends TestResultImpl {
 				transformResult = stringWriter.toString();
 				result = transformResult;
 			} catch (Exception e) {
-				LOGGER.error("Could not perform XSLT transform. Returning transform input instead.", e);
+				log.error("Could not perform XSLT transform. Returning transform input instead.", e);
 				result = super.getResultString();
 			}
 		} else {

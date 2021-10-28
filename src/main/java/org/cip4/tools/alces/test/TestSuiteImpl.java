@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.message.InMessage;
@@ -17,6 +16,8 @@ import org.cip4.tools.alces.message.OutMessage;
 import org.cip4.tools.alces.message.OutMessageImpl;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.tests.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Alces' default implementation of <code>TestSuite</code>.
@@ -25,7 +26,7 @@ import org.cip4.tools.alces.test.tests.Test;
  */
 public class TestSuiteImpl implements TestSuite, TestSessionListener {
 
-	private static Logger LOGGER = Logger.getLogger(TestSuiteImpl.class);
+	private static Logger log = LoggerFactory.getLogger(TestSuiteImpl.class);
 
 	private final List<TestSession> _testSessions;
 
@@ -66,27 +67,27 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 	public synchronized TestSession findTestSession(Message message) {
 		final JDFJMF jmf = message.getBodyAsJMF();
 		if (jmf == null) {
-			LOGGER.debug("Incoming message does not contain JMF; TestSession not found.");
+			log.debug("Incoming message does not contain JMF; TestSession not found.");
 			return null;
 		}
 		final JDFMessage jmfMsg = jmf.getMessageElement(null, null, 0);
 		final String refId = jmfMsg.getrefID();
-		LOGGER.debug("Searching for test session for incoming JMF message with refID '" + refId + "'...");
+		log.debug("Searching for test session for incoming JMF message with refID '" + refId + "'...");
 		for (TestSession s : _testSessions) {
 			for (Message mOut : s.getOutgoingMessages()) {
 				JDFJMF jmfOut = mOut.getBodyAsJMF();
 				if (jmfOut == null) {
-					LOGGER.debug("TestSession's outgoing message does not contain JMF; incoming message cannot be matched to outgoing message.");
+					log.debug("TestSession's outgoing message does not contain JMF; incoming message cannot be matched to outgoing message.");
 					continue;
 				}
 				JDFMessage jmfMsgOut = jmfOut.getMessageElement(null, null, 0);
 				if (refId.startsWith(jmfMsgOut.getID())) {
-					LOGGER.debug("Found test session with refID '" + jmfMsgOut.getID() + "' that matches incoming message with refID '" + refId + "'.");
+					log.debug("Found test session with refID '" + jmfMsgOut.getID() + "' that matches incoming message with refID '" + refId + "'.");
 					return s;
 				}
 			}
 		}
-		LOGGER.warn("No test session was found that matches incoming JMF message with refID '" + refId + "'.");
+		log.warn("No test session was found that matches incoming JMF message with refID '" + refId + "'.");
 		return null;
 	}
 

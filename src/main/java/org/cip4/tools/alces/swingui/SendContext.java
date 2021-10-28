@@ -12,10 +12,11 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Represents the context menu for the Send JMF-File Button
@@ -25,7 +26,7 @@ import org.cip4.tools.alces.util.JMFFileFilter;
  */
 public class SendContext extends JPopupMenu implements MouseListener {
 
-	private static Logger LOGGER = Logger.getLogger(SendContext.class);
+	private static Logger log = LoggerFactory.getLogger(SendContext.class);
 
 	private JMenuItem label = null;
 
@@ -93,7 +94,7 @@ public class SendContext extends JPopupMenu implements MouseListener {
 					fileItem.setToolTipText((new File(_dir)).getCanonicalPath() + "" + File.separator + "" + _entries.get(i).toString());
 				} catch (IOException e) {
 
-					LOGGER.error(e);
+					log.error("error", e);
 				}
 
 			}
@@ -134,7 +135,7 @@ public class SendContext extends JPopupMenu implements MouseListener {
 					fileItem.setToolTipText((new File(_dir)).getCanonicalPath() + "" + File.separator + "" + _entries.get(i).toString());
 				} catch (IOException e) {
 
-					LOGGER.error(e);
+					log.error("error", e);
 				}
 
 			}

@@ -4,12 +4,13 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 
-import org.apache.log4j.Logger;
 import org.jdom.Document;
 import org.jdom.JDOMException;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Formatter for the XML-Output of incoming and outgoing messages
@@ -19,7 +20,7 @@ import org.jdom.output.XMLOutputter;
 @Deprecated
 public class FormatOutput {
 
-	private static Logger LOGGER = Logger.getLogger(FormatOutput.class);
+	private static Logger LOGGER = LoggerFactory.getLogger(FormatOutput.class);
 	private static StringWriter sw = null;
 	private static StringReader sr = null;
 	private static Document doc = null;

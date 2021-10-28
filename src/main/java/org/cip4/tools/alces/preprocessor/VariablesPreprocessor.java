@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.JDFDoc;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.node.JDFNode;
@@ -16,6 +15,8 @@ import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A preprocessor that replaces variables in the JDF and JMF. See {@linkplain http ://commons.apache.org/lang/api-2.3/org/apache/commons/lang/text
@@ -31,7 +32,7 @@ import org.cip4.tools.alces.util.ConfigurationHandler;
  * @since 0.9.9.3
  */
 public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
-	private static final Logger LOGGER = Logger.getLogger(VariablesPreprocessor.class);
+	private static final Logger log = LoggerFactory.getLogger(VariablesPreprocessor.class);
 
 	public static final String VARIABLES_MAP = "org.cip4.tools.alces.VariablesPreprocessor.VARIABLES_MAP";
 
@@ -112,14 +113,14 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 		setVariablesMap(props);
 		final InputStream input = VariablesPreprocessor.class.getResourceAsStream(RES_VARIABLES_FILE);
 		if (input == null) {
-			LOGGER.warn(String.format("Could not load variables from Java Properties file %s because it could not be found.", RES_VARIABLES_FILE));
+			log.warn(String.format("Could not load variables from Java Properties file %s because it could not be found.", RES_VARIABLES_FILE));
 			return;
 		}
 		try {
 			props.load(input);
 			setVariablesMap(props);
 		} catch (IOException e) {
-			LOGGER.error("Could not load variables from Java Properties file.", e);
+			log.error("Could not load variables from Java Properties file.", e);
 		}
 	}
 
@@ -141,11 +142,11 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 		if (context != null && context.getAttribute(VARIABLES_MAP) != null) {
 			setVariablesMap((Map<String, String>) context.getAttribute(VARIABLES_MAP));
 		} else {
-			LOGGER.warn("No PreprocessorContext or variables map specified. Returning original JDF.");
+			log.warn("No PreprocessorContext or variables map specified. Returning original JDF.");
 			return jdf;
 		}
 		if (!jdf.isJDFRoot()) {
-			LOGGER.warn("JDF node is not root node. This Preprocessor only processes root JDF nodes.");
+			log.warn("JDF node is not root node. This Preprocessor only processes root JDF nodes.");
 			return jdf;
 		}
 		String src = jdf.toXML();
@@ -153,7 +154,7 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 		src = substitutor.replace(src);
 		JDFDoc jdfDoc = new JDFParser().parseString(src);
 		if (jdfDoc == null) {
-			LOGGER.warn("Could not preprocess JDF. Returning original JDF.");
+			log.warn("Could not preprocess JDF. Returning original JDF.");
 			return jdf;
 		}
 		return jdfDoc.getJDFRoot();

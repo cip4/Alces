@@ -14,7 +14,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTextArea;
 import javax.swing.tree.DefaultMutableTreeNode;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.ElementName;
 import org.cip4.jdflib.core.JDFComment;
@@ -29,13 +28,15 @@ import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xhtmlrenderer.simple.XHTMLPanel;
 import org.xhtmlrenderer.simple.extend.XhtmlNamespaceHandler;
 
 public class RendererFactory {
 	public static boolean wordWrap = false;
 
-	private static Logger LOGGER = Logger.getLogger(RendererFactory.class);
+	private static Logger log = LoggerFactory.getLogger(RendererFactory.class);
 
 	/**
 	 * Returns a <code>Component</code> that is a rendered version of a content object.
@@ -78,7 +79,7 @@ public class RendererFactory {
 	}
 
 	public static synchronized Component getRenderer(final XsltTestResult content) {
-		LOGGER.debug("Getting renderer for XSLT TestResult...");
+		log.debug("Getting renderer for XSLT TestResult...");
 		return getXHTMLRenderer(content.getResultString());
 	}
 
@@ -91,8 +92,8 @@ public class RendererFactory {
 	}
 
 	private static Component getXHTMLRenderer(String xhtml) {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Getting renderer for XHTML:\n" + xhtml);
+		if (log.isDebugEnabled()) {
+			log.debug("Getting renderer for XHTML:\n" + xhtml);
 		}
 		XHTMLPanel htmlRenderer = new XHTMLPanel();
 		htmlRenderer.setDocumentFromString(xhtml, null, new XhtmlNamespaceHandler());
@@ -109,7 +110,7 @@ public class RendererFactory {
 			xmlOut.output(doc, sw);
 			xml = sw.getBuffer().toString();
 		} catch (Exception e) {
-			LOGGER.debug("Could not format XML.", e);
+			log.debug("Could not format XML.", e);
 		}
 		JTextArea xmlRenderer = getTextRenderer(xml);
 		xmlRenderer.setWrapStyleWord(true);

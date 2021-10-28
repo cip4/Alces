@@ -21,11 +21,12 @@ import javax.swing.ComboBoxModel;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.tests.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Singleton used to load/save properties and configure test for incoming and outgoing tests
@@ -35,7 +36,7 @@ import org.cip4.tools.alces.test.tests.Test;
  */
 public class ConfigurationHandler {
 
-	private static Logger LOGGER = Logger.getLogger(ConfigurationHandler.class);
+	private static Logger log = LoggerFactory.getLogger(ConfigurationHandler.class);
 
 	private static final String RES_ALCES_PROPS = "/org/cip4/tools/alces/conf/alces.properties";
 
@@ -198,7 +199,7 @@ public class ConfigurationHandler {
 			// it will be overwritten later using alces.properties file, 'alces.host'.
 			DEFAULT_PROPERTIES.put(HOST, "localhost");
 		} catch (UnknownHostException e) {
-			LOGGER.error(e);
+			log.error("error", e);
 		}
 
 		DEFAULT_PROPERTIES.put(JMF_PATH, AlcesPathUtil.ALCES_TEST_DATA_DIR + File.separator + "elk-testdata" + File.separator + "");
@@ -235,7 +236,7 @@ public class ConfigurationHandler {
 		try {
 			initResourceBundle();
 		} catch (MissingResourceException e) {
-			LOGGER.error(e);
+			log.error("error", e);
 		}
 	}
 
@@ -269,7 +270,7 @@ public class ConfigurationHandler {
 	 * @throws FileNotFoundException
 	 */
 	public synchronized Properties loadConfiguration(File propsFile) {
-		LOGGER.info("Loading configuration from '" + propsFile.getAbsolutePath() + "'...");
+		log.info("Loading configuration from '" + propsFile.getAbsolutePath() + "'...");
 		Properties props = new Properties(_props);
 
 		// check if properties file exists
@@ -283,7 +284,7 @@ public class ConfigurationHandler {
 				is.close();
 
 			} catch (Exception e) {
-				LOGGER.error("Error occured during creating alces.properties file.", e);
+				log.error("Error occured during creating alces.properties file.", e);
 			}
 		}
 
@@ -291,11 +292,11 @@ public class ConfigurationHandler {
 			props.load(new FileInputStream(propsFile));
 
 		} catch (FileNotFoundException fnfe) {
-			LOGGER.error("Could not find the properties file '" + propsFile.getAbsolutePath() + "'. Defaults will be used. No error while using Automated-Alces");
+			log.error("Could not find the properties file '" + propsFile.getAbsolutePath() + "'. Defaults will be used. No error while using Automated-Alces");
 		} catch (IOException ioe) {
-			LOGGER.error("Could not load the properties file '" + propsFile.getAbsolutePath() + "'. Defaults will be used. No error while using Automated-Alces");
+			log.error("Could not load the properties file '" + propsFile.getAbsolutePath() + "'. Defaults will be used. No error while using Automated-Alces");
 		}
-		LOGGER.info("Configuration loaded.");
+		log.info("Configuration loaded.");
 		_props = props;
 
 		loadAndInitTests();
@@ -335,7 +336,7 @@ public class ConfigurationHandler {
 			port = Integer.parseInt(getProp(ConfigurationHandler.PORT));
 		} catch (Exception e) {
 			port = 9090;
-			LOGGER.error("Port was not a number. Using Port: " + port, e);
+			log.error("Port was not a number. Using Port: " + port, e);
 		}
 		return port;
 	}
@@ -360,10 +361,10 @@ public class ConfigurationHandler {
 	 * @param session the <code>TestSession</code> to add the incoming <code>Test</code>s to
 	 */
 	public void configureIncomingTests(TestSession session) {
-		LOGGER.debug("Configuring incoming tests...");
+		log.debug("Configuring incoming tests...");
 		for (int i = 0; i < _incomingTests.length; i++) {
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Added Test: " + _incomingTests[i].getClass().getName());
+			if (log.isDebugEnabled()) {
+				log.debug("Added Test: " + _incomingTests[i].getClass().getName());
 			}
 			session.addIncomingTest(_incomingTests[i]);
 		}
@@ -375,11 +376,11 @@ public class ConfigurationHandler {
 	 * @param session the <code>TestSession</code> to add the outgoing <code>Test</code>s to
 	 */
 	public void configureOutgoingTests(TestSession session) {
-		LOGGER.debug("Configuring outgoing tests...");
-		LOGGER.debug("Configuring incoming tests...");
+		log.debug("Configuring outgoing tests...");
+		log.debug("Configuring incoming tests...");
 		for (int i = 0; i < _outgoingTests.length; i++) {
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Added Test: " + _outgoingTests[i].getClass().getName());
+			if (log.isDebugEnabled()) {
+				log.debug("Added Test: " + _outgoingTests[i].getClass().getName());
 			}
 			session.addOutgoingTest(_outgoingTests[i]);
 		}
@@ -395,7 +396,7 @@ public class ConfigurationHandler {
 	 * @param mainPaneHeight
 	 */
 	public void saveConfiguration(int windowWidth, int windowHeight, int devicePaneWidth, int testPaneWidth, int mainPaneHeight) {
-		LOGGER.info("Saving configuration to '" + _props.getProperty(PROPERTIES_FILE).toString() + "'...");
+		log.info("Saving configuration to '" + _props.getProperty(PROPERTIES_FILE).toString() + "'...");
 
 		// Saving Window settings
 		_props.put(WIN_WIDTH, windowWidth + "");
@@ -417,9 +418,9 @@ public class ConfigurationHandler {
 		// Saving Properties to File
 		try {
 			_props.store(new FileOutputStream(_props.getProperty(PROPERTIES_FILE).toString()), "");
-			LOGGER.debug("Saved configuration.");
+			log.debug("Saved configuration.");
 		} catch (IOException ioe) {
-			LOGGER.error("Could not save configuration.", ioe);
+			log.error("Could not save configuration.", ioe);
 		}
 	}
 
@@ -521,15 +522,15 @@ public class ConfigurationHandler {
 					// ((URLPreprocessor) pp).setURL(getServerJmfUrl());
 					// }
 					pps.add(pp);
-					LOGGER.debug("Configured Preprocessor: " + ppName);
+					log.debug("Configured Preprocessor: " + ppName);
 				} catch (ClassNotFoundException cnfe) {
-					LOGGER.error("Could not find Preprocessor class: " + ppName, cnfe);
+					log.error("Could not find Preprocessor class: " + ppName, cnfe);
 				} catch (IllegalAccessException iae) {
-					LOGGER.error("Could not instantiate Preprocessor class: " + ppName, iae);
+					log.error("Could not instantiate Preprocessor class: " + ppName, iae);
 				} catch (InstantiationException ie) {
-					LOGGER.error("Could not instantiate Preprocessor class: " + ppName, ie);
+					log.error("Could not instantiate Preprocessor class: " + ppName, ie);
 				} catch (ClassCastException cce) {
-					LOGGER.error("Could not add Preprocessor class because it was of incorrect type: " + ppName, cce);
+					log.error("Could not add Preprocessor class because it was of incorrect type: " + ppName, cce);
 				}
 			}
 		}
@@ -546,15 +547,15 @@ public class ConfigurationHandler {
 				try {
 					JDFPreprocessor pp = (JDFPreprocessor) Class.forName(ppName).newInstance();
 					pps.add(pp);
-					LOGGER.debug("Configured JDFPreprocessor: " + ppName);
+					log.debug("Configured JDFPreprocessor: " + ppName);
 				} catch (ClassNotFoundException cnfe) {
-					LOGGER.error("Could not find JDFPreprocessor class: " + ppName, cnfe);
+					log.error("Could not find JDFPreprocessor class: " + ppName, cnfe);
 				} catch (IllegalAccessException iae) {
-					LOGGER.error("Could not instantiate JDFPreprocessor class: " + ppName, iae);
+					log.error("Could not instantiate JDFPreprocessor class: " + ppName, iae);
 				} catch (InstantiationException ie) {
-					LOGGER.error("Could not instantiate JDFPreprocessor class: " + ppName, ie);
+					log.error("Could not instantiate JDFPreprocessor class: " + ppName, ie);
 				} catch (ClassCastException cce) {
-					LOGGER.error("Could not add JDFPreprocessor class because it was of incorrect type: " + ppName, cce);
+					log.error("Could not add JDFPreprocessor class because it was of incorrect type: " + ppName, cce);
 				}
 			}
 		}
@@ -583,7 +584,7 @@ public class ConfigurationHandler {
 					testConfig.put(splitProp[0], Boolean.valueOf(splitProp[1]));
 				}
 			} catch (Exception e) {
-				LOGGER.error("Could not parse configuration property: " + propValue, e);
+				log.error("Could not parse configuration property: " + propValue, e);
 			}
 		}
 		return testConfig;
@@ -605,15 +606,15 @@ public class ConfigurationHandler {
 				try {
 					Test test = (Test) Class.forName(testName).newInstance();
 					tests.add(test);
-					LOGGER.debug("Configured test: " + testName);
+					log.debug("Configured test: " + testName);
 				} catch (ClassNotFoundException cnfe) {
-					LOGGER.error("Could not find test class: " + testName, cnfe);
+					log.error("Could not find test class: " + testName, cnfe);
 				} catch (IllegalAccessException iae) {
-					LOGGER.error("Could not instantiate test class: " + testName, iae);
+					log.error("Could not instantiate test class: " + testName, iae);
 				} catch (InstantiationException ie) {
-					LOGGER.error("Could not instantiate test class: " + testName, ie);
+					log.error("Could not instantiate test class: " + testName, ie);
 				} catch (ClassCastException cce) {
-					LOGGER.error("Could not add test class because it was of incorrect type: " + testName, cce);
+					log.error("Could not add test class because it was of incorrect type: " + testName, cce);
 				}
 			}
 		}
@@ -719,7 +720,7 @@ public class ConfigurationHandler {
 	 * @return
 	 */
 	public String[] loadHistory() {
-		LOGGER.debug("Loading history...");
+		log.debug("Loading history...");
 		String addressHistory = getProp(ADRESS_HISTORY);
 
 		return addressHistory == null ? new String[0] : addressHistory.split("\\|");
@@ -730,7 +731,7 @@ public class ConfigurationHandler {
 	 * Saves the address history and finds duplicate HTTP-Adresses and remove them before saving
 	 */
 	public void saveHistory(ComboBoxModel adresses) {
-		LOGGER.debug("Saving history...");
+		log.debug("Saving history...");
 
 		StringBuffer addressHistory = new StringBuffer();
 
@@ -761,7 +762,7 @@ public class ConfigurationHandler {
 
 		_props.put(ADRESS_HISTORY, addressHistory.toString().trim());
 
-		LOGGER.debug("Saved history: " + addressHistory);
+		log.debug("Saved history: " + addressHistory);
 	}
 
 	/**
@@ -771,7 +772,7 @@ public class ConfigurationHandler {
 	 * @return
 	 */
 	public String getProp(String key) {
-		LOGGER.debug("Looking up property with key: " + key);
+		log.debug("Looking up property with key: " + key);
 		return _props.getProperty(key);
 	}
 

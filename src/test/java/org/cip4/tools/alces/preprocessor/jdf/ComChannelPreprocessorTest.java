@@ -13,8 +13,8 @@ import org.cip4.jdflib.resource.process.JDFComChannel;
 import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -57,11 +57,11 @@ public class ComChannelPreprocessorTest extends AlcesTestCase {
         final List<KElement> comChannels = getEmailComChannels(jdf);
         for (KElement comChannelElement : comChannels) {
             final JDFComChannel comChannel = (JDFComChannel) comChannelElement;
-            Assert.assertTrue(comChannel.buildXPath("/", 1), comChannel.getLocator()
-                    .endsWith(ComChannelPreprocessor.DEFAULT_HOSTNAME));
-            Assert.assertEquals(comChannel.getLocator(), comChannel.getLocator()
+            Assertions.assertTrue(comChannel.getLocator()
+                    .endsWith(ComChannelPreprocessor.DEFAULT_HOSTNAME), comChannel.buildXPath("/", 1));
+            Assertions.assertEquals(comChannel.getLocator()
                     .indexOf("@"), comChannel.getLocator().indexOf(
-                    ComChannelPreprocessor.DEFAULT_HOSTNAME) - 1);
+                    ComChannelPreprocessor.DEFAULT_HOSTNAME) - 1, comChannel.getLocator());
         }
         return true;
     }
@@ -70,8 +70,7 @@ public class ComChannelPreprocessorTest extends AlcesTestCase {
         final List<KElement> comChannels = getEmailComChannels(jdf);
         for (KElement comChannelElement : comChannels) {
             final JDFComChannel comChannel = (JDFComChannel) comChannelElement;
-            Assert.assertEquals(comChannel.buildXPath("/", 1), email, comChannel
-                    .getLocator());
+            Assertions.assertEquals(email, comChannel.getLocator(), comChannel.buildXPath("/", 1));
         }
         return true;
     }

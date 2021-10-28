@@ -62,7 +62,7 @@ public class OutMessageNode extends AbstractMessageNode implements OutMessage {
 	}
 
 	public void addInMessage(InMessage message) {
-	    LOGGER.debug("Adding InMessage to message/tree: " + message);
+	    log.debug("Adding InMessage to message/tree: " + message);
         final MutableTreeNode thisNode = this;
         final InMessageNode messageNode;
 		if (message instanceof InMessageNode) {
@@ -73,7 +73,7 @@ public class OutMessageNode extends AbstractMessageNode implements OutMessage {
 			for (TestResult testResult : messageNode.getTestResults()) {				
 				if (!(testResult instanceof TreeNode && isNodeChild((TreeNode) testResult))) {
 					messageNode.add(new TestResultNode(testResult, _treeModel));
-					LOGGER.debug("Added TestResult to "
+					log.debug("Added TestResult to "
 							+ messageNode.getClass().getName() + ".");
 				}
 			}
@@ -83,12 +83,12 @@ public class OutMessageNode extends AbstractMessageNode implements OutMessage {
         // Update model using Swing's event-dispatching thread
         Runnable addInMessage = new Runnable() {
             public void run() {
-                LOGGER.debug("Inserting InMessage as child to OutMessage in tree model...");
+                log.debug("Inserting InMessage as child to OutMessage in tree model...");
                 _treeModel.insertNodeInto(messageNode, thisNode, thisNode.getChildCount());
-                LOGGER.debug("Inserted InMessage in tree model.");                
+                log.debug("Inserted InMessage in tree model.");
             }
         };
-        LOGGER.debug("Queueing InMessage for insertion as child to OutMessage in tree model...");
+        log.debug("Queueing InMessage for insertion as child to OutMessage in tree model...");
         SwingUtilities.invokeLater(addInMessage);
 	}
 

@@ -13,7 +13,6 @@ import org.apache.commons.vfs.FileObject;
 import org.apache.commons.vfs.FileSystemException;
 import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.jmf.JDFCommand;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage.EnumFamily;
@@ -23,6 +22,8 @@ import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * If the message tested contains a JMF SubmitQueueEntry message, the JDF file referenced by the SubmitQueueEntry message
@@ -31,8 +32,6 @@ import org.cip4.tools.alces.util.JDFConstants;
  * @author Claes Buckwalter (clabu@itn.liu.se)
  */
 public class SubmitQueueEntryTest extends ConfigurableTest {
-
-	protected static Logger LOGGER = Logger.getLogger(SubmitQueueEntryTest.class);
 
 	/**
 	 * The property name for configuring the CheckJDF command-line arguments
@@ -67,7 +66,7 @@ public class SubmitQueueEntryTest extends ConfigurableTest {
 		try {
 			fileSystemManager = VFS.getManager();
 		} catch (FileSystemException fse) {
-			LOGGER.error("Could not instantiate file system resources.", fse);
+			log.error("Could not instantiate file system resources.", fse);
 			throw fse;
 		}
 	}
@@ -130,11 +129,11 @@ public class SubmitQueueEntryTest extends ConfigurableTest {
 			result = CheckJDFWrapper.validateCommandLine(commandLine, jdfStream, testLog);
 			jdfFile.close();
 		} catch (FileSystemException fse) {
-			LOGGER.error("The JDF file could not be read.", fse);
+			log.error("The JDF file could not be read.", fse);
 			testLog.append("\nThe JDF file could not be read: " + fse.getMessage());
 			result = false;
 		} catch (IOException ioe) {
-			LOGGER.error("The JDF file could not be validated.", ioe);
+			log.error("The JDF file could not be validated.", ioe);
 			testLog.append("\nThe JDF file could not be validated: " + ioe.getMessage());
 			result = false;
 		}

@@ -3,12 +3,13 @@
  */
 package org.cip4.tools.alces.preprocessor.jdf;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.node.JDFNode;
 import org.cip4.tools.alces.jdf.AlcesJobIDFactory;
 import org.cip4.tools.alces.jdf.JobIDFactory;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Replaces <em>/JDF/@JobID</em> of the JDF instance with a generated job ID.
@@ -18,7 +19,7 @@ import org.cip4.tools.alces.preprocessor.PreprocessorException;
  */
 public class JobIDPreprocessor implements JDFPreprocessor {
 
-	private static Logger LOGGER = Logger.getLogger(JobIDPreprocessor.class);
+	private static Logger log = LoggerFactory.getLogger(JobIDPreprocessor.class);
 
 	/**
 	 * Attribute for storing the new JobID in the context. If this preprocessor finds this attribute in the context it will use it as the new JobID.
@@ -62,7 +63,7 @@ public class JobIDPreprocessor implements JDFPreprocessor {
 		} else {
 			jobId = factory.newJobID(jdf.getJobID(true));
 		}
-		LOGGER.debug("Replacing JobID of JDF '" + jdf.getJobID(true) + "' with new JobID '" + jobId + "'...");
+		log.debug("Replacing JobID of JDF '" + jdf.getJobID(true) + "' with new JobID '" + jobId + "'...");
 		return replaceJobID(jdf, jobId);
 	}
 

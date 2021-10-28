@@ -1,0 +1,8 @@
+app:
+  name: Alces
+  version: @version@
+  buildtime: @timestamp@
+
+spring:
+  main:
+    banner-mode: off

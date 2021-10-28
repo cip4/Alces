@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Vector;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.message.InMessage;
@@ -26,13 +25,15 @@ import org.cip4.tools.alces.util.JDFConstants;
 import org.jdom.Attribute;
 import org.jdom.Namespace;
 import org.jdom.xpath.XPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Claes Buckwalter
  */
 public class TestSessionImpl implements TestSession {
 
-	private static Logger LOGGER = Logger.getLogger(TestSessionImpl.class);
+	private static Logger log = LoggerFactory.getLogger(TestSessionImpl.class);
 
 	private String _targetUrl;
 
@@ -91,7 +92,7 @@ public class TestSessionImpl implements TestSession {
 			responseMessage = dispatcher.dispatch(message, _targetUrl);
 			receiveMessage(responseMessage, message);
 		} catch (IOException e) {
-			LOGGER.error("Could not send message to '" + _targetUrl + "': " + e, e);
+			log.error("Could not send message to '" + _targetUrl + "': " + e, e);
 		}
 	}
 
@@ -101,10 +102,10 @@ public class TestSessionImpl implements TestSession {
 	 * @param message the received message
 	 */
 	public synchronized void receiveMessage(InMessage message) {
-		LOGGER.debug("Looking up outgoing message for incoming message.");
+		log.debug("Looking up outgoing message for incoming message.");
 		OutMessage outMsg = getOutgoingMessage(message);
 		if (outMsg == null) {
-			LOGGER.debug("No outgoing message could be found for that matches the incoming message.");
+			log.debug("No outgoing message could be found for that matches the incoming message.");
 		}
 		receiveMessage(message, outMsg);
 	}
@@ -115,8 +116,8 @@ public class TestSessionImpl implements TestSession {
 	 * @param outMessage
 	 */
 	public void receiveMessage(InMessage inMessage, OutMessage outMessage) {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Received message: " + inMessage);
+		if (log.isDebugEnabled()) {
+			log.debug("Received message: " + inMessage);
 		}
 		if (_outgoingMessages.size() == 0 && _incomingMessages.size() == 0) {
 			_initMessage = inMessage;
@@ -167,9 +168,9 @@ public class TestSessionImpl implements TestSession {
 	 * @param message
 	 */
 	private void runTests(List<Test> tests, Message message) {
-		LOGGER.debug("Running tests on message...");
+		log.debug("Running tests on message...");
 		for (Test test : tests) {
-			LOGGER.debug("Running test: " + test.getClass().getName());
+			log.debug("Running test: " + test.getClass().getName());
 			TestResult result = test.runTest(message); // XXX Links
 			// TestResult->Message
 			message.addTestResult(result); // XXX Links Message->TestResult
@@ -214,29 +215,29 @@ public class TestSessionImpl implements TestSession {
 		}
 		final JDFMessage jmfMsg = jmf.getMessageElement(null, null, 0);
 		final String refId = jmfMsg.getrefID();
-		LOGGER.debug("Getting outgoing JMF message for incoming JMF message with refID '" + refId + "'...");
+		log.debug("Getting outgoing JMF message for incoming JMF message with refID '" + refId + "'...");
 
 		for (OutMessage mOut : getOutgoingMessages()) {
 			JDFJMF jmfOut = mOut.getBodyAsJMF();
 			if (mOut.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
 				JDFMessage jmfMsgOut = jmfOut.getMessageElement(null, null, 0);
 				if (jmfMsgOut != null && refId.startsWith(jmfMsgOut.getID())) {
-					LOGGER.debug("Found outgoing JMF message with refID '" + jmfMsgOut.getID() + "' that matches incoming JMF message with refID '" + refId + "'.");
+					log.debug("Found outgoing JMF message with refID '" + jmfMsgOut.getID() + "' that matches incoming JMF message with refID '" + refId + "'.");
 					return mOut;
 				}
 			} else if (mOut.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE)) {
-				LOGGER.debug("Looking for refID '" + refId + "' in outgoing JMF MIME package...");
+				log.debug("Looking for refID '" + refId + "' in outgoing JMF MIME package...");
 				Message tempMsg = getJMFFromMime(mOut);
 				if (tempMsg != null) {
 					String mimeId = tempMsg.getBodyAsJMF().getMessageElement(null, null, 0).getID();
 					if (refId.startsWith(mimeId)) {
-						LOGGER.debug("Found matching refID '" + mimeId + "' in JMF MIME package.");
+						log.debug("Found matching refID '" + mimeId + "' in JMF MIME package.");
 					}
 					return mOut;
 				}
 			}
 		}
-		LOGGER.warn("No outgoing message was found that matches the incoming message with refID '" + refId + "'.");
+		log.warn("No outgoing message was found that matches the incoming message with refID '" + refId + "'.");
 		return null;
 	}
 
@@ -264,7 +265,7 @@ public class TestSessionImpl implements TestSession {
 			// Execute XPath query for refID
 			Attribute refIDAttr = (Attribute) refidXPath.selectSingleNode(message.getBodyAsJDOM());
 			refID = refIDAttr.getValue();
-			LOGGER.info("Found: @refID / @ID = " + refID);
+			log.info("Found: @refID / @ID = " + refID);
 
 			// Configure XPath for ID
 			// XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@ID='" + refID + "']");
@@ -276,15 +277,15 @@ public class TestSessionImpl implements TestSession {
 				for (InMessage msgIn : _incomingMessages) {
 					// Execute XPath for ID
 					if (idXPath.selectSingleNode(msgIn.getBodyAsJDOM()) != null) {
-						LOGGER.debug("Found ID matching refID: " + refID);
+						log.debug("Found ID matching refID: " + refID);
 						return msgIn;
 					}
 				}
 			}
 		} catch (Exception e) {
-			LOGGER.error("An error occurred while getting InMessage.", e);
+			log.error("An error occurred while getting InMessage.", e);
 		}
-		LOGGER.debug("No incoming message was found that matches the outgoing message with refID: " + refID);
+		log.debug("No incoming message was found that matches the outgoing message with refID: " + refID);
 		return null;
 	}
 
@@ -299,7 +300,7 @@ public class TestSessionImpl implements TestSession {
 	 * @return a Message containing the JMF message found in the JMF MIME package
 	 */
 	public static Message getJMFFromMime(Message message) {
-		LOGGER.debug("Extracting JMF from JMF MIME package...");
+		log.debug("Extracting JMF from JMF MIME package...");
 		try {
 			// Read message body as input stream
 			InputStream mimeStream = new ByteArrayInputStream(message.getBody().getBytes());
@@ -312,22 +313,22 @@ public class TestSessionImpl implements TestSession {
 				if (fileUrls[i].endsWith(JDFConstants.JMF_EXTENSION)) {
 					String body = IOUtils.toString(new FileInputStream(new File(new URI(fileUrls[i]))));
 					OutMessage tempMsgOut = new OutMessageImpl(JDFConstants.JMF_CONTENT_TYPE, "", body, false);
-					LOGGER.debug("Extracted JMF from JMF MIME package: " + tempMsgOut);
+					log.debug("Extracted JMF from JMF MIME package: " + tempMsgOut);
 					return tempMsgOut;
 				}
 			}
 		} catch (IOException ioe) {
-			LOGGER.error("Could not extract JMF from outgoing message's MIME package.", ioe);
+			log.error("Could not extract JMF from outgoing message's MIME package.", ioe);
 		} catch (MimePackageException mpe) {
-			LOGGER.error("Could not extract JMF from outgoing message's MIME package.", mpe);
+			log.error("Could not extract JMF from outgoing message's MIME package.", mpe);
 		} catch (URISyntaxException use) {
-			LOGGER.error("Could not extract JMF from outgoing message's MIME package.", use);
+			log.error("Could not extract JMF from outgoing message's MIME package.", use);
 		}
 		return null;
 	}
 
 	public static String getJDFFileFromMime(Message message) {
-		LOGGER.warn("Extracting JDF from JMF MIME package...");
+		log.warn("Extracting JDF from JMF MIME package...");
 		try {
 			// Read message body as input stream
 			InputStream mimeStream = new ByteArrayInputStream(message.getBody().getBytes());
@@ -340,17 +341,17 @@ public class TestSessionImpl implements TestSession {
 				if (fileUrls[i].endsWith(JDFConstants.JDF_EXTENSION)) {
 					String body = IOUtils.toString(new FileInputStream(new File(new URI(fileUrls[i]))));
 					OutMessage tempMsgOut = new OutMessageImpl(JDFConstants.JDF_CONTENT_TYPE, "", body, false);
-					LOGGER.debug("Extracted JDF from JMF MIME package: " + tempMsgOut);
+					log.debug("Extracted JDF from JMF MIME package: " + tempMsgOut);
 					// return tempMsgOut;
 					return fileUrls[i];
 				}
 			}
 		} catch (IOException ioe) {
-			LOGGER.error("Could not extract JDF from outgoing message's MIME package.", ioe);
+			log.error("Could not extract JDF from outgoing message's MIME package.", ioe);
 		} catch (MimePackageException mpe) {
-			LOGGER.error("Could not extract JDF from outgoing message's MIME package.", mpe);
+			log.error("Could not extract JDF from outgoing message's MIME package.", mpe);
 		} catch (URISyntaxException use) {
-			LOGGER.error("Could not extract JDF from outgoing message's MIME package.", use);
+			log.error("Could not extract JDF from outgoing message's MIME package.", use);
 		}
 		return null;
 	}

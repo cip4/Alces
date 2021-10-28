@@ -7,7 +7,7 @@ import org.cip4.jdflib.core.JDFDoc;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.node.JDFNode;
-import org.junit.Assert;
+import org.junit.jupiter.api.Assertions;
 
 import java.io.*;
 
@@ -27,15 +27,15 @@ public abstract class AlcesTestCase {
         try {
             jdf = new JDFParser().parseStream(getResourceAsStream(resourcePath)).getJDFRoot();
         } catch (Exception e) {
-            Assert.fail("An exception occurred whil parsing JDF from resource: " + resourcePath);
+            Assertions.fail("An exception occurred whil parsing JDF from resource: " + resourcePath);
         }
-        Assert.assertNotNull("Could not parse JDF from resource: " + resourcePath, jdf);
+        Assertions.assertNotNull(jdf, "Could not parse JDF from resource: " + resourcePath);
         return jdf;
     }
 
     public String getResourceAsString(String resourcePath) throws IOException {
         InputStream stream = getResourceAsStream(resourcePath);
-        Assert.assertNotNull("Could not read resource: " + resourcePath, stream);
+        Assertions.assertNotNull(stream, "Could not read resource: " + resourcePath);
         return toString(stream);
     }
 
@@ -53,14 +53,14 @@ public abstract class AlcesTestCase {
     public JDFNode getTestFileAsJDF(String filePath) throws IOException {
         JDFDoc jdf = null;
         jdf = new JDFParser().parseStream(getTestFileAsStream(filePath));
-        Assert.assertNotNull("JDF could not be parsed from: " + filePath);
+        Assertions.assertNotNull(jdf, "JDF could not be parsed from: " + filePath);
         return jdf.getJDFRoot();
     }
 
     public JDFJMF getTestFileAsJMF(String filePath) throws IOException {
         JDFDoc jdf = null;
         jdf = new JDFParser().parseStream(getTestFileAsStream(filePath));
-        Assert.assertNotNull("JDF could not be parsed from: " + filePath);
+        Assertions.assertNotNull(jdf, "JDF could not be parsed from: " + filePath);
         return jdf.getJMFRoot();
     }
 
@@ -75,8 +75,8 @@ public abstract class AlcesTestCase {
         String resPath = "/org/cip4/tools/alces/data/" + className + "/" + filePath;
         File file = new File(AlcesTestCase.class.getResource(resPath).getFile());
 
-        Assert.assertTrue("Test file does not exist: " + file.getAbsolutePath(), file.exists());
-        Assert.assertTrue("Test file is not a file: " + file.getAbsolutePath(), file.isFile());
+        Assertions.assertTrue( file.exists(), "Test file does not exist: " + file.getAbsolutePath());
+        Assertions.assertTrue(file.isFile(), "Test file is not a file: " + file.getAbsolutePath());
         return file;
     }
 

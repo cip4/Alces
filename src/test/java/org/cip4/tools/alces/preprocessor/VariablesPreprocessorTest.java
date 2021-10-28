@@ -7,9 +7,9 @@ import org.cip4.tools.alces.message.OutMessageImpl;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.util.ConfigurationHandler;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -21,7 +21,7 @@ public class VariablesPreprocessorTest extends AlcesTestCase {
     private static final String JOBID = "VariablesPreprocessorTest.JobID";
     private static final String JOBPARTID = "VariablesPreprocessorTest.JobPartID";
 
-    @Before
+    @BeforeEach
     public void setUp() {
         ConfigurationHandler.getInstance().loadConfiguration(
                 getTestFileAsFile("alces.properties"));
@@ -33,9 +33,9 @@ public class VariablesPreprocessorTest extends AlcesTestCase {
         Message mOriginal = new OutMessageImpl(null,
                 getTestFileAsString("Status-Subscription.jmf"), true);
         Message mPreprocessed = p.preprocess(mOriginal);
-        Assert.assertSame(mOriginal, mPreprocessed);
-        Assert.assertFalse(mPreprocessed.getBody(), mPreprocessed.getBody().contains("${alces.host}"));
-        Assert.assertFalse(mPreprocessed.getBody(), mPreprocessed.getBody().contains("${alces.port}"));
+        Assertions.assertSame(mOriginal, mPreprocessed);
+        Assertions.assertFalse(mPreprocessed.getBody().contains("${alces.host}"), mPreprocessed.getBody());
+        Assertions.assertFalse(mPreprocessed.getBody().contains("${alces.port}"), mPreprocessed.getBody());
     }
 
     @Test
@@ -43,12 +43,12 @@ public class VariablesPreprocessorTest extends AlcesTestCase {
         JDFPreprocessor p = new VariablesPreprocessor();
         JDFNode jdf = getTestFileAsJDF("Elk_Approval.jdf");
         // Validate input
-        Assert.assertTrue(jdf.toXML().contains("${jdf.id}"));
-        Assert.assertTrue(jdf.toXML().contains("${jdf.jobid}"));
-        Assert.assertTrue(jdf.toXML().contains("${jdf.jobpartid}"));
-        Assert.assertFalse(jdf.toXML().contains(ID));
-        Assert.assertFalse(jdf.toXML().contains(JOBID));
-        Assert.assertFalse(jdf.toXML().contains(JOBPARTID));
+        Assertions.assertTrue(jdf.toXML().contains("${jdf.id}"));
+        Assertions.assertTrue(jdf.toXML().contains("${jdf.jobid}"));
+        Assertions.assertTrue(jdf.toXML().contains("${jdf.jobpartid}"));
+        Assertions.assertFalse(jdf.toXML().contains(ID));
+        Assertions.assertFalse(jdf.toXML().contains(JOBID));
+        Assertions.assertFalse(jdf.toXML().contains(JOBPARTID));
         // Preprocess
         PreprocessorContext context = new PreprocessorContext();
         Map<String, String> vars = new HashMap<String, String>();
@@ -59,13 +59,13 @@ public class VariablesPreprocessorTest extends AlcesTestCase {
         context.addAttribute(JDFPreprocessor.PREPROCESSING_ENABLED, "true");
         // Validate output
         JDFNode newJdf = p.preprocess(jdf, context);
-        Assert.assertNotSame(jdf, newJdf);
-        Assert.assertFalse(newJdf.toXML().contains("${jdf.id}"));
-        Assert.assertFalse(newJdf.toXML().contains("${jdf.jobid}"));
-        Assert.assertFalse(newJdf.toXML().contains("${jdf.jobpartid}"));
-        Assert.assertTrue(newJdf.toXML().contains(ID));
-        Assert.assertTrue(newJdf.toXML().contains(JOBID));
-        Assert.assertTrue(newJdf.toXML().contains(JOBPARTID));
+        Assertions.assertNotSame(jdf, newJdf);
+        Assertions.assertFalse(newJdf.toXML().contains("${jdf.id}"));
+        Assertions.assertFalse(newJdf.toXML().contains("${jdf.jobid}"));
+        Assertions.assertFalse(newJdf.toXML().contains("${jdf.jobpartid}"));
+        Assertions.assertTrue(newJdf.toXML().contains(ID));
+        Assertions.assertTrue(newJdf.toXML().contains(JOBID));
+        Assertions.assertTrue(newJdf.toXML().contains(JOBPARTID));
     }
 
 }

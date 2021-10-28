@@ -8,7 +8,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
@@ -23,6 +22,8 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A preprocessor that sets a node selected by an XPaths to a new value.
@@ -41,7 +42,7 @@ public class XPathPreprocessor implements Preprocessor {
 
 	private String _defaultNsPrefix = DEFAULT_NS_PREFIX;
 
-	private static Logger LOGGER = Logger.getLogger(XPathPreprocessor.class);
+	private static Logger log = LoggerFactory.getLogger(XPathPreprocessor.class);
 
 	public XPathPreprocessor() {
 		this(null, null);
@@ -85,7 +86,7 @@ public class XPathPreprocessor implements Preprocessor {
 	public Message preprocess(Message message, PreprocessorContext context) throws PreprocessorException {
 		if (!(message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE) || message.getContentType().startsWith(JDFConstants.JDF_CONTENT_TYPE) || message.getContentType().startsWith(
 				JDFConstants.XML_CONTENT_TYPE))) {
-			LOGGER.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
+			log.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
 			return message;
 		}
 
@@ -102,7 +103,7 @@ public class XPathPreprocessor implements Preprocessor {
 			defaultNsPrefix = _defaultNsPrefix;
 		}
 		if (_xpathValuePairs == null) {
-			LOGGER.warn("The transformation will not modify the object because no" + " XPaths are configured.");
+			log.warn("The transformation will not modify the object because no" + " XPaths are configured.");
 			return message;
 		}
 
@@ -142,14 +143,14 @@ public class XPathPreprocessor implements Preprocessor {
 	 * @throws JDOMException
 	 */
 	private Document replace(Document doc, String xpath, String defaultNsPrefix, String value) throws JDOMException {
-		LOGGER.debug("Using XPath-value pair: " + xpath + " = " + value);
+		log.debug("Using XPath-value pair: " + xpath + " = " + value);
 		XPath xp = XPath.newInstance(xpath);
 		// Add root element's namespace to XPath
 		Namespace n = doc.getRootElement().getNamespace();
 		if (n.getPrefix().length() == 0) {
 			// Replace empty prefix with default prefix
 			xp.addNamespace(defaultNsPrefix, n.getURI());
-			LOGGER.debug("Assigned namespace prefix '" + defaultNsPrefix + "' to default namespace URI '" + n.getURI() + "'.");
+			log.debug("Assigned namespace prefix '" + defaultNsPrefix + "' to default namespace URI '" + n.getURI() + "'.");
 		} else {
 			xp.addNamespace(n);
 		}
@@ -160,14 +161,14 @@ public class XPathPreprocessor implements Preprocessor {
 			if (ns.getPrefix().length() == 0) {
 				// Replace empty prefix with default prefix
 				xp.addNamespace(defaultNsPrefix, ns.getURI());
-				LOGGER.debug("Assigned namespace prefix '" + defaultNsPrefix + "' to default namespace URI '" + ns.getURI() + "'.");
+				log.debug("Assigned namespace prefix '" + defaultNsPrefix + "' to default namespace URI '" + ns.getURI() + "'.");
 			} else {
 				xp.addNamespace(ns);
 			}
 		}
 		// Evaluate XPath expression and replace
 		List nodes = xp.selectNodes(doc);
-		LOGGER.debug("Matching nodes: " + nodes.size());
+		log.debug("Matching nodes: " + nodes.size());
 		for (Iterator i = nodes.iterator(); i.hasNext();) {
 			Object o = i.next();
 			if (o instanceof Attribute) {
@@ -177,7 +178,7 @@ public class XPathPreprocessor implements Preprocessor {
 			} else if (o instanceof Text) {
 				((Text) o).setText(value);
 			} else {
-				LOGGER.warn("XPath-value pair '" + xpath + " = " + value + "' was ignored because it did not select a node.");
+				log.warn("XPath-value pair '" + xpath + " = " + value + "' was ignored because it did not select a node.");
 			}
 		}
 		return doc;

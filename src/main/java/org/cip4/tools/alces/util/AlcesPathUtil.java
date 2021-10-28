@@ -77,8 +77,9 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.test.TestSuiteSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Manages all Alces paths.
@@ -87,7 +88,7 @@ import org.cip4.tools.alces.test.TestSuiteSerializer;
  */
 public class AlcesPathUtil {
 
-	private static Logger LOGGER = Logger.getLogger(AlcesPathUtil.class);
+	private static Logger log = LoggerFactory.getLogger(AlcesPathUtil.class);
 
 	public final static String ALCES_ROOT_DIR = initAlcesPath();
 
@@ -178,7 +179,7 @@ public class AlcesPathUtil {
 					is.close();
 				}
 			} catch (Exception ex) {
-				LOGGER.error("An error has occured during copying bin data.", ex);
+				log.error("An error has occured during copying bin data.", ex);
 			}
 
 		}
@@ -291,7 +292,7 @@ public class AlcesPathUtil {
 					is.close();
 				}
 			} catch (Exception ex) {
-				LOGGER.error("An error has occured during copying testdata.", ex);
+				log.error("An error has occured during copying testdata.", ex);
 			}
 		}
 

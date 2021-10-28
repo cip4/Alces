@@ -1,6 +1,7 @@
 package org.cip4.tools.alces.util;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -10,7 +11,7 @@ import java.util.Properties;
  */
 public class BuildPropsUtil {
 
-    private static Logger LOGGER = Logger.getLogger(BuildPropsUtil.class);
+    private static Logger log = LoggerFactory.getLogger(BuildPropsUtil.class);
 
     private static final String RES_BUILD_PROPS = "/org/cip4/tools/alces/build.properties";
 
@@ -27,7 +28,7 @@ public class BuildPropsUtil {
             try {
                 props.load(BuildPropsUtil.class.getResourceAsStream(RES_BUILD_PROPS));
             } catch (IOException e) {
-                LOGGER.warn("Error during reading build.properties file.", e);
+                log.warn("Error during reading build.properties file.", e);
             }
         }
 

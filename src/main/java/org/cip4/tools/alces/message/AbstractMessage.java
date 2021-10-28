@@ -12,7 +12,6 @@ import java.util.Vector;
 
 import javax.mail.Multipart;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.JDFDoc;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.jmf.JDFJMF;
@@ -21,6 +20,8 @@ import org.cip4.jdflib.util.MimeUtil;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.jdom.input.SAXBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A base class for JMF messages sent and received by Alces.
@@ -30,7 +31,7 @@ import org.jdom.input.SAXBuilder;
  */
 public abstract class AbstractMessage implements Message {
 
-	protected static Logger LOGGER = Logger.getLogger(AbstractMessage.class);
+	protected static Logger LOGGER = LoggerFactory.getLogger(AbstractMessage.class);
 
 	protected String _header;
 

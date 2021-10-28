@@ -7,8 +7,8 @@ import org.cip4.jdflib.util.MimeUtil;
 import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.message.OutMessage;
 import org.cip4.tools.alces.message.OutMessageImpl;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import javax.mail.BodyPart;
 import javax.mail.MessagingException;
@@ -26,32 +26,32 @@ public class TestRunnerTest extends AlcesTestCase {
         final String jmf = getTestFileAsString("CommandSubmitQueueEntry-Approval.jmf");
         final File jdfFile = getTestFileAsFile("Elk_Approval.jdf");
 
-        Assert.assertTrue(jdfFile.exists());
+        Assertions.assertTrue(jdfFile.exists());
         TestRunner testRunner = new TestRunner();
         OutMessage outMessage = new OutMessageImpl(null, jmf, true);
         OutMessage mimeOutMessage = testRunner.packageAsMime(outMessage, jdfFile);
         JDFNode jdf = mimeOutMessage.getBodyAsJDF();
-        Assert.assertNotNull(jdf);
+        Assertions.assertNotNull(jdf);
         List<JDFFileSpec> fileSpecs = (Vector) jdf.getChildrenByTagName(ElementName.FILESPEC, null, null, false, false, 0);
-        Assert.assertEquals(3, fileSpecs.size());
+        Assertions.assertEquals(3, fileSpecs.size());
         for (JDFFileSpec fileSpec : fileSpecs) {
-            Assert.assertTrue("Incorrect URL: " + fileSpec.getURL(), fileSpec.getURL().startsWith("cid:"));
-            Assert.assertTrue("Incorrect URL: " + fileSpec.getURL(), fileSpec.getURL().endsWith(".pdf"));
+            Assertions.assertTrue(fileSpec.getURL().startsWith("cid:"), "Incorrect URL: " + fileSpec.getURL());
+            Assertions.assertTrue(fileSpec.getURL().endsWith(".pdf"), "Incorrect URL: " + fileSpec.getURL());
         }
         BodyPart[] parts = MimeUtil.extractMultipartMime(new ByteArrayInputStream(mimeOutMessage.getBody().getBytes()));
-        Assert.assertEquals(5, parts.length);
-        Assert.assertEquals("message.jmf", parts[0].getFileName());
-        Assert.assertEquals("Elk_Approval.jdf", parts[1].getFileName());
-        Assert.assertEquals("file1.pdf", parts[2].getFileName());
-        Assert.assertEquals("file2.pdf", parts[3].getFileName());
-        Assert.assertEquals("file3.pdf", parts[4].getFileName());
+        Assertions.assertEquals(5, parts.length);
+        Assertions.assertEquals("message.jmf", parts[0].getFileName());
+        Assertions.assertEquals("Elk_Approval.jdf", parts[1].getFileName());
+        Assertions.assertEquals("file1.pdf", parts[2].getFileName());
+        Assertions.assertEquals("file2.pdf", parts[3].getFileName());
+        Assertions.assertEquals("file3.pdf", parts[4].getFileName());
     }
 
     @Test
     public void testUrlUtil() {
         final File file1 = getTestFileAsFile("content/file1.pdf");
 
-        Assert.assertNotNull(file1);
-        Assert.assertTrue(file1.exists());
+        Assertions.assertNotNull(file1);
+        Assertions.assertTrue(file1.exists());
     }
 }

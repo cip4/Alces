@@ -29,7 +29,8 @@ import javax.mail.Session;
 import javax.mail.internet.MimeMessage;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A class that reads JMF/JDF MIME packages and extracts their contents.
@@ -57,7 +58,7 @@ public class MimeReader {
 	 * Creates a new MIME reader.
 	 */
 	public MimeReader() {
-		LOGGER = Logger.getLogger(this.getClass().getName());
+		LOGGER = LoggerFactory.getLogger(this.getClass().getName());
 		_mailSession = Session.getDefaultInstance(new Properties());
 	}
 

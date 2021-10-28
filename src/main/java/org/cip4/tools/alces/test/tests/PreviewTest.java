@@ -21,6 +21,8 @@ import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A <code>Test</code> that detects <i>Preview</i> elements in JMF messages
@@ -30,6 +32,8 @@ import org.cip4.tools.alces.util.JDFConstants;
  * 
  */
 public class PreviewTest extends Test {
+
+	protected static Logger log = LoggerFactory.getLogger(PreviewTest.class);
 
 	private final File previewDir;
 
@@ -71,7 +75,7 @@ public class PreviewTest extends Test {
 				// Create file
 				File previewFile = new File(jmfDumpDir, buildPreviewFileName(preview, previewUrl.getPath()));
 				previewFile.getParentFile().mkdirs();
-				LOGGER.debug("Downloading preview '" + url + "' to '"
+				log.debug("Downloading preview '" + url + "' to '"
 						+ previewFile.getAbsolutePath() + "'...");
 				// Download file
 				InputStream in = previewUrl.openStream();
@@ -84,11 +88,11 @@ public class PreviewTest extends Test {
 						"Successfully downloaded Preview file: "
 								+ previewFile.getAbsolutePath()).append("\n");
 			} catch (MalformedURLException e) {
-				LOGGER.info("Could not parse preview URL '" + url + "':" + e);
+				log.info("Could not parse preview URL '" + url + "':" + e);
 				failed++;
 				logMsg.append("Could not parse Preview URL '").append(url).append("'.\n");
 			} catch (IOException e) {
-				LOGGER.info("Could not download preview '" + url + "': " + e);
+				log.info("Could not download preview '" + url + "': " + e);
 				failed++;
 				logMsg.append("Could not download Preview URL '").append(url).append("': ").append(e).append("\n");
 			}

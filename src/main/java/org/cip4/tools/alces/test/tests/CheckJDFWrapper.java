@@ -12,7 +12,6 @@ import java.util.StringTokenizer;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.JDFElement.EnumValidationLevel;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.core.XMLDoc;
@@ -20,6 +19,8 @@ import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.node.JDFNode;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A wrapper for easy validation with CheckJDF.
@@ -30,7 +31,7 @@ import org.cip4.tools.alces.util.JDFConstants;
  */
 public class CheckJDFWrapper {
 
-	private static Logger LOGGER = Logger.getLogger(CheckJDFWrapper.class);
+	private static Logger log = LoggerFactory.getLogger(CheckJDFWrapper.class);
 
 	/**
 	 * Prevents instances from being created.
@@ -333,7 +334,7 @@ public class CheckJDFWrapper {
 			i++;
 		}
 		// Call CheckJDF
-		LOGGER.debug("Validating command line: " + commandLine);
+		log.debug("Validating command line: " + commandLine);
 		CheckJDF.main(commandLineArgs);
 		// Read result
 		XMLDoc reportDoc = new JDFParser().parseFile(reportFile.getAbsolutePath());

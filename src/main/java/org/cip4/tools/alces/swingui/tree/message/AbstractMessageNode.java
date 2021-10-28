@@ -11,7 +11,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.JDFElement;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.node.JDFNode;
@@ -19,6 +18,8 @@ import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.swingui.tree.test.TestResultNode;
 import org.cip4.tools.alces.test.TestResult;
 import org.jdom.Document;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -33,7 +34,7 @@ import org.w3c.dom.NodeList;
  */
 public abstract class AbstractMessageNode extends DefaultMutableTreeNode implements Message {
 
-	protected static Logger LOGGER = Logger.getLogger(AbstractMessageNode.class);
+	protected static Logger log = LoggerFactory.getLogger(AbstractMessageNode.class);
 
 	protected Message _wrappedMessage = null;
 	protected DefaultTreeModel _treeModel = null;
@@ -144,8 +145,8 @@ public abstract class AbstractMessageNode extends DefaultMutableTreeNode impleme
 	 * Wraps a TestResult in a TestResultNode and adds it to the Message and to the TestSuite's TreeModel.
 	 */
 	public void addTestResult(TestResult testResult) {
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Adding TestResult to message/tree: " + testResult);
+		if (log.isDebugEnabled()) {
+			log.debug("Adding TestResult to message/tree: " + testResult);
 		}
 		final MutableTreeNode thisNode = this;
 		final MutableTreeNode testResultNode;
@@ -158,12 +159,12 @@ public abstract class AbstractMessageNode extends DefaultMutableTreeNode impleme
 		// Update tree model using Swing's event-dispatching thread
 		Runnable addTestResult = new Runnable() {
 			public void run() {
-				LOGGER.debug("Inserting TestResult in tree model...");
+				log.debug("Inserting TestResult in tree model...");
 				_treeModel.insertNodeInto(testResultNode, thisNode, thisNode.getChildCount());
-				LOGGER.debug("Inserted TestResult in tree model.");
+				log.debug("Inserted TestResult in tree model.");
 			}
 		};
-		LOGGER.debug("Queueing TestResult for insertion in tree model...");
+		log.debug("Queueing TestResult for insertion in tree model...");
 		SwingUtilities.invokeLater(addTestResult);
 	}
 

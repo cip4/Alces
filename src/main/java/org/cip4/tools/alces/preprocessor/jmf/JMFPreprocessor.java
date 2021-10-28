@@ -8,7 +8,6 @@ import java.security.SecureRandom;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.util.JDFDate;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
@@ -23,6 +22,8 @@ import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
 import org.jdom.output.XMLOutputter;
 import org.jdom.xpath.XPath;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Preprocesses a JMF message by replacing SenderID, TimeStamp, and IDs of any Query, Command, Signal, Acknowledge, or Response.
@@ -40,7 +41,7 @@ public class JMFPreprocessor implements Preprocessor {
 
 	private String senderIDValue = DEFAULT_SENDER_ID;
 
-	private static Logger LOGGER = Logger.getLogger(JMFPreprocessor.class);
+	private static Logger log = LoggerFactory.getLogger(JMFPreprocessor.class);
 
 	private XPath senderID = null;
 
@@ -105,11 +106,11 @@ public class JMFPreprocessor implements Preprocessor {
 	 */
 	public Message preprocess(final Message message) throws PreprocessorException {
 		if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
-			LOGGER.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
+			log.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
 			return message;
 		}
-		if (LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Preprocessor input: " + message.toString());
+		if (log.isDebugEnabled()) {
+			log.debug("Preprocessor input: " + message.toString());
 		}
 		try {
 			// Parse String
@@ -164,8 +165,8 @@ public class JMFPreprocessor implements Preprocessor {
 			// Output string
 			XMLOutputter outputter = new XMLOutputter(Format.getRawFormat());
 			message.setBody(outputter.outputString(doc));
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Preprocessor output: " + message);
+			if (log.isDebugEnabled()) {
+				log.debug("Preprocessor output: " + message);
 			}
 			return message;
 		} catch (JDOMParseException jpe) {
@@ -173,7 +174,7 @@ public class JMFPreprocessor implements Preprocessor {
 			throw new PreprocessorException(msg, jpe);
 		} catch (Exception e) {
 			String msg = "The message could not be preprocessed: " + message;
-			LOGGER.error(msg);
+			log.error(msg);
 			throw new PreprocessorException(msg, e);
 		}
 	}

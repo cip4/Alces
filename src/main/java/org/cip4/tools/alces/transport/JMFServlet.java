@@ -17,7 +17,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage.EnumFamily;
 import org.cip4.jdflib.jmf.JDFMessage.EnumType;
@@ -27,6 +26,8 @@ import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.TestSuite;
 import org.cip4.tools.alces.transport.util.HttpHeaderUtils;
 import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A servlet for receiving JMF messages.
@@ -56,7 +57,7 @@ public class JMFServlet extends HttpServlet {
 
 	public static final String SERVLET_NAME = "Elk Alces JMFServlet";
 
-	protected static Logger LOGGER;
+	protected static Logger log;
 
 	private ConfigurationHandler _confHand = ConfigurationHandler.getInstance();
 
@@ -74,10 +75,10 @@ public class JMFServlet extends HttpServlet {
 	@Override
 	public void init() throws ServletException {
 		super.init();
-		LOGGER = Logger.getLogger(this.getClass().getName());
-		LOGGER.debug("Initializing " + getServletName() + "...");
+		log = LoggerFactory.getLogger(this.getClass().getName());
+		log.debug("Initializing " + getServletName() + "...");
 		// TODO Do initializing...
-		LOGGER.debug("Initialized " + getServletName() + ".");
+		log.debug("Initialized " + getServletName() + ".");
 	}
 
 	@Override
@@ -88,15 +89,11 @@ public class JMFServlet extends HttpServlet {
 	/**
 	 * Entry point that delegates to the process methods based on the request header <code>Content-type</code>.
 	 * 
-	 * @see #processJDF(HttpServletRequest, HttpServletResponse)
-	 * @see #processMessage(HttpServletRequest, HttpServletResponse)
-	 * @see #processMime(HttpServletRequest, HttpServletResponse)
-	 * @see #processOther(HttpServletRequest, HttpServletResponse)
 	 */
 	@Override
 	public void doPost(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		// Debug logging
-		if (LOGGER.isDebugEnabled()) {
+		if (log.isDebugEnabled()) {
 			StringBuffer debugInfo = new StringBuffer("Received request from ");
 			debugInfo.append(req.getHeader("User-Agent")).append(" @ ");
 			debugInfo.append(req.getRemoteHost()).append(" (");
@@ -108,14 +105,14 @@ public class JMFServlet extends HttpServlet {
 				debugInfo.append("  ").append(headerName).append(": ");
 				debugInfo.append(req.getHeader(headerName)).append("\n");
 			}
-			LOGGER.debug(debugInfo);
+			log.debug(debugInfo.toString());
 		}
 		// Delegate to methods
 		try {
 			processMessage(req, res);
 		} catch (Exception e) {
 			String err = "The request body could not be processed. Maybe it did not contain JMF or JDF? ";
-			LOGGER.error(err, e);
+			log.error(err, e);
 			e.printStackTrace();
 			res.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, err + e);
 		}
@@ -149,7 +146,7 @@ public class JMFServlet extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		String msg = "Received HTTP GET request from " + req.getHeader("User-Agent") + " @ " + req.getRemoteHost() + " (" + req.getRemoteAddr() + "). Request ignored.";
-		LOGGER.warn(msg);
+		log.warn(msg);
 		res.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "HTTP GET not implemented.");
 	}
 
@@ -157,17 +154,16 @@ public class JMFServlet extends HttpServlet {
 	 * Processes an incoming JMF message.
 	 * 
 	 * @param req
-	 * @param resp
 	 * @throws IOException
 	 */
 	public void processMessage(HttpServletRequest req, HttpServletResponse res) throws IOException {
 		String msg = "Receiving message from " + req.getHeader("User-Agent") + " @ " + req.getRemoteHost() + " (" + req.getRemoteAddr() + ")...";
-		LOGGER.debug(msg);
+		log.debug(msg);
 		// Build incoming Message
 		final String messageBody = toString(req.getInputStream());
-		LOGGER.debug("Incoming message body: " + messageBody); // XXX
+		log.debug("Incoming message body: " + messageBody); // XXX
 		String contentType = req.getHeader(HttpHeaderUtils.CONTENT_TYPE_HEADER);
-		LOGGER.info("contentType: " + contentType);
+		log.info("contentType: " + contentType);
 		if (contentType == null && new Boolean(_confHand.getProp(ConfigurationHandler.NO_CONTENT_TYPE))) {
 			contentType = JMFServlet.JMF_CONTENT_TYPE;
 		}
@@ -178,19 +174,19 @@ public class JMFServlet extends HttpServlet {
 		final JDFJMF jmfIn = message.getBodyAsJMF();
 		if (jmfIn != null) {
 			if (jmfIn.getAcknowledge(0) != null) {
-				LOGGER.debug("Receiving Acknowledge message...");
+				log.debug("Receiving Acknowledge message...");
 				startTestSession(req, res, message);
 			} else if (jmfIn.getSignal(0) != null) {
-				LOGGER.debug("Receiving Signal message...");
+				log.debug("Receiving Signal message...");
 				startTestSession(req, res, message);
 			} else if (jmfIn.getMessageElement(EnumFamily.Command, EnumType.ReturnQueueEntry, 0) != null) {
-				LOGGER.debug("Receiving RetunQueueEntry message...");
+				log.debug("Receiving RetunQueueEntry message...");
 				startTestSession(req, res, message);
 				res.setContentType(JMFServlet.JMF_CONTENT_TYPE);
 				JDFJMF jmfOut = JMFMessageBuilder.buildResponse(jmfIn);
 				IOUtils.write(jmfOut.toXML(), res.getOutputStream());
 			} else {
-				LOGGER.debug("Receiving unhandled JMF message...");
+				log.debug("Receiving unhandled JMF message...");
 				startTestSession(req, res, message);
 				res.setContentType(JMFServlet.JMF_CONTENT_TYPE);
 				JDFJMF jmfOut = JMFMessageBuilder.buildNotImplementedResponse(jmfIn);
@@ -200,16 +196,16 @@ public class JMFServlet extends HttpServlet {
 			}
 			res.setStatus(HttpServletResponse.SC_OK);
 		} else if (contentType.startsWith(JMFServlet.MIME_CONTENT_TYPE)) {
-			LOGGER.debug("Receiving MIME package...");
+			log.debug("Receiving MIME package...");
 			startTestSession(req, res, message);
 			// TODO Extract JMF/Command/@ID from MIME package and use in Response
 			res.setStatus(HttpServletResponse.SC_OK);
 		} else if (contentType.startsWith(JMFServlet.JDF_CONTENT_TYPE)) {
-			LOGGER.debug("Receiving JDF file...");
+			log.debug("Receiving JDF file...");
 			startTestSession(req, res, message);
 			res.setStatus(HttpServletResponse.SC_OK);
 		} else {
-			LOGGER.debug("Unknown content-type '" + contentType + "'...");
+			log.debug("Unknown content-type '" + contentType + "'...");
 			startTestSession(req, res, message);
 			res.sendError(HttpServletResponse.SC_UNSUPPORTED_MEDIA_TYPE, "The request's content-type was: " + contentType);
 		}
@@ -289,8 +285,8 @@ public class JMFServlet extends HttpServlet {
 			if (testSession != null) {
 				testSession.receiveMessage(message);
 			} else {
-				LOGGER.warn("No test session found that matches the message: " + message);
-				LOGGER.debug("Creating new TestSession for InMessage...");
+				log.warn("No test session found that matches the message: " + message);
+				log.debug("Creating new TestSession for InMessage...");
 				// Create a objects using factory
 				InMessage newMessage = _testSuite.createInMessage(message.getContentType(), message.getHeader(), message.getBody(), true);
 				testSession = _testSuite.createTestSession(req.getRemoteAddr());

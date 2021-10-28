@@ -19,7 +19,6 @@ package org.cip4.tools.alces.preprocessor.jdf;
 
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.auto.JDFAutoComChannel.EnumChannelType;
 import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.ElementName;
@@ -29,6 +28,8 @@ import org.cip4.jdflib.node.JDFNode;
 import org.cip4.jdflib.resource.process.JDFComChannel;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A preprocessor that updates the <em>//ComChannel</em> elements of a JDF.
@@ -56,7 +57,7 @@ public class ComChannelPreprocessor implements JDFPreprocessor {
 	 */
 	public static final String DEFAULT_HOSTNAME = "cip4.example.org";
 
-	private static Logger LOGGER = Logger.getLogger(ComChannelPreprocessor.class);
+	private static Logger log = LoggerFactory.getLogger(ComChannelPreprocessor.class);
 
 	private final String defaultEmail;
 
@@ -84,7 +85,7 @@ public class ComChannelPreprocessor implements JDFPreprocessor {
 	 * @see #SUBSCRIPTION_URL_ATTR
 	 */
 	public JDFNode preprocess(JDFNode jdf, PreprocessorContext context) throws PreprocessorException {
-		LOGGER.debug("Updating Contact elements of JDF '" + jdf.getJobID(true) + "'...");
+		log.debug("Updating Contact elements of JDF '" + jdf.getJobID(true) + "'...");
 		List<KElement> comChannels = jdf.getChildrenByTagName(ElementName.COMCHANNEL, null, new JDFAttributeMap(AttributeName.CHANNELTYPE, EnumChannelType.Email.getName()), false, false, 0);
 		for (KElement comChannelElement : comChannels) {
 			final JDFComChannel comChannel = (JDFComChannel) comChannelElement;
@@ -98,8 +99,8 @@ public class ComChannelPreprocessor implements JDFPreprocessor {
 			} else {
 				newEmail = oldEmail.replace('@', '-') + "@" + DEFAULT_HOSTNAME;
 			}
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug(String.format("Replacing Email '%s' with '%s' in %s/@Locator", oldEmail, newEmail, comChannel.buildXPath("/", 1)));
+			if (log.isDebugEnabled()) {
+				log.debug(String.format("Replacing Email '%s' with '%s' in %s/@Locator", oldEmail, newEmail, comChannel.buildXPath("/", 1)));
 			}
 			comChannel.setLocator(newEmail);
 		}

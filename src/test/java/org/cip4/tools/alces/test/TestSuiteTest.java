@@ -9,8 +9,8 @@ import org.cip4.tools.alces.message.InMessageImpl;
 import org.cip4.tools.alces.message.OutMessage;
 import org.cip4.tools.alces.message.OutMessageImpl;
 import org.cip4.tools.alces.transport.HttpDispatcher;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
@@ -34,13 +34,13 @@ public class TestSuiteTest extends AlcesTestCase {
                 getTestFileAsString("ResponseKnownMessages.jmf"), false);
         // Find the test session the fake message belongs to
         TestSession foundSession = pool.findTestSession(mIn);
-        Assert.assertSame(session, foundSession);
+        Assertions.assertSame(session, foundSession);
         // Load and fake message that matches the sent messsage
         InMessage mIn2 = new InMessageImpl("",
                 getTestFileAsString("ResponseKnownMessages2.jmf"), false);
         // Find the test session the fake message belongs to
         TestSession foundSession2 = pool.findTestSession(mIn2);
-        Assert.assertSame(session, foundSession2);
+        Assertions.assertSame(session, foundSession2);
 
     }
 }

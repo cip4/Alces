@@ -8,6 +8,8 @@ import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tests that a <code>Message</code>'s body contains a JDF instance or a JMF
@@ -17,6 +19,8 @@ import org.cip4.tools.alces.util.JDFConstants;
  * @version $Id$
  */
 public class JDFContentTest extends Test {
+
+    private final static Logger log = LoggerFactory.getLogger(JDFContentTest.class);
 
     public JDFContentTest() {
         super(
@@ -86,7 +90,7 @@ public class JDFContentTest extends Test {
                 passedTest = false;
             }            
         }
-        LOGGER.debug(logMsg);
+        log.debug(logMsg);
         return new TestResultImpl(this, message, Result.getPassed(passedTest), logMsg);
     }
 }

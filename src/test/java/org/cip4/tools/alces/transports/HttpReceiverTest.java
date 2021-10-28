@@ -4,7 +4,7 @@
 package org.cip4.tools.alces.transports;
 
 import org.apache.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)

@@ -6,8 +6,8 @@ package org.cip4.tools.alces.preprocessor.jmf;
 import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.message.OutMessageImpl;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.Properties;
@@ -32,7 +32,7 @@ public class XPathPreprocessorTest extends AlcesTestCase {
         String m0 = jmf.getBody();
         jmf = pp.preprocess(jmf);
         System.out.println("After:\n" + jmf + "\n");
-        Assert.assertNotSame(m0, jmf.getBody());
+        Assertions.assertNotSame(m0, jmf.getBody());
     }
 
 }

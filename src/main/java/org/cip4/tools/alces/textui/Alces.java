@@ -17,7 +17,6 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.test.TestRunner;
 import org.cip4.tools.alces.test.TestSuite;
 import org.cip4.tools.alces.test.TestSuiteImpl;
@@ -25,6 +24,8 @@ import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * The Alces command line application for running automated tests.
@@ -34,7 +35,7 @@ import org.mozilla.javascript.ScriptableObject;
  */
 public class Alces {
 
-	private static Logger LOGGER = Logger.getLogger(Alces.class);
+	private static Logger log = LoggerFactory.getLogger(Alces.class);
 
 	private static final int PASSED = 0;
 
@@ -141,13 +142,13 @@ public class Alces {
 			// Serialize test suite
 			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh.mm.ss");
 			String outputDir = config.getProp(ConfigurationHandler.OUTPUT_DIR) + " " + dateFormat.format(new Date());
-			LOGGER.info("Writing test suite to '" + outputDir + "'...");
+			log.info("Writing test suite to '" + outputDir + "'...");
 			String outputFile = testRunner.serializeTestSuite(outputDir);
-			LOGGER.info("Wrote test suite report to: " + outputFile);
+			log.info("Wrote test suite report to: " + outputFile);
 			// Display summarized test report
 			returnCode = showTextReport(outputFile);
 		} catch (Exception e) {
-			LOGGER.error("An error occured while running the automated tests.", e);
+			log.error("An error occured while running the automated tests.", e);
 			returnCode = ERROR;
 		} finally {
 			testRunner.destroy();
@@ -191,11 +192,11 @@ public class Alces {
 			ScriptableObject.putProperty(scope, "testdata", jsTestdata);
 			Object jsConfig = Context.javaToJS(config, scope);
 			ScriptableObject.putProperty(scope, "config", jsConfig);
-			Object jsLog = Context.javaToJS(LOGGER, scope);
+			Object jsLog = Context.javaToJS(log, scope);
 			ScriptableObject.putProperty(scope, "log", jsLog);
 			// Evaluate script
 			Object result = cx.evaluateReader(scope, new FileReader(scriptFile), scriptFile.getName(), 0, null);
-			LOGGER.info("Scritp result: " + Context.toString(result));
+			log.info("Scritp result: " + Context.toString(result));
 		} finally {
 			Context.exit();
 		}
@@ -203,9 +204,9 @@ public class Alces {
 		// Serialize test suite
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh.mm.ss");
 		String outputDir = config.getProp(ConfigurationHandler.OUTPUT_DIR) + " " + dateFormat.format(new Date());
-		LOGGER.info("Writing test suite to '" + outputDir + "'...");
+		log.info("Writing test suite to '" + outputDir + "'...");
 		String outputFile = testRunner.serializeTestSuite(outputDir);
-		LOGGER.info("Wrote test suite report to: " + outputFile);
+		log.info("Wrote test suite report to: " + outputFile);
 		// Display summarized test report
 		final int returnCode = showTextReport(outputFile);
 		return returnCode;
@@ -222,14 +223,14 @@ public class Alces {
 		String xslFile = ConfigurationHandler.getInstance().getProp(ConfigurationHandler.XSLT_REPORT_DIR) + "/report-text.xsl";
 		String result = transform(outputFile, xslFile);
 		if (result != null) {
-			LOGGER.debug(result);
+			log.debug(result);
 			if (result.indexOf("Failed tests:  0") != -1) {
 				returnCode = PASSED;
 			} else {
 				returnCode = FAILED;
 			}
 		} else {
-			LOGGER.error("Could not display test results.");
+			log.error("Could not display test results.");
 			returnCode = TEST_REPORT_ERROR;
 		}
 		return returnCode;
@@ -242,15 +243,15 @@ public class Alces {
 	 * @param xslPath the absolute path to the XSL stylesheet to use
 	 */
 	private static String transform(String xmlPath, String xslPath) {
-		LOGGER.debug("Test report: " + xmlPath);
-		LOGGER.debug("XSL file:    " + xslPath);
+		log.debug("Test report: " + xmlPath);
+		log.debug("XSL file:    " + xslPath);
 		try {
 			Transformer transformer = TransformerFactory.newInstance().newTransformer(new StreamSource(new File(xslPath)));
 			Writer stringWriter = new StringWriter();
 			transformer.transform(new StreamSource(new File(xmlPath)), new StreamResult(stringWriter));
 			return stringWriter.toString();
 		} catch (Exception e) {
-			LOGGER.error("Could not transform XML test report for display.", e);
+			log.error("Could not transform XML test report for display.", e);
 		}
 		return null;
 	}

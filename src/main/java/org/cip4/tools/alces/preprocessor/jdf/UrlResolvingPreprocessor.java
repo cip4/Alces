@@ -7,13 +7,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.ElementName;
 import org.cip4.jdflib.core.KElement;
 import org.cip4.jdflib.node.JDFNode;
 import org.cip4.jdflib.resource.process.JDFFileSpec;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A preprocessor that examines all //FileSpec/@URL attributes found in a JDF instance. If a FileSpec/@URL contains a relative URL (the URL has no scheme), then
@@ -25,7 +26,7 @@ import org.cip4.tools.alces.preprocessor.PreprocessorException;
  */
 public class UrlResolvingPreprocessor implements JDFPreprocessor {
 
-	private static Logger LOGGER = Logger.getLogger(UrlResolvingPreprocessor.class);
+	private static Logger log = LoggerFactory.getLogger(UrlResolvingPreprocessor.class);
 
 	/**
 	 * Attribute for storing the new JobID in the context. If this preprocessor finds this attribute in the context it will use it as the new JobID.
@@ -68,10 +69,10 @@ public class UrlResolvingPreprocessor implements JDFPreprocessor {
 			baseUrl = (String) context.getAttribute(BASEURL_ATTR);
 		}
 		if (baseUrl == null) {
-			LOGGER.warn("URL preprocessor not configured with base URL. No preprocessing will be performed.");
+			log.warn("URL preprocessor not configured with base URL. No preprocessing will be performed.");
 			return jdf;
 		}
-		LOGGER.debug("Resolving relative URLs in JDF '" + jdf.getJobID(true) + "' against base URL '" + baseUrl + "'...");
+		log.debug("Resolving relative URLs in JDF '" + jdf.getJobID(true) + "' against base URL '" + baseUrl + "'...");
 		return resolveReferencedFiles(jdf, baseUrl);
 	}
 
@@ -91,12 +92,12 @@ public class UrlResolvingPreprocessor implements JDFPreprocessor {
 		for (KElement fileSpecElement : fileSpecs) {
 			final JDFFileSpec fileSpec = (JDFFileSpec) fileSpecElement;
 			final String url = fileSpec.getURL();
-			LOGGER.debug("Resolving URL '" + url + "'...");
+			log.debug("Resolving URL '" + url + "'...");
 			final URI uri;
 			try {
 				uri = new URI(url);
 			} catch (URISyntaxException e) {
-				LOGGER.warn("Could not resolve URL '" + url + "'.", e);
+				log.warn("Could not resolve URL '" + url + "'.", e);
 				System.out.println(e);
 				continue;
 			}
@@ -108,12 +109,12 @@ public class UrlResolvingPreprocessor implements JDFPreprocessor {
 					newUri = newUri.normalize();
 					newUrl = newUri.toASCIIString();
 				} catch (URISyntaxException e) {
-					LOGGER.warn("Could not normalize URL '" + newUrl + "'. Normalization is skipped.");
+					log.warn("Could not normalize URL '" + newUrl + "'. Normalization is skipped.");
 				}
 				fileSpec.setURL(newUrl);
-				LOGGER.debug("Resolved and replaced URL with http URL '" + fileSpec.getURL() + "'.");
+				log.debug("Resolved and replaced URL with http URL '" + fileSpec.getURL() + "'.");
 			} else {
-				LOGGER.warn("Could not resolve URL '" + url + "'. Left URL untouched.");
+				log.warn("Could not resolve URL '" + url + "'. Left URL untouched.");
 			}
 		}
 		return jdf;

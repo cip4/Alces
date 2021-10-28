@@ -6,7 +6,6 @@ package org.cip4.tools.alces.preprocessor.jdf;
 import java.util.List;
 import java.util.Vector;
 
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.core.ElementName;
 import org.cip4.jdflib.core.JDFNodeInfo;
 import org.cip4.jdflib.core.KElement;
@@ -18,6 +17,8 @@ import org.cip4.tools.alces.jmf.AlcesMessageIDFactory;
 import org.cip4.tools.alces.jmf.MessageIDFactory;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Updates the <em>/JDF/NodeInfo</em> element of a JDF.
@@ -39,7 +40,7 @@ public class NodeInfoPreprocessor implements JDFPreprocessor {
 	 */
 	public final static String SUBSCRIPTION_URL_ATTR = "org.cip4.tools.alces.NodeInfoPreprocessor.SubscriptionURL";
 
-	private static Logger LOGGER = Logger.getLogger(NodeInfoPreprocessor.class);
+	private static Logger log = LoggerFactory.getLogger(NodeInfoPreprocessor.class);
 
 	protected final MessageIDFactory factory;
 
@@ -58,7 +59,7 @@ public class NodeInfoPreprocessor implements JDFPreprocessor {
 	 * @see #SUBSCRIPTION_URL_ATTR
 	 */
 	public JDFNode preprocess(JDFNode jdf, PreprocessorContext context) throws PreprocessorException {
-		LOGGER.debug("Updating NodeInfo of JDF '" + jdf.getJobID(true) + "'...");
+		log.debug("Updating NodeInfo of JDF '" + jdf.getJobID(true) + "'...");
 		JDFNodeInfo nodeInfo = jdf.getNodeInfo();
 		if (nodeInfo == null) {
 			return jdf;

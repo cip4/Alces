@@ -20,7 +20,6 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.log4j.Logger;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.jdflib.node.JDFNode;
@@ -29,6 +28,8 @@ import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.message.OutMessage;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Serializes a TestSuite. The TestSuite XML file and the resources related to it are written to the specified base directory. The TestSuite XML file is named
@@ -38,7 +39,7 @@ import org.cip4.tools.alces.util.JDFConstants;
  */
 public class TestSuiteSerializer {
 
-	private static Logger LOGGER = Logger.getLogger(TestSuiteSerializer.class);
+	private static Logger log = LoggerFactory.getLogger(TestSuiteSerializer.class);
 
 	private DateFormat _dateFormat = null;
 
@@ -79,7 +80,7 @@ public class TestSuiteSerializer {
 		outputDir.mkdir();
 		// Creates output file
 		File outFile = new File(outputDir, "report.xml");
-		LOGGER.debug("Serializing TestSuite to '" + outFile.getAbsolutePath() + "'...");
+		log.debug("Serializing TestSuite to '" + outFile.getAbsolutePath() + "'...");
 		Writer out = new BufferedWriter(new FileWriter(outFile));
 		// Serializes TestSuite
 		out.write("<?xml version='1.0' encoding='UTF-8'?>\n");
@@ -91,7 +92,7 @@ public class TestSuiteSerializer {
 		out.close();
 		// Copy stylesheet and images
 		copyReportResources(outputDir.getAbsolutePath());
-		LOGGER.debug("Serialized TestSuite.");
+		log.debug("Serialized TestSuite.");
 		return outFile.getAbsolutePath();
 	}
 
@@ -161,7 +162,7 @@ public class TestSuiteSerializer {
 	}
 
 	private void serializeMessage(Message message, File outputDir, Writer out) throws IOException {
-		LOGGER.debug("Serializing message...");
+		log.debug("Serializing message...");
 		out.write("<message type='");
 		if (message instanceof OutMessage) {
 			out.write("out");
@@ -211,11 +212,11 @@ public class TestSuiteSerializer {
 			out.write("</messages>\n");
 		}
 		out.write("</message>");
-		LOGGER.debug("Serialized message.");
+		log.debug("Serialized message.");
 	}
 
 	private void serializeTestResult(TestResult result, File outputDir, Writer out) throws IOException {
-		LOGGER.debug("Serializing " + result.getTest().getClass() + " TestResult...");
+		log.debug("Serializing " + result.getTest().getClass() + " TestResult...");
 		out.write("<test passed='");
 		out.write(Boolean.toString(result.isPassed()));
 		out.write("' description='");
@@ -230,7 +231,7 @@ public class TestSuiteSerializer {
 		out.write("\n");
 		out.write("</log>\n");
 		out.write("</test>\n");
-		LOGGER.debug("Serialized " + result.getTest().getClass() + " TestResult.");
+		log.debug("Serialized " + result.getTest().getClass() + " TestResult.");
 	}
 
 	/**
@@ -272,7 +273,7 @@ public class TestSuiteSerializer {
 			extension = ".txt";
 		}
 		File messageFile = new File(outputDir, filename + extension);
-		LOGGER.debug("Writing message body to file '" + messageFile.getAbsolutePath() + "'...");
+		log.debug("Writing message body to file '" + messageFile.getAbsolutePath() + "'...");
 		IOUtils.write(message.getBody(), new FileOutputStream(messageFile));
 		return "file:" + messageFile.getAbsolutePath();
 	}

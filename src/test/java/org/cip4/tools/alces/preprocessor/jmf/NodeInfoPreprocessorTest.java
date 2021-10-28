@@ -13,8 +13,8 @@ import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jdf.NodeInfoPreprocessor;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -27,17 +27,17 @@ public class NodeInfoPreprocessorTest extends AlcesTestCase {
         JDFPreprocessor pp = new NodeInfoPreprocessor();
         JDFNode jdf1 = getTestFileAsJDF("MISPrepress_ICS_PlateMaking.jdf");
         JDFNode jdf2 = getTestFileAsJDF("MISPrepress_ICS_PlateMaking.jdf");
-        Assert.assertEquals(jdf1.toXML(), jdf2.toXML());
+        Assertions.assertEquals(jdf1.toXML(), jdf2.toXML());
         JDFNode jdf3 = pp.preprocess(jdf2);
-        Assert.assertSame(jdf2, jdf3);
-        Assert.assertNotSame(jdf1, jdf3);
+        Assertions.assertSame(jdf2, jdf3);
+        Assertions.assertNotSame(jdf1, jdf3);
         List jmfs = jdf3.getChildrenByTagName(ElementName.JMF, null, null, false, false, 0);
         for (Iterator i = jmfs.iterator(); i.hasNext(); ) {
             JDFJMF jmf = (JDFJMF) i.next();
             List msgs = jmf.getMessageVector(null, null);
             for (Iterator j = msgs.iterator(); j.hasNext(); ) {
                 JDFMessage msg = (JDFMessage) j.next();
-                Assert.assertTrue(msg.getID().startsWith(AlcesMessageIDFactory.PREFIX));
+                Assertions.assertTrue(msg.getID().startsWith(AlcesMessageIDFactory.PREFIX));
             }
         }
     }
@@ -50,18 +50,17 @@ public class NodeInfoPreprocessorTest extends AlcesTestCase {
         JDFPreprocessor pp = new NodeInfoPreprocessor();
         JDFNode jdf1 = getTestFileAsJDF("MISPrepress_ICS_PlateMaking.jdf");
         JDFNode jdf2 = getTestFileAsJDF("MISPrepress_ICS_PlateMaking.jdf");
-        Assert.assertEquals(jdf1.toXML(), jdf2.toXML());
+        Assertions.assertEquals(jdf1.toXML(), jdf2.toXML());
         JDFNode jdf3 = pp.preprocess(jdf2, context);
-        Assert.assertSame(jdf2, jdf3);
-        Assert.assertNotSame(jdf1, jdf3);
+        Assertions.assertSame(jdf2, jdf3);
+        Assertions.assertNotSame(jdf1, jdf3);
         List jmfs = jdf3.getChildrenByTagName(ElementName.JMF, null, null, false, false, 0);
         for (Iterator i = jmfs.iterator(); i.hasNext(); ) {
             JDFJMF jmf = (JDFJMF) i.next();
             List msgs = jmf.getMessageVector(null, null);
             for (Iterator j = msgs.iterator(); j.hasNext(); ) {
                 JDFMessage msg = (JDFMessage) j.next();
-                Assert.assertTrue(msg.getID() + " did not start with " + prefix + ".", msg.getID()
-                        .startsWith(prefix));
+                Assertions.assertTrue(msg.getID().startsWith(prefix), msg.getID() + " did not start with " + prefix + ".");
             }
         }
     }

@@ -3,7 +3,6 @@
  */
 package org.cip4.tools.alces.transport;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.test.TestSuite;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.SocketListener;
@@ -12,6 +11,8 @@ import org.mortbay.jetty.Server;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHolder;
 import org.mortbay.jetty.servlet.ServletHttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A service for receiving JMF messages over HTTP, essentially a HTTP server.
@@ -20,7 +21,7 @@ import org.mortbay.jetty.servlet.ServletHttpContext;
  */
 public class HttpReceiver {
 
-	private static Logger LOGGER = Logger.getLogger(HttpReceiver.class);
+	private static Logger log = LoggerFactory.getLogger(HttpReceiver.class);
 
 	private Server _server = null;
 
@@ -69,14 +70,14 @@ public class HttpReceiver {
 	 * @throws Exception if the HTTP server could not by started
 	 */
 	public synchronized void startServer(String host, int port, String jmfContextPath, String resourceBase) throws Exception {
-		LOGGER.debug("Starting HTTP server on " + host + ":" + port + jmfContextPath + " ...");
-		LOGGER.debug("Static content will be served from: " + resourceBase);
+		log.debug("Starting HTTP server on " + host + ":" + port + jmfContextPath + " ...");
+		log.debug("Static content will be served from: " + resourceBase);
 		if (_server != null && _server.isStarted()) {
 			try {
-				LOGGER.debug("Stopping active HTTP server before starting a new one.");
+				log.debug("Stopping active HTTP server before starting a new one.");
 				stopServer();
 			} catch (InterruptedException ie) {
-				LOGGER.warn("HTTP server could not be stopped.");
+				log.warn("HTTP server could not be stopped.");
 			}
 		}
 		// Create the server
@@ -110,7 +111,7 @@ public class HttpReceiver {
 		final JMFServlet servlet = (JMFServlet) holder.getServlet();
 		servlet.setTestSessions(_testSuite);
 
-		LOGGER.debug("Started HTTP server.");
+		log.debug("Started HTTP server.");
 	}
 
 	/**
@@ -128,9 +129,9 @@ public class HttpReceiver {
 	 * @throws InterruptedExceptions
 	 */
 	public synchronized void stopServer() throws InterruptedException {
-		LOGGER.debug("Stopping HTTP server...");
+		log.debug("Stopping HTTP server...");
 		_server.stop();
 		_server = null;
-		LOGGER.debug("Stopped HTTP server.");
+		log.debug("Stopped HTTP server.");
 	}
 }

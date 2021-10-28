@@ -16,14 +16,10 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.UnknownHostException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -66,12 +62,9 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
-import org.apache.log4j.xml.DOMConfigurator;
 import org.cip4.jdflib.auto.JDFAutoMessageService.EnumJMFRole;
 import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.ElementName;
@@ -99,16 +92,20 @@ import org.cip4.tools.alces.swingui.tree.test.TestSuiteNode;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestRunner;
 import org.cip4.tools.alces.test.TestSession;
-import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 /**
  * The Alces Swing GUI application for interactive testing.
  * 
  * @author Claes Buckwalter (clabu@itn.liu.se)
  */
+@SpringBootApplication
 public class Alces extends JFrame implements ActionListener, TreeModelListener, TreeSelectionListener, MouseListener {
 
 	// -----------------------------------------------------
@@ -127,7 +124,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	// | | | |
 	// -----------------------------------------------------
 
-	private static Logger LOGGER = Logger.getLogger(Alces.class);
+	private static Logger log = LoggerFactory.getLogger(Alces.class);
 
 	private static String RES_LOG4J_TPL = "/org/cip4/tools/alces/conf/log4j.xml.tpl";
 
@@ -430,51 +427,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		connectButton.requestFocusInWindow();
 	}
 
-	public static void main(String[] args) throws Exception {
-
-		// init logging
-		initLogging();
-
-		// log system start
-		LOGGER.info("---- System start ------");
-
-		// start alces
-		new Alces();
-	}
-
-	/**
-	 * Initialize log4j
-	 * @throws FileNotFoundException
-	 */
-	private static void initLogging() throws Exception {
-
-		String confPath = FilenameUtils.concat(AlcesPathUtil.ALCES_CONFIG_DIR, "log4j.xml");
-		File file = new File(confPath);
-
-		if (!file.exists()) {
-
-			// load log4j.xml template
-			InputStream is = Alces.class.getResourceAsStream(RES_LOG4J_TPL);
-			ByteArrayOutputStream bos = new ByteArrayOutputStream();
-			IOUtils.copy(is, bos);
-			bos.close();
-			is.close();
-
-			// override params
-			String tpl = new String(bos.toByteArray());
-			tpl = tpl.replaceAll("\\$\\{LOG_PATH\\}", AlcesPathUtil.ALCES_LOG_DIR);
-
-			// write config fie
-			ByteArrayInputStream bis = new ByteArrayInputStream(tpl.getBytes());
-			FileOutputStream fos = new FileOutputStream(file);
-			IOUtils.copy(bis, fos);
-			fos.close();
-			bis.close();
-		}
-
-		// init log4j
-		DOMConfigurator.configureAndWatch(confPath, 60 * 1000);
-
+	public static void main(String[] args) {
+		SpringApplication.run(Alces.class, args);
 	}
 
 	/**
@@ -485,7 +439,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @throws PreprocessorException
 	 */
 	private JDFJMF sendKnownDevices() throws IOException {
-		LOGGER.info("Sending KnownDevices...");
+		log.info("Sending KnownDevices...");
 		final OutMessage outMessage = createMessage("Connect_KnownDevices");
 		InMessage inMessage = null;
 		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
@@ -506,7 +460,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 
 		final JDFJMF jmf = inMessage.getBodyAsJMF();
-		LOGGER.info("Sending KnownDevices...done");
+		log.info("Sending KnownDevices...done");
 		return jmf;
 	}
 
@@ -516,7 +470,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @throws IOException
 	 */
 	private JDFJMF sendQueueStatus() throws IOException {
-		LOGGER.info("Sending QueueStatus...");
+		log.info("Sending QueueStatus...");
 		final OutMessage outMessage = createMessage("Connect_QueueStatus");
 		InMessage inMessage = null;
 		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
@@ -537,7 +491,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 
 		final JDFJMF jmf = inMessage.getBodyAsJMF();
-		LOGGER.info("Sending QueueStatus...done");
+		log.info("Sending QueueStatus...done");
 		return jmf;
 	}
 
@@ -556,7 +510,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		// Remove old known devices first
 		clearKnownDevices();
 		clearActiveDevice();
-		LOGGER.debug("Updating Known Devices combobox...");
+		log.debug("Updating Known Devices combobox...");
 		if (knownDevicesResponse == null) {
 			return;
 		}
@@ -581,7 +535,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 
 		deviceListComboBox.setEnabled(true);
-		LOGGER.debug("Known Devices combobox updated.");
+		log.debug("Known Devices combobox updated.");
 	}
 
 	private void clearActiveDevice() {
@@ -599,7 +553,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @param idx the index of the device in the combobox
 	 */
 	private void setActiveDevice(int idx) {
-		LOGGER.debug("Updating device info...");
+		log.debug("Updating device info...");
 		JDFDeviceInfo deviceInfo = this.knownDevices.getDeviceInfo(idx);
 		JDFDevice device = deviceInfo.getDevice();
 		setDeviceStatus(deviceInfo);
@@ -618,7 +572,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		deviceInfoTextArea.append(_confHand.getLabel("ModelNumber", "ModelNumber: ") + device.getModelNumber() + "\n");
 		deviceInfoTextArea.setCaretPosition(0);
 		deviceInfoTextArea.setEditable(false);
-		LOGGER.debug("Active device is now '" + device.getDeviceID() + "'.");
+		log.debug("Active device is now '" + device.getDeviceID() + "'.");
 	}
 
 	/**
@@ -627,7 +581,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @throws IOException
 	 */
 	private JDFJMF sendKnownMessages() throws IOException {
-		LOGGER.info("Sending KnownMessages...");
+		log.info("Sending KnownMessages...");
 		OutMessage outMessage = createMessage("Connect_KnownMessages");
 		InMessage inMessage = null;
 		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
@@ -648,7 +602,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 
 		JDFJMF jmf = inMessage.getBodyAsJMF();
-		LOGGER.info("Sending KnownMessages...done");
+		log.info("Sending KnownMessages...done");
 		return jmf;
 	}
 
@@ -656,28 +610,31 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * Removes all messages buttons from the GUI
 	 */
 	private void clearMessageButtons() {
-		LOGGER.debug("Clearing message buttons...");
+		log.debug("Clearing message buttons...");
 		messagesPanel.removeAll();
 	}
 
 	/**
-	 * Adds buttons to the GUI based on the message services specificed in the JMF response. If the JMF response does not contain any message services a warning
-	 * dialog box is displayed.
-	 * 
-	 * @param jmf the JMF message
+	 * Adds buttons to the GUI based on the message services specified in the JMF response. If the JMF
+	 * response does not contain any message services a warning dialog box is displayed.
+	 *
+	 * @param knownMessages The KnownMessages JMF message
 	 */
 	public void buildMessageButtons(JDFJMF knownMessages) {
-		// Always add Send File button
+
+		// add 'Send File...' button (default)
 		JButton sendFileButton = createMessageButton(_confHand.getLabel("Send.File", "Send File..."), "Send File...", ACTION_SEND_FILE);
 		sendFileButton.setMnemonic(KeyEvent.VK_D);
 		messagesPanel.add(sendFileButton);
-		// Create SubmitQueueEntry button if there was no JMF response
+
+		// add SubmitQueueEntry button if there was no JMF response
 		if (knownMessages == null || knownMessages.getResponse(0) == null || knownMessages.getResponse(0).getMessageService(0) == null) {
 			JButton sqeButton = createMessageButton(EnumType.SubmitQueueEntry.getName() + "...", "Command", "Command" + EnumType.SubmitQueueEntry.getName());
 			sqeButton.setMnemonic(KeyEvent.VK_E);
 			messagesPanel.add(sqeButton);
 			return;
 		}
+
 		// Get known message services
 		JDFMessage response = knownMessages.getResponse(0);
 		List services = response.getChildElementVector(ElementName.MESSAGESERVICE, null, null, true, 0, false);
@@ -698,31 +655,15 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			if (jmfServices[i].getJMFRole() != null && jmfServices[i].getJMFRole().equals(EnumJMFRole.Sender)) {
 				continue;
 			}
-			StringBuffer toolTip = new StringBuffer();
-			String actionCommand = null;
-			if (jmfServices[i].getAcknowledge()) {
-				toolTip.append("Acknowledge ");
-			}
-			if (jmfServices[i].getCommand()) {
-				toolTip.append("Command ");
-				actionCommand = "Command" + jmfServices[i].getType();
-			}
-			if (jmfServices[i].getPersistent()) {
-				toolTip.append("Persistent ");
-			}
-			if (jmfServices[i].getQuery()) {
-				toolTip.append("Query ");
-				actionCommand = "Query" + jmfServices[i].getType();
-			}
-			if (jmfServices[i].getSignal()) {
-				toolTip.append("Signal ");
-			}
-			JButton button = createMessageButton(jmfServices[i].getType(), toolTip.toString(), actionCommand);
+
+			JButton button = createMessageButton(jmfServices[i].getType(), "JMF Message", jmfServices[i].getType());
+
 			// Add ... to SubmitQueueEntry button
 			if (jmfServices[i].getType().equals("SubmitQueueEntry")) {
 				button.setText(jmfServices[i].getType() + "...");
 				button.setMnemonic(KeyEvent.VK_E);
 			}
+
 			// Add ... to ResubmitQueueEntry button
 			if (jmfServices[i].getType().equals("ResubmitQueueEntry")) {
 				button.setText(jmfServices[i].getType() + "...");
@@ -773,7 +714,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	}
 
 	private OutMessage createSubmitQueueEntry(File jdfFile) {
-		LOGGER.debug("Creating a SubmitQueueEntry message for submitting JDF '" + jdfFile.getAbsolutePath() + "'...");
+		log.debug("Creating a SubmitQueueEntry message for submitting JDF '" + jdfFile.getAbsolutePath() + "'...");
 		String publicDirPath = _confHand.getProp(ConfigurationHandler.RESOURCE_BASE);
 
 		File publicJdfDir = new File(publicDirPath, "jdf");
@@ -783,10 +724,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		File publicJdfFile = new File(publicJdfDir, jdfFilename);
 		// Copy JDF to public JDF file
 		try {
-			LOGGER.debug("Copying JDF to public dir '" + publicJdfFile + "'...");
+			log.debug("Copying JDF to public dir '" + publicJdfFile + "'...");
 			IOUtils.copy(new FileInputStream(jdfFile), new FileOutputStream(publicJdfFile));
 		} catch (IOException ioe) {
-			LOGGER.error("The JDF file could not be copied from '" + jdfFile.getAbsolutePath() + "' to '" + publicJdfFile.getAbsolutePath() + "'.");
+			log.error("The JDF file could not be copied from '" + jdfFile.getAbsolutePath() + "' to '" + publicJdfFile.getAbsolutePath() + "'.");
 			return null; // /XXX
 		}
 		// TODO Copy files referenced by JDF to public dir
@@ -795,13 +736,13 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		String publicJdfUrl = null;
 		try {
 			String host = _confHand.getProp(ConfigurationHandler.HOST);
-			LOGGER.debug("The Host:" + host);
+			log.debug("The Host:" + host);
 
 			int port = Integer.parseInt(_confHand.getProp(ConfigurationHandler.PORT));
-			LOGGER.debug("port:" + port);
+			log.debug("port:" + port);
 			publicJdfUrl = "http://" + host + ":" + port + "/jdf/" + jdfFilename;
 		} catch (Exception uhe) {
-			LOGGER.error("Could not build public URL.");
+			log.error("Could not build public URL.");
 			return null; // XXX
 		}
 
@@ -827,7 +768,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		_testSuite.setTreeModel(_treeModel);
 		_treeModel.addTreeModelListener(this);
 		JTree tree = new JTree(_treeModel);
-		LOGGER.debug("Shows root handles: " + tree.getShowsRootHandles());
+		log.debug("Shows root handles: " + tree.getShowsRootHandles());
 		tree.setRootVisible(false);
 		tree.setShowsRootHandles(true);
 		tree.addTreeSelectionListener(this);
@@ -847,7 +788,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			return;
 		// Gets all Device elements with the specified DeviceID
 		final JDFAttributeMap deviceID = new JDFAttributeMap();
-		LOGGER.debug("deviceListComboBox.getSelectedItem() = " + deviceListComboBox.getSelectedItem());
+		log.debug("deviceListComboBox.getSelectedItem() = " + deviceListComboBox.getSelectedItem());
 		if (deviceListComboBox.getSelectedItem() != null) {
 			deviceID.put(AttributeName.DEVICEID, (String) deviceListComboBox.getSelectedItem());
 		}
@@ -921,7 +862,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @see #cancelConnect()
 	 */
 	private synchronized void connect() {
-		LOGGER.debug("Connecting...");
+		log.debug("Connecting...");
 
 		connectButton.setText(_confHand.getLabel("Cancel", "Cancel"));
 		connectButton.setActionCommand(Alces.ACTION_CONNECT_CANCEL);
@@ -942,7 +883,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 			@Override
 			public void run() {
-				LOGGER.debug("Connecting... [Thread: " + hashCode() + "]");
+				log.debug("Connecting... [Thread: " + hashCode() + "]");
 				// Initialize test environment
 				try {
 					synchronized (testRunner) {
@@ -950,7 +891,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 						testRunner.init();
 					}
 				} catch (Exception e) {
-					LOGGER.error("Failed to initialize TestRunner before connecting", e);
+					log.error("Failed to initialize TestRunner before connecting", e);
 					JOptionPane.showMessageDialog(Alces.this, "Alces test envirnement could not be initialized\n" + "prior to connecting. View the log file 'alces.log'\n" + "for details.",
 							"Could Not Connect", JOptionPane.ERROR_MESSAGE);
 					return;
@@ -973,20 +914,20 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 						buildMessageButtons(knownMessagesResponse);
 					}
 				} catch (UnknownHostException e) {
-					LOGGER.error("Could not connect to device.", e);
+					log.error("Could not connect to device.", e);
 					String msg = "The device's hostname '" + e.getMessage() + "' could not\n" + "be found. Make sure that the entered device URL is correct.";
 					JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
 				} catch (IOException e) {
 					if (cancel)
 						return;
-					LOGGER.error("Could not connect to device.", e);
+					log.error("Could not connect to device.", e);
 					String msg = "The device did not respond correctly to the JMF handshake.\n" + "You can still try sending JMF to the device URL using\n" + "the buttons to the left.";
 					JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
 					buildMessageButtons(null);
 				} catch (Exception e) {
 					if (cancel)
 						return;
-					LOGGER.error("Could not connect to device.", e);
+					log.error("Could not connect to device.", e);
 					String msg = "An unexpected error occured while connecting to the device.\n" + "You can still try sending JMF to the device URL using\n" + "the buttons to the left.";
 					JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
 					buildMessageButtons(null);
@@ -995,276 +936,318 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					connectButton.setActionCommand(Alces.ACTION_CONNECT);
 					connectButton.setEnabled(true);
 					if (cancel) {
-						LOGGER.debug("Connecting cancelled. [Thread: " + hashCode() + "]");
+						log.debug("Connecting cancelled. [Thread: " + hashCode() + "]");
 					} else {
-						LOGGER.debug("Connecting done. [Thread: " + hashCode() + "]");
+						log.debug("Connecting done. [Thread: " + hashCode() + "]");
 					}
 				}
 			}
 		};
 		connectThread.start();
-		LOGGER.debug("Connected.");
+		log.debug("Connected.");
 	}
 
-	// ----------------------------------------------------------------
-	// ActionListener
-	// ----------------------------------------------------------------
+	/**
+	 * Implementation of the ActionListner Interface.
+	 * @param e The action event.
+	 */
 	public void actionPerformed(ActionEvent e) {
+
 		if (e.getSource().equals(addressComboBox)) {
 			addressComboBox.insertItemAt(addressComboBox.getSelectedItem(), 0);
 			return;
 		}
+
+		// process action command
+
+		final JFileChooser fileChooser;
+		int returnValue;
+		boolean packageAsMime;
+		boolean disablePreprocessing;
+
+		String queueEntryId;
+		String jobId;
+
+		OutMessage outMessage;
+
 		String actionCommand = e.getActionCommand();
-		if (actionCommand.equals(ACTION_CONNECT)) {
-			connect();
-		} else if (actionCommand.equals(ACTION_CONNECT_CANCEL)) {
-			cancelConnect();
-		} else if (actionCommand.equals(ACTION_SEND_FILE)) {
-			// Send file to device
-			final JFileChooser fc = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
-			fc.addChoosableFileFilter(new JMFFileFilter());
-			fc.setAcceptAllFileFilterUsed(true);
-			fc.setDialogTitle("Select a File to Send");
-			int returnVal = fc.showOpenDialog(this);
-			// Store last used dir
-			// _props.put("last.dir",
-			// fc.getCurrentDirectory().getAbsolutePath());
-			_confHand.putProp("last.dir", fc.getCurrentDirectory().getAbsolutePath());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				testRunner.startTestSession(testRunner.loadMessage(fc.getSelectedFile()), getDeviceUrl());
-			}
-		} else if (actionCommand.equals(ACTION_BATCH_SELECT_FILE)) {
-			JFileChooser fc = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
-			fc.setFileSelectionMode(JFileChooser.FILES_ONLY);
-			fc.addChoosableFileFilter(new JMFFileFilter());
-			fc.setAcceptAllFileFilterUsed(true);
-			fc.setDialogTitle("Batch Mode: Select a File to Send");
-			int returnVal = fc.showOpenDialog(this);
+		log.info("New action event received: '{}'", actionCommand);
 
-			_confHand.putProp("last.dir", fc.getCurrentDirectory().getAbsolutePath());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				batchStartButton.setEnabled(true);
-				batchModeLabel.setText(fc.getSelectedFile().getAbsolutePath());
+		switch (actionCommand) {
+			case ACTION_CONNECT:
+				connect();
+				break;
 
-				filesToSendInBatch.clear();
-				filesToSendInBatch.add(fc.getSelectedFile());
-			}
-		} else if (actionCommand.equals(ACTION_BATCH_SELECT_FOLDER)) {
-			JFileChooser fc = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
-			fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-			fc.addChoosableFileFilter(new JMFFileFilter());
-			fc.setAcceptAllFileFilterUsed(true);
-			fc.setDialogTitle("Batch Mode: Select a Folder to Send");
-			int returnVal = fc.showOpenDialog(this);
+			case ACTION_CONNECT_CANCEL:
+				cancelConnect();
+				break;
 
-			_confHand.putProp("last.dir", fc.getCurrentDirectory().getAbsolutePath());
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				batchStartButton.setEnabled(true);
-				batchModeLabel.setText(fc.getSelectedFile().getAbsolutePath());
-
-				filesToSendInBatch.clear();
-				File folder = fc.getSelectedFile();
-				File[] listOfFiles = folder.listFiles();
-				for (int i = 0; i < listOfFiles.length; i++) {
-					if (listOfFiles[i].isFile())
-						filesToSendInBatch.add(listOfFiles[i]);
+			case ACTION_SEND_FILE:
+				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser.addChoosableFileFilter(new JMFFileFilter());
+				fileChooser.setAcceptAllFileFilterUsed(true);
+				fileChooser.setDialogTitle("Select a File to Send");
+				returnValue = fileChooser.showOpenDialog(this);
+				// Store last used dir
+				// _props.put("last.dir",
+				// fc.getCurrentDirectory().getAbsolutePath());
+				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				if (returnValue == JFileChooser.APPROVE_OPTION) {
+					testRunner.startTestSession(testRunner.loadMessage(fileChooser.getSelectedFile()), getDeviceUrl());
 				}
-			}
-		} else if (actionCommand.equals(ACTION_BATCH_START)) {
-			// create and run thread
-			batchStartButton.setEnabled(false);
-			batchStopButton.setEnabled(true);
-			SwingWorker<Object, Object> worker = new SwingWorker<Object, Object>() {
-				@Override
-				protected Object doInBackground() throws Exception {
-					isBatchRunned = true;
-					while (isBatchRunned) {
-						LOGGER.info("-> batch executer");
-						// prepare file to send
-						for (File f : filesToSendInBatch) {
-							LOGGER.info("Batch: send file: " + f.getAbsolutePath());
-							testRunner.startTestSession(
-							// testRunner.loadMessage(new File("D:/Projects/Kodak/JMFs/QueueStatus.Full.jmf")),
-									testRunner.loadMessage(f), getDeviceUrl());
+				break;
 
-							try {
-								String delayStr = _confHand.getProp(ConfigurationHandler.BATCHMODE_DELAYTONEXT_FILE);
-								int delayMs = new Integer(delayStr);
-								Thread.sleep(delayMs);
-							} catch (InterruptedException e) {
-								e.printStackTrace();
+			case ACTION_BATCH_SELECT_FILE:
+				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+				fileChooser.addChoosableFileFilter(new JMFFileFilter());
+				fileChooser.setAcceptAllFileFilterUsed(true);
+				fileChooser.setDialogTitle("Batch Mode: Select a File to Send");
+				returnValue = fileChooser.showOpenDialog(this);
+
+				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				if (returnValue == JFileChooser.APPROVE_OPTION) {
+					batchStartButton.setEnabled(true);
+					batchModeLabel.setText(fileChooser.getSelectedFile().getAbsolutePath());
+
+					filesToSendInBatch.clear();
+					filesToSendInBatch.add(fileChooser.getSelectedFile());
+				}
+				break;
+
+			case ACTION_BATCH_SELECT_FOLDER:
+				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+				fileChooser.addChoosableFileFilter(new JMFFileFilter());
+				fileChooser.setAcceptAllFileFilterUsed(true);
+				fileChooser.setDialogTitle("Batch Mode: Select a Folder to Send");
+				returnValue = fileChooser.showOpenDialog(this);
+
+				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				if (returnValue == JFileChooser.APPROVE_OPTION) {
+					batchStartButton.setEnabled(true);
+					batchModeLabel.setText(fileChooser.getSelectedFile().getAbsolutePath());
+
+					filesToSendInBatch.clear();
+					File folder = fileChooser.getSelectedFile();
+					File[] listOfFiles = folder.listFiles();
+					for (int i = 0; i < listOfFiles.length; i++) {
+						if (listOfFiles[i].isFile())
+							filesToSendInBatch.add(listOfFiles[i]);
+					}
+				}
+				break;
+
+			case ACTION_BATCH_START:
+				// create and run thread
+				batchStartButton.setEnabled(false);
+				batchStopButton.setEnabled(true);
+				SwingWorker<Object, Object> worker = new SwingWorker<>() {
+					@Override
+					protected Object doInBackground() {
+						isBatchRunned = true;
+						while (isBatchRunned) {
+							log.info("-> batch executer");
+							// prepare file to send
+							for (File f : filesToSendInBatch) {
+								log.info("Batch: send file: " + f.getAbsolutePath());
+								testRunner.startTestSession(
+										testRunner.loadMessage(f), getDeviceUrl());
+
+								try {
+									String delayStr = _confHand.getProp(ConfigurationHandler.BATCHMODE_DELAYTONEXT_FILE);
+									int delayMs = Integer.parseInt(delayStr);
+									Thread.sleep(delayMs);
+								} catch (InterruptedException e) {
+									e.printStackTrace();
+								}
 							}
 						}
+						return null;
 					}
-					return null;
-				}
 
-				@Override
-				protected void done() {
-					batchStartButton.setEnabled(true);
-					batchStopButton.setEnabled(false);
-				}
-			};
-			worker.execute();
-		} else if (actionCommand.equals(ACTION_BATCH_STOP)) {
-			LOGGER.info(ACTION_BATCH_STOP);
-			batchStopButton.setEnabled(false);
-			isBatchRunned = false;
-		} else if (actionCommand.startsWith("Command") || actionCommand.startsWith("Query")) {
-			if (actionCommand.equals("CommandSubmitQueueEntry")) {
-				final JFileChooser fc = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
-				fc.addChoosableFileFilter(new JDFFileFilter());
-				fc.setDialogTitle("Select a JDF Job Ticket to Submit");
-				final boolean packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
+					@Override
+					protected void done() {
+						batchStartButton.setEnabled(true);
+						batchStopButton.setEnabled(false);
+					}
+				};
+				worker.execute();
+				break;
+
+			case ACTION_BATCH_STOP:
+				batchStopButton.setEnabled(false);
+				isBatchRunned = false;
+				break;
+
+			case "SubmitQueueEntry":
+				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser.addChoosableFileFilter(new JDFFileFilter());
+				fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
+				packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
 				if (packageAsMime) {
-					fc.setDialogTitle(fc.getDialogTitle() + " in a MIME package");
+					fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " in a MIME package");
 				}
-				final boolean disablePreprocessing = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
+				disablePreprocessing = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
 				if (disablePreprocessing) {
-					fc.setDialogTitle(fc.getDialogTitle() + " - JDF preprocessing is disabled");
+					fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " - JDF preprocessing is disabled");
 				}
-				int returnVal = fc.showOpenDialog(this);
-				_confHand.putProp("last.dir", fc.getCurrentDirectory().getAbsolutePath());
-				if (returnVal == JFileChooser.APPROVE_OPTION) {
-					testRunner.startTestSessionWithSubmitQueueEntry(fc.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
+				returnValue = fileChooser.showOpenDialog(this);
+				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				if (returnValue == JFileChooser.APPROVE_OPTION) {
+					testRunner.startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
 				}
-				return;
-			} else if (actionCommand.equals("CommandResubmitQueueEntry")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				final String jobID = queuePanel.getSelectedJobID();
-				if (queueEntryID != null && jobID != null) {
-					final JFileChooser fc = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
-					fc.addChoosableFileFilter(new JDFFileFilter());
-					fc.setDialogTitle("Select a JDF Job Ticket to Resubmit");
-					final boolean packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
+				break;
+
+			case "ResubmitQueueEntry":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				jobId = queuePanel.getSelectedJobID();
+				if (queueEntryId != null && jobId != null) {
+					fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+					fileChooser.addChoosableFileFilter(new JDFFileFilter());
+					fileChooser.setDialogTitle("Select a JDF Job Ticket to Resubmit");
+					packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
 					if (packageAsMime) {
-						fc.setDialogTitle(fc.getDialogTitle() + " in a MIME package");
+						fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " in a MIME package");
 					}
-					final boolean disablePreprocessing = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
+					disablePreprocessing = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
 					if (disablePreprocessing) {
-						fc.setDialogTitle(fc.getDialogTitle() + " - JDF preprocessing is disabled");
+						fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " - JDF preprocessing is disabled");
 					}
-					int returnVal = fc.showOpenDialog(this);
-					_confHand.putProp("last.dir", fc.getCurrentDirectory().getAbsolutePath());
-					if (returnVal == JFileChooser.APPROVE_OPTION) {
-						testRunner.startTestSessionWithResubmitQueueEntry(fc.getSelectedFile(), queueEntryID, jobID, getDeviceUrl(), !disablePreprocessing, packageAsMime);
+					returnValue = fileChooser.showOpenDialog(this);
+					_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+					if (returnValue == JFileChooser.APPROVE_OPTION) {
+						testRunner.startTestSessionWithResubmitQueueEntry(fileChooser.getSelectedFile(), queueEntryId, jobId, getDeviceUrl(), !disablePreprocessing, packageAsMime);
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("CommandStopPersistentChannel")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				final String jobID = queuePanel.getSelectedJobID();
-				OutMessage message = JMFMessageBuilder.buildStopPersistentChannel(_confHand.getServerJmfUrl(), queueEntryID, jobID);
-				testRunner.startTestSession(message, getDeviceUrl());
-				return;
-			} else if (actionCommand.equals("CommandAbortQueueEntry")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildAbortQueueEntry(queueEntryID);
-					testRunner.startTestSession(message, getDeviceUrl());
+				break;
+
+			case "StopPersistentChannel":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				jobId = queuePanel.getSelectedJobID();
+				outMessage = JMFMessageBuilder.buildStopPersistentChannel(_confHand.getServerJmfUrl(), queueEntryId, jobId);
+				testRunner.startTestSession(outMessage, getDeviceUrl());
+				break;
+
+			case "AbortQueueEntry":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				if (queueEntryId != null) {
+					outMessage = JMFMessageBuilder.buildAbortQueueEntry(queueEntryId);
+					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("CommandHoldQueueEntry")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildHoldQueueEntry(queueEntryID);
-					testRunner.startTestSession(message, getDeviceUrl());
+				break;
+
+			case "HoldQueueEntry":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				if (queueEntryId != null) {
+					outMessage = JMFMessageBuilder.buildHoldQueueEntry(queueEntryId);
+					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("CommandRemoveQueueEntry")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildRemoveQueueEntry(queueEntryID);
-					testRunner.startTestSession(message, getDeviceUrl());
+				break;
+
+			case "RemoveQueueEntry":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				if (queueEntryId != null) {
+					outMessage = JMFMessageBuilder.buildRemoveQueueEntry(queueEntryId);
+					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("CommandResumeQueueEntry")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildResumeQueueEntry(queueEntryID);
-					testRunner.startTestSession(message, getDeviceUrl());
+				break;
+
+			case "ResumeQueueEntry":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				if (queueEntryId != null) {
+					outMessage = JMFMessageBuilder.buildResumeQueueEntry(queueEntryId);
+					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("CommandSuspendQueueEntry")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildSuspendQueueEntry(queueEntryID);
-					testRunner.startTestSession(message, getDeviceUrl());
+				break;
+
+			case "SuspendQueueEntry":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				if (queueEntryId != null) {
+					outMessage = JMFMessageBuilder.buildSuspendQueueEntry(queueEntryId);
+					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("CommandSetQueueEntryPriority")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildSetQueueEntryPriority(queueEntryID, 100);
-					testRunner.startTestSession(message, getDeviceUrl());
+				break;
+
+			case "SetQueueEntryPriority":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				if (queueEntryId != null) {
+					outMessage = JMFMessageBuilder.buildSetQueueEntryPriority(queueEntryId, 100);
+					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("CommandSetQueueEntryPosition")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildSetQueueEntryPostion(queueEntryID, 0, null, null);
-					testRunner.startTestSession(message, getDeviceUrl());
+				break;
+
+			case "SetQueueEntryPosition":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				if (queueEntryId != null) {
+					outMessage = JMFMessageBuilder.buildSetQueueEntryPostion(queueEntryId, 0, null, null);
+					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
 							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
-				return;
-			} else if (actionCommand.equals("QueryStatus")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				final String jobID = queuePanel.getSelectedJobID();
-				if (queueEntryID != null) {
-					OutMessage message = JMFMessageBuilder.buildStatus(queueEntryID, jobID);
+				break;
+
+			case "Status":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				jobId = queuePanel.getSelectedJobID();
+				if (queueEntryId != null) {
+					OutMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
 					testRunner.startTestSession(message, getDeviceUrl());
-					return;
 				}
-			} else if (actionCommand.equals("QueryResource")) {
-				final String queueEntryID = queuePanel.getSelectedQueueEntryID();
-				final String jobID = queuePanel.getSelectedJobID();
-				OutMessage message = JMFMessageBuilder.buildQueryResource(jobID, queueEntryID);
-				testRunner.startTestSession(message, getDeviceUrl());
-				return;
-			}
-			// TODO Allow possibility to add subscription
-			// TODO Allow manual modification of messages
-			testRunner.startTestSession(createMessage(actionCommand), getDeviceUrl());
-		} else if (actionCommand.equals(QueuePanel.REFRESH_QUEUE)) {
-			JDFJMF jmf = null;
-			try {
-				jmf = sendQueueStatus();
-			} catch (IOException e1) {
-				LOGGER.error("Could not send QueueStatus message to refresh queue.", e1);
-			}
-			processReceivedJMF(jmf);
-		} else if (actionCommand.equals(ACTION_SELECT_DEVICE)) {
-			final int idx = ((JComboBox) e.getSource()).getSelectedIndex();
-			if (idx != -1) {
-				setActiveDevice(idx);
-			}
-			return;
-		} else if (actionCommand.equals(ACTION_SHOW_PREFERENCES)) {
-			new PreferencesDialog(this, "Preferences");
-			setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
+				break;
+
+			case "Resource":
+				queueEntryId = queuePanel.getSelectedQueueEntryID();
+				jobId = queuePanel.getSelectedJobID();
+				outMessage = JMFMessageBuilder.buildQueryResource(jobId, queueEntryId);
+				testRunner.startTestSession(outMessage, getDeviceUrl());
+				break;
+
+			case QueuePanel.REFRESH_QUEUE:
+				JDFJMF jmf = null;
+				try {
+					jmf = sendQueueStatus();
+				} catch (IOException e1) {
+					log.error("Could not send QueueStatus message to refresh queue.", e1);
+				}
+				processReceivedJMF(jmf);
+				break;
+
+			case ACTION_SELECT_DEVICE:
+				final int idx = ((JComboBox) e.getSource()).getSelectedIndex();
+				if (idx != -1) {
+					setActiveDevice(idx);
+				}
+				break;
+
+			case ACTION_SHOW_PREFERENCES:
+				new PreferencesDialog(this, "Preferences");
+				setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
+				break;
+
+			default:
 		}
 	}
 
@@ -1357,8 +1340,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		@Override
 		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
 			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Rendering tree cell " + value.getClass() + " - " + value + "...");
+			if (log.isDebugEnabled()) {
+				log.debug("Rendering tree cell " + value.getClass() + " - " + value + "...");
 			}
 			if (value instanceof OutMessage) {
 				if (((OutMessage) value).hasPassedAllTests()) {
@@ -1418,7 +1401,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			if (imgURL != null) {
 				icon = new ImageIcon(imgURL);
 			} else {
-				LOGGER.warn("Could not load icon from path: " + path);
+				log.warn("Could not load icon from path: " + path);
 			}
 			return icon;
 		}
@@ -1480,22 +1463,22 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * Saves the configuration and writes a test report before Alces quits.
 	 */
 	private void quitAlces() {
-		LOGGER.debug("Quitting Alces...");
+		log.debug("Quitting Alces...");
 		try {
 			testRunner.destroy();
 		} catch (Exception e) {
-			LOGGER.warn("Could not shut down TestRunner.", e);
+			log.warn("Could not shut down TestRunner.", e);
 		}
 		// Save test report
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-hhmmss");
 		String outputDir = _confHand.getProp(ConfigurationHandler.OUTPUT_DIR) + dateFormat.format(new Date());
-		LOGGER.info("Writing test report to '" + outputDir + "'...");
+		log.info("Writing test report to '" + outputDir + "'...");
 		String outputFile;
 		try {
 			outputFile = testRunner.serializeTestSuite(outputDir);
-			LOGGER.info("Wrote test report to: " + outputFile);
+			log.info("Wrote test report to: " + outputFile);
 		} catch (Exception e) {
-			LOGGER.error("Could not write test report.", e);
+			log.error("Could not write test report.", e);
 		}
 		// Save configuration
 		_confHand.saveHistory(addressComboBox.getModel());

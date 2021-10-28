@@ -25,11 +25,12 @@ import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpConnectionManagerParams;
 import org.apache.commons.lang.StringUtils;
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.message.InMessage;
 import org.cip4.tools.alces.message.InMessageImpl;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.transport.util.HttpHeaderUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A service for sending messages over HTTP.
@@ -39,7 +40,7 @@ import org.cip4.tools.alces.transport.util.HttpHeaderUtils;
  */
 public class HttpDispatcher {
 
-	private static Logger LOGGER = Logger.getLogger(HttpDispatcher.class);
+	private static Logger log = LoggerFactory.getLogger(HttpDispatcher.class);
 
 	final private HttpClient _httpClient;
 
@@ -102,7 +103,7 @@ public class HttpDispatcher {
 		try {
 			configureProxy(proxyHost, proxyPort, proxyUser, proxyPassword);
 		} catch (UnknownHostException e) {
-			LOGGER.error("Could not configure proxy: " + e.toString(), e);
+			log.error("Could not configure proxy: " + e.toString(), e);
 		}
 	}
 
@@ -111,7 +112,7 @@ public class HttpDispatcher {
 		final HostConfiguration hostConfig = _httpClient.getHostConfiguration();
 		if (StringUtils.isNotEmpty(proxyHost) && proxyPort != -1) {
 			hostConfig.setProxy(proxyHost, proxyPort);
-			LOGGER.debug("Using proxy configuration: " + proxyHost + ":" + proxyPort);
+			log.debug("Using proxy configuration: " + proxyHost + ":" + proxyPort);
 			if (StringUtils.isNotEmpty(proxyUser) && StringUtils.isNotEmpty(proxyPassword)) {
 				final Credentials credentials;
 				if (proxyUser.indexOf("\\") != -1) {
@@ -122,7 +123,7 @@ public class HttpDispatcher {
 					credentials = new UsernamePasswordCredentials(proxyUser, proxyPassword);
 				}
 				_httpClient.getState().setProxyCredentials(new AuthScope(proxyHost, proxyPort, AuthScope.ANY_REALM, AuthScope.ANY_SCHEME), credentials);
-				LOGGER.debug("Using proxy authentication: " + proxyUser + "/" + proxyPassword);
+				log.debug("Using proxy authentication: " + proxyUser + "/" + proxyPassword);
 			}
 		}
 	}
@@ -174,20 +175,20 @@ public class HttpDispatcher {
 			post = new PostMethod(url);
 			post.setRequestHeader(HttpHeaderUtils.CONTENT_TYPE_HEADER, message.getContentType()); // ; charset=UTF-8");
 			post.setRequestEntity(new StringRequestEntity(message.getBody()));
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Posting message to URL '" + url + "':\n" + "Headers:\n" + Arrays.asList(post.getRequestHeaders()) + "\nBody:\n" + post.getRequestEntity());
+			if (log.isDebugEnabled()) {
+				log.debug("Posting message to URL '" + url + "':\n" + "Headers:\n" + Arrays.asList(post.getRequestHeaders()) + "\nBody:\n" + post.getRequestEntity());
 			}
 			int result = _httpClient.executeMethod(post);
 			// Debug logging
-			if (LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Response from posting message to URL '" + url + "':\n" + "Headers:\n" + Arrays.asList(post.getResponseHeaders()) + "\nBody:\n" + post.getResponseBodyAsString() + "\n"
+			if (log.isDebugEnabled()) {
+				log.debug("Response from posting message to URL '" + url + "':\n" + "Headers:\n" + Arrays.asList(post.getResponseHeaders()) + "\nBody:\n" + post.getResponseBodyAsString() + "\n"
 						+ "Status code: " + result);
 			}
 			if (result == HttpStatus.SC_NOT_FOUND) {
 				throw new IOException("HTTP ERROR 404");
 			}
 		} catch (IllegalArgumentException e) {
-			LOGGER.error("Can not connect to URL:" + url + " " + e);
+			log.error("Can not connect to URL:" + url + " " + e);
 		}
 		return post;
 	}

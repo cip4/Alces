@@ -38,8 +38,9 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Display the Preferences DiaLOGGER. To choose settings for validation
@@ -49,7 +50,7 @@ import org.cip4.tools.alces.util.ConfigurationHandler;
  */
 public class PreferencesDialog extends JDialog implements ActionListener {
 
-	private static Logger LOGGER = Logger.getLogger(PreferencesDialog.class);
+	private static Logger log = LoggerFactory.getLogger(PreferencesDialog.class);
 
 	private JPanel validationPanel = null;
 
@@ -357,7 +358,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		ipComboBox.removeAllItems();
 		try {
 			String addr = (InetAddress.getLocalHost().getHostAddress()).toString();
-			LOGGER.info("addr = " + addr);
+			log.info("addr = " + addr);
 			ipComboBox.setSelectedItem(addr);
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
@@ -375,10 +376,10 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 				Enumeration<InetAddress> inetAddress = ni.getInetAddresses();
 				while (inetAddress.hasMoreElements()) {
 					InetAddress address = inetAddress.nextElement();
-					LOGGER.info("address: " + address.getHostAddress());
+					log.info("address: " + address.getHostAddress());
 					ipComboBox.addItem(address.getHostAddress());
 				}
-				LOGGER.info("------- next interface");
+				log.info("------- next interface");
 			}
 		} catch (SocketException e) {
 			e.printStackTrace();
@@ -655,7 +656,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		if (imgURL != null) {
 			icon = new ImageIcon(imgURL);
 		} else {
-			LOGGER.warn("Could not load icon from path: " + path);
+			log.warn("Could not load icon from path: " + path);
 		}
 		return icon;
 	}

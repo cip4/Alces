@@ -8,9 +8,9 @@ import org.cip4.tools.alces.message.InMessage;
 import org.cip4.tools.alces.message.InMessageImpl;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.tests.CheckJDFTest;
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
@@ -18,7 +18,7 @@ import org.junit.Test;
 public class TemplateJMFElementFactoryTest {
 
     @Test
-    @Ignore("Disabled failing test for future analysis.")
+    @Disabled("Disabled failing test for future analysis.")
     public void testCreateJMF() throws Exception {
         System.setProperty("org.cip4.tools.alces.jmf.JMFMessageFactory", "org.cip4.tools.alces.jmf.TemplateJMFMessageFactory");
 
@@ -30,13 +30,13 @@ public class TemplateJMFElementFactoryTest {
         InMessage msg = new InMessageImpl(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assert.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.isPassed());
 
         System.out.println(result.getResultString());
     }
 
     @Test
-    @Ignore("Disabled failing test for future analysis.")
+    @Disabled("Disabled failing test for future analysis.")
     public void testCreateQueryKnownMessages() throws Exception {
         JDFJMF jmf = JMFMessageFactory.getInstance().createJMF("QueryKnownMessages");
 
@@ -46,7 +46,7 @@ public class TemplateJMFElementFactoryTest {
         InMessage msg = new InMessageImpl(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assert.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.isPassed());
 
         System.out.println(result.getResultString());
     }
@@ -59,6 +59,6 @@ public class TemplateJMFElementFactoryTest {
         } catch (Exception e) {
             failed = true;
         }
-        Assert.assertTrue(failed);
+        Assertions.assertTrue(failed);
     }
 }

@@ -7,7 +7,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A configurable <code>Test</code> that loads its configuration from a Java properties file <code><i>classname</i>.properties</code> on the class path.
@@ -16,7 +17,7 @@ import org.apache.log4j.Logger;
  */
 public abstract class ConfigurableTest extends Test {
 
-	protected static Logger LOGGER = Logger.getLogger(ConfigurableTest.class);
+	protected static Logger log = LoggerFactory.getLogger(ConfigurableTest.class);
 
 	private static final String PATH_PROPS = "/org/cip4/tools/alces/props/";
 
@@ -36,7 +37,7 @@ public abstract class ConfigurableTest extends Test {
 		// InputStream stream = this.getClass().getClassLoader().getResourceAsStream(configFile);
 
 		String configFile = PATH_PROPS + getSimpleName() + ".properties";
-		LOGGER.debug("Loading test configuration from resource '" + configFile + "'...");
+		log.debug("Loading test configuration from resource '" + configFile + "'...");
 		InputStream stream = ConfigurableTest.class.getResourceAsStream(configFile);
 
 		if (stream == null) {

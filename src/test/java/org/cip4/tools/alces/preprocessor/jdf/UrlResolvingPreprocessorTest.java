@@ -8,8 +8,8 @@ import org.cip4.jdflib.node.JDFNode;
 import org.cip4.jdflib.resource.process.JDFFileSpec;
 import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.net.URI;
@@ -34,7 +34,7 @@ public class UrlResolvingPreprocessorTest extends AlcesTestCase {
         for (Iterator i = fileSpecs.iterator(); i.hasNext(); ) {
             JDFFileSpec fileSpec = (JDFFileSpec) i.next();
             String url = fileSpec.getURL();
-            Assert.assertTrue("URL has not been preprocessed: " + url, url.startsWith(baseUrl));
+            Assertions.assertTrue(url.startsWith(baseUrl), "URL has not been preprocessed: " + url);
             URI uri = new URI(url);
         }
         return true;

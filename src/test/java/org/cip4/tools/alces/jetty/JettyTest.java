@@ -1,20 +1,21 @@
 package org.cip4.tools.alces.jetty;
 
-import org.apache.log4j.Logger;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.mortbay.http.HttpContext;
 import org.mortbay.http.HttpServer;
 import org.mortbay.http.SocketListener;
 import org.mortbay.http.handler.ResourceHandler;
 import org.mortbay.jetty.servlet.ServletHandler;
 import org.mortbay.jetty.servlet.ServletHttpContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
  */
 public class JettyTest {
 
-    private static Logger LOGGER = Logger.getLogger(JettyTest.class);
+    private static Logger log = LoggerFactory.getLogger(JettyTest.class);
 
     @Test
     public void testJetty() throws Exception {
@@ -45,7 +46,7 @@ public class JettyTest {
         // Start the http server
         server.start();
         int sleepTime = 2000;
-        LOGGER.info("Sleeping " + sleepTime + "...");
+        log.info("Sleeping " + sleepTime + "...");
         Thread.sleep(sleepTime);
         server.stop();
     }

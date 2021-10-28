@@ -3,8 +3,9 @@
  */
 package org.cip4.tools.alces.message;
 
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 /**
  * @author Claes Buckwalter (clabu@itn.liu.se)
@@ -17,12 +18,12 @@ public class OutMessageTest {
         String body = "body";
         Message m = new OutMessageImpl(header, body, true);
 
-        Assert.assertEquals(m.getHeader(), header);
-        Assert.assertEquals(m.getBody(), body);
+        Assertions.assertEquals(m.getHeader(), header);
+        Assertions.assertEquals(m.getBody(), body);
 
-        Assert.assertNull(m.getBodyAsJDOM());
-        Assert.assertNull(m.getBodyAsJDF());
-        Assert.assertNull(m.getBodyAsJMF());
+        Assertions.assertNull(m.getBodyAsJDOM());
+        Assertions.assertNull(m.getBodyAsJDF());
+        Assertions.assertNull(m.getBodyAsJMF());
     }
 
     @Test
@@ -36,12 +37,12 @@ public class OutMessageTest {
         System.out.println("JDF: " + m.getBodyAsJDF());
         System.out.println("JMF: " + m.getBodyAsJMF());
 
-        Assert.assertEquals(m.getHeader(), header);
-        Assert.assertEquals(m.getBody(), body);
+        Assertions.assertEquals(m.getHeader(), header);
+        Assertions.assertEquals(m.getBody(), body);
 
-        Assert.assertNotNull(m.getBodyAsJDOM());
-        Assert.assertNull(m.getBodyAsJDF());
-        Assert.assertNotNull(m.getBodyAsJMF());
+        Assertions.assertNotNull(m.getBodyAsJDOM());
+        Assertions.assertNull(m.getBodyAsJDF());
+        Assertions.assertNotNull(m.getBodyAsJMF());
     }
 
     @Test
@@ -55,11 +56,11 @@ public class OutMessageTest {
         System.out.println("JDF: " + m.getBodyAsJDF());
         System.out.println("JMF: " + m.getBodyAsJMF());
 
-        Assert.assertEquals(m.getHeader(), header);
-        Assert.assertEquals(m.getBody(), body);
+        Assertions.assertEquals(m.getHeader(), header);
+        Assertions.assertEquals(m.getBody(), body);
 
-        Assert.assertNotNull(m.getBodyAsJDOM());
-        Assert.assertNotNull(m.getBodyAsJDF());
-        Assert.assertNull(m.getBodyAsJMF());
+        Assertions.assertNotNull(m.getBodyAsJDOM());
+        Assertions.assertNotNull(m.getBodyAsJDF());
+        Assertions.assertNull(m.getBodyAsJMF());
     }
 }

@@ -8,7 +8,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import org.apache.log4j.Logger;
 import org.cip4.tools.alces.message.InMessage;
 import org.cip4.tools.alces.message.Message;
 import org.cip4.tools.alces.message.OutMessage;
@@ -22,6 +21,8 @@ import org.cip4.tools.alces.transport.HttpDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.ThreadedExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * A <code>DefaultMutableTreeNode</code> implementation of a <code>TestSession</code>. This class wraps a non-Swing TestSession implementation. The wrapped
@@ -33,7 +34,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 
 	private static final long serialVersionUID = 865715767294195142L;
 
-	protected static Logger LOGGER = Logger.getLogger(TestSessionNode.class);
+	protected static Logger log = LoggerFactory.getLogger(TestSessionNode.class);
 
 	private TestSession _wrappedTestSession = null;
 
@@ -99,21 +100,21 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 */
 	public void sendMessage(final OutMessage message, final HttpDispatcher dispatcher) {
 		if (_asynchronous) {
-			LOGGER.debug("Sending message asynchronously...");
+			log.debug("Sending message asynchronously...");
 			try {
 				_executor.execute(new Runnable() {
 					public void run() {
 						sendMessageSync(message, dispatcher);
 					}
 				});
-				LOGGER.debug("Message sent asynchronously.");
+				log.debug("Message sent asynchronously.");
 			} catch (InterruptedException ie) {
-				LOGGER.error("Could not send message asynchronously: " + message, ie);
+				log.error("Could not send message asynchronously: " + message, ie);
 			}
 		} else {
-			LOGGER.debug("Sending message synchronously...");
+			log.debug("Sending message synchronously...");
 			sendMessageSync(message, dispatcher);
-			LOGGER.debug("Sent message synchronously.");
+			log.debug("Sent message synchronously.");
 		}
 	}
 
@@ -128,21 +129,21 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 		if (message instanceof MutableTreeNode) {
 			messageNode = (MutableTreeNode) message;
 		} else {
-			LOGGER.debug("Wrapping OutMessage in OutMessageNode...");
+			log.debug("Wrapping OutMessage in OutMessageNode...");
 			messageNode = new OutMessageNode(message, _treeModel);
 		}
 		if (message.isSessionInitiator()) {
-			LOGGER.debug("Adding initiating OutMessage to TestSession...");
+			log.debug("Adding initiating OutMessage to TestSession...");
 			setUserObject(messageNode + " - " + getTargetUrl());
 			// Update tree model using Swing's event-dispatching thread
 			Runnable addOutMessage = new Runnable() {
 				public void run() {
-					LOGGER.debug("Inserting OutMessage as child to TestSession in tree model...");
+					log.debug("Inserting OutMessage as child to TestSession in tree model...");
 					_treeModel.insertNodeInto(messageNode, thisNode, thisNode.getChildCount());
-					LOGGER.debug("Inserted OutMessage in tree model.");
+					log.debug("Inserted OutMessage in tree model.");
 				}
 			};
-			LOGGER.debug("Queueing OutMessage for insertion as child to TestSession in tree model...");
+			log.debug("Queueing OutMessage for insertion as child to TestSession in tree model...");
 			SwingUtilities.invokeLater(addOutMessage);
 		}
 		_wrappedTestSession.sendMessage((OutMessage) messageNode, dispatcher);
@@ -155,26 +156,26 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * @see org.cip4.tools.alces.TestSession#receiveMessage(org.cip4.tools.alces.InMessage)
 	 */
 	public void receiveMessage(InMessage message) {
-		LOGGER.debug("Receiving InMessage...");
+		log.debug("Receiving InMessage...");
 		final MutableTreeNode thisNode = this;
 		final MutableTreeNode messageNode;
 		if (!(message instanceof MutableTreeNode)) {
-			LOGGER.debug("Wrapping InMessage in InMessageNode...");
+			log.debug("Wrapping InMessage in InMessageNode...");
 			messageNode = new InMessageNode(message, _treeModel); // XXX
 		} else {
 			messageNode = (MutableTreeNode) message;
 		}
 		if (message.isSessionInitiator()) {
-			LOGGER.debug("Adding initiating InMessage to TestSession...");
+			log.debug("Adding initiating InMessage to TestSession...");
 			// Update tree model using Swing's event-dispatching thread
 			Runnable addMessage = new Runnable() {
 				public void run() {
-					LOGGER.debug("Inserting InMessage as child to TestSession in tree model...");
+					log.debug("Inserting InMessage as child to TestSession in tree model...");
 					_treeModel.insertNodeInto(messageNode, thisNode, thisNode.getChildCount());
-					LOGGER.debug("Inserted InMessage in tree model.");
+					log.debug("Inserted InMessage in tree model.");
 				}
 			};
-			LOGGER.debug("Queueing InMessage for insertion as child to TestSession in tree model...");
+			log.debug("Queueing InMessage for insertion as child to TestSession in tree model...");
 			SwingUtilities.invokeLater(addMessage);
 		}
 		_wrappedTestSession.receiveMessage(message);
