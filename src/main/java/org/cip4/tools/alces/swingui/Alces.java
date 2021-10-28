@@ -69,13 +69,8 @@ import org.cip4.jdflib.auto.JDFAutoMessageService.EnumJMFRole;
 import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.ElementName;
 import org.cip4.jdflib.datatypes.JDFAttributeMap;
-import org.cip4.jdflib.jmf.JDFDeviceInfo;
-import org.cip4.jdflib.jmf.JDFJMF;
-import org.cip4.jdflib.jmf.JDFMessage;
+import org.cip4.jdflib.jmf.*;
 import org.cip4.jdflib.jmf.JDFMessage.EnumType;
-import org.cip4.jdflib.jmf.JDFMessageService;
-import org.cip4.jdflib.jmf.JDFQueue;
-import org.cip4.jdflib.jmf.JDFResponse;
 import org.cip4.jdflib.resource.JDFDevice;
 import org.cip4.jdflib.resource.JDFDeviceList;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
@@ -655,8 +650,26 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			if (jmfServices[i].getJMFRole() != null && jmfServices[i].getJMFRole().equals(EnumJMFRole.Sender)) {
 				continue;
 			}
-
-			JButton button = createMessageButton(jmfServices[i].getType(), "JMF Message", jmfServices[i].getType());
+			StringBuffer toolTip = new StringBuffer();
+			String actionCommand = null;
+			if (jmfServices[i].getAcknowledge()) {
+				toolTip.append("Acknowledge ");
+			}
+			if (jmfServices[i].getCommand() || jmfServices[i].getType().contains("QueueEntry")) {
+				toolTip.append("Command ");
+				actionCommand = "Command" + jmfServices[i].getType();
+			}
+			if (jmfServices[i].getPersistent()) {
+				toolTip.append("Persistent ");
+			}
+			if (jmfServices[i].getQuery() || jmfServices[i].getType().contains("Status") || jmfServices[i].getType().contains("Known")) {
+				toolTip.append("Query ");
+				actionCommand = "Query" + jmfServices[i].getType();
+			}
+			if (jmfServices[i].getSignal()) {
+				toolTip.append("Signal ");
+			}
+			JButton button = createMessageButton(jmfServices[i].getType(), toolTip.toString(), actionCommand);
 
 			// Add ... to SubmitQueueEntry button
 			if (jmfServices[i].getType().equals("SubmitQueueEntry")) {
@@ -959,7 +972,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 
 		// process action command
-
 		final JFileChooser fileChooser;
 		int returnValue;
 		boolean packageAsMime;
@@ -1080,7 +1092,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				isBatchRunned = false;
 				break;
 
-			case "SubmitQueueEntry":
+			case "CommandSubmitQueueEntry":
 				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
 				fileChooser.addChoosableFileFilter(new JDFFileFilter());
 				fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
@@ -1099,7 +1111,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "ResubmitQueueEntry":
+			case "CommandResubmitQueueEntry":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				if (queueEntryId != null && jobId != null) {
@@ -1125,14 +1137,14 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "StopPersistentChannel":
+			case "CommandStopPersistentChannel":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				outMessage = JMFMessageBuilder.buildStopPersistentChannel(_confHand.getServerJmfUrl(), queueEntryId, jobId);
 				testRunner.startTestSession(outMessage, getDeviceUrl());
 				break;
 
-			case "AbortQueueEntry":
+			case "CommandAbortQueueEntry":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildAbortQueueEntry(queueEntryId);
@@ -1143,7 +1155,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "HoldQueueEntry":
+			case "CommandHoldQueueEntry":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildHoldQueueEntry(queueEntryId);
@@ -1154,7 +1166,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "RemoveQueueEntry":
+			case "CommandRemoveQueueEntry":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildRemoveQueueEntry(queueEntryId);
@@ -1165,7 +1177,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "ResumeQueueEntry":
+			case "CommandResumeQueueEntry":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildResumeQueueEntry(queueEntryId);
@@ -1176,7 +1188,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "SuspendQueueEntry":
+			case "CommandSuspendQueueEntry":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildSuspendQueueEntry(queueEntryId);
@@ -1187,7 +1199,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "SetQueueEntryPriority":
+			case "CommandSetQueueEntryPriority":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildSetQueueEntryPriority(queueEntryId, 100);
@@ -1198,7 +1210,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "SetQueueEntryPosition":
+			case "CommandSetQueueEntryPosition":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildSetQueueEntryPostion(queueEntryId, 0, null, null);
@@ -1209,16 +1221,18 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case "Status":
+			case "QueryStatus":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				if (queueEntryId != null) {
 					OutMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
 					testRunner.startTestSession(message, getDeviceUrl());
+				} else {
+					testRunner.startTestSession(createMessage(actionCommand), getDeviceUrl());
 				}
 				break;
 
-			case "Resource":
+			case "QueryResource":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				outMessage = JMFMessageBuilder.buildQueryResource(jobId, queueEntryId);
@@ -1248,6 +1262,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				break;
 
 			default:
+				testRunner.startTestSession(createMessage(actionCommand), getDeviceUrl());
+				break;
 		}
 	}
 
