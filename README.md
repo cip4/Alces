@@ -10,19 +10,3 @@ All Alces versions are availale at: https://github.com/cip4/Alces/releases/lates
 
 ## Issue Tracking
 Don't write issues, provide Pull-Requests!
-
-
-## Development Notes
-### Release a new Version
-Creation and publishing of a new version to GitHub Release.
-
-```bash
-$ git tag -a [VERSION] -m "[TITLE]"
-$ git push origin [VERSION]
-```
-
-In case a build has been failed, a tag can be deleted using the following command:
-```bash
-$ git tag -d [VERSION]
-$ git push origin :refs/tags/[VERSION]
-```

@@ -23,6 +23,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
+import org.cip4.tools.alces.service.AboutService;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.tests.Test;
 import org.slf4j.Logger;
@@ -313,7 +314,8 @@ public class ConfigurationHandler {
 	 * @return The sender ID.
      */
 	public static String getSenderId() {
-		return BuildPropsUtil.getAppName() + " " + BuildPropsUtil.getAppVersion();
+		AboutService aboutService = ApplicationContextUtil.getBean(AboutService.class);
+		return aboutService.getAppName() + " " + aboutService.getAppVersion();
 	}
 
 	/**

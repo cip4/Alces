@@ -79,6 +79,7 @@ import org.cip4.tools.alces.message.InMessage;
 import org.cip4.tools.alces.message.OutMessage;
 import org.cip4.tools.alces.message.OutMessageImpl;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
+import org.cip4.tools.alces.service.AboutService;
 import org.cip4.tools.alces.swingui.actions.ActionCollapse;
 import org.cip4.tools.alces.swingui.actions.ActionCollapseAll;
 import org.cip4.tools.alces.swingui.actions.ActionSaveRequestsResponcesToDisk;
@@ -92,8 +93,12 @@ import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.event.EventListener;
 
 /**
  * The Alces Swing GUI application for interactive testing.
@@ -101,6 +106,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * @author Claes Buckwalter (clabu@itn.liu.se)
  */
 @SpringBootApplication
+@ComponentScan({"org.cip4.tools.alces"})
 public class Alces extends JFrame implements ActionListener, TreeModelListener, TreeSelectionListener, MouseListener {
 
 	// -----------------------------------------------------
@@ -204,6 +210,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	private final List<File> filesToSendInBatch = new ArrayList<File>();
 	private final JButton batchStartButton, batchStopButton;
 	private static boolean isBatchRunned;
+
+	@Autowired
+	private AboutService aboutService;
 
 	/**
 	 * Creates a new instance of the Alces Swing application using the specified locale.
@@ -417,13 +426,25 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				quitAlces();
 			}
 		});
-		this.setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
 		this.setVisible(true);
 		connectButton.requestFocusInWindow();
 	}
 
+	/**
+	 * Applications main entrance point.
+	 * @param args Applications parameter.
+	 */
 	public static void main(String[] args) {
 		SpringApplication.run(Alces.class, args);
+	}
+
+	/**
+	 * Event is called after applications start up.
+	 */
+	@EventListener(ApplicationReadyEvent.class)
+	public void onStartUp() {
+		this.setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
+		log.warn(String.format("%s %s has started. (buildtime: %s)", aboutService.getAppName(), aboutService.getAppVersion(), aboutService.getBuildTime()));
 	}
 
 	/**
