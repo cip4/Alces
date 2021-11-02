@@ -88,6 +88,7 @@ import org.cip4.tools.alces.swingui.tree.test.TestSuiteNode;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestRunner;
 import org.cip4.tools.alces.test.TestSession;
+import org.cip4.tools.alces.test.TestSuite;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
@@ -126,6 +127,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	// -----------------------------------------------------
 
 	private static Logger log = LoggerFactory.getLogger(Alces.class);
+
+	private static Alces THE_INSTANCE;
 
 	private static String RES_LOG4J_TPL = "/org/cip4/tools/alces/conf/log4j.xml.tpl";
 
@@ -428,6 +431,25 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		});
 		this.setVisible(true);
 		connectButton.requestFocusInWindow();
+
+		// save the current instance
+		THE_INSTANCE = this;
+	}
+
+	/**
+	 * Returns the current instance.
+	 * @return The current instance.
+	 */
+	public static Alces getInstance() {
+		return THE_INSTANCE;
+	}
+
+	/**
+	 * Returns the test suite.
+	 * @return The test suite
+	 */
+	public TestSuite getTestSuite() {
+		return this._testSuite;
 	}
 
 	/**

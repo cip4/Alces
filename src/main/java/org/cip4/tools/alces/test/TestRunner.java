@@ -25,7 +25,6 @@ import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.SenderIDPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.URLPreprocessor;
 import org.cip4.tools.alces.transport.HttpDispatcher;
-import org.cip4.tools.alces.transport.HttpReceiver;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.NotDirFilter;
@@ -53,8 +52,6 @@ public class TestRunner {
 	private static Logger log = LoggerFactory.getLogger(TestRunner.class);
 
 	private TestSuite _suite = null;
-
-	private HttpReceiver _httpReceiver = null;
 
 	private HttpDispatcher _dispatcher = null;
 
@@ -311,19 +308,19 @@ public class TestRunner {
 			final String contextPath = _confHand.getServerJmfContextPath();
 			log.info("Starting HTTP server on " + url + "...");
 			final String resourceBase = _confHand.getProp(ConfigurationHandler.RESOURCE_BASE);
-			_httpReceiver = new HttpReceiver(_suite);
-			_httpReceiver.startServer(host, port, contextPath, resourceBase);
+			// _httpReceiver = new HttpReceiver(_suite);
+			// _httpReceiver.startServer(host, port, contextPath, resourceBase);
 			// Configure message dispatcher
 			_dispatcher = configureHttpDispatcher();
 			log.debug("Test environment initialized.");
 		} catch (Exception e) {
 			log.error("Could not initialize test environment.", e);
-			try {
-				_httpReceiver.stopServer();
-			} catch (InterruptedException e1) {
-				log.warn("Could not stop HTTP receiver while aborting test environment initialization.", e1);
-			}
-			_httpReceiver = null;
+//			try {
+//				// _httpReceiver.stopServer();
+//			} catch (InterruptedException e1) {
+//				log.warn("Could not stop HTTP receiver while aborting test environment initialization.", e1);
+//			}
+//			_httpReceiver = null;
 			_dispatcher = null;
 			throw e;
 		}
@@ -336,10 +333,10 @@ public class TestRunner {
 	 */
 	public void destroy() throws Exception {
 		log.debug("Cleaning up test environment...");
-		if (_httpReceiver != null) {
-			_httpReceiver.stopServer();
-			_httpReceiver = null;
-		}
+//		if (_httpReceiver != null) {
+//			_httpReceiver.stopServer();
+//			_httpReceiver = null;
+//		}
 		_dispatcher = null;
 		log.debug("Cleaned up test environment.");
 	}

@@ -35,4 +35,9 @@ public interface AboutService {
      */
     String getHostname();
 
+    /**
+     * Returns the JDFLibJ version.
+     * @return The JDFLibJs version as String
+     */
+    String getJdfLibJVersion();
 }

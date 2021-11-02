@@ -3,6 +3,9 @@ app:
   version: @version@
   buildtime: @timestamp@
 
+server:
+  port: 9090
+
 spring:
   main:
     banner-mode: off
