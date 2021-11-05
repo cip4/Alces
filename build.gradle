@@ -6,18 +6,19 @@ plugins {
     id 'java'
     id 'application'
     id 'distribution'
-    id 'edu.sc.seis.launch4j' version '2.4.9'
-    id 'edu.sc.seis.macAppBundle' version '2.3.0'
+    id 'org.beryx.runtime' version '1.12.7'
 }
+
+mainClassName = 'org.cip4.tools.alces.swingui.Alces'
+
+sourceCompatibility = 11
+targetCompatibility = 11
 
 if (project.hasProperty('projectVersion')) {
     version = project.projectVersion
 } else {
     version = 'development'
 }
-
-sourceCompatibility = 11
-targetCompatibility = 11
 
 repositories {
     mavenCentral()
@@ -40,18 +41,6 @@ application {
     mainClass = 'org.cip4.tools.alces.swingui.Alces'
 }
 
-launch4j {
-    icon = "${projectDir}/src/main/dist/alces.ico"
-    outfile = project.name + '-' + project.version + '.exe'
-    headerType = 'gui'
-}
-
-macAppBundle {
-    mainClassName = 'org.cip4.tools.alces.swingui.Alces'
-    icon = "${projectDir}/src/main/dist/alces.icns"
-    javaProperties.put("apple.laf.useScreenMenuBar", "true")
-}
-
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.cip4.lib.jdf:JDFLibJ:2.1.7.+'
@@ -61,9 +50,36 @@ dependencies {
     implementation 'commons-vfs:commons-vfs:1.0'
     implementation 'org.mozilla:rhino:1.7R4'
     implementation 'commons-httpclient:commons-httpclient:3.1'
-    // implementation 'jetty:jetty:5.1.10'
-    // implementation 'jetty:org.mortbay.jmx:5.1.10'
     implementation 'jaxen:jaxen:1.1.4'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+runtime {
+    jpackage {
+        imageOptions = [
+                "--copyright", "CIP4 Organization",
+                "--vendor", "CIP4 Organization"
+        ]
+        def currentOs = org.gradle.internal.os.OperatingSystem.current()
+        def icon = "src/main/dist/alces.ico"
+        if (currentOs.macOsX) {
+            imageOptions += [
+                    "--mac-sign",
+                    "--mac-signing-key-user-name", "CIP4 Organization (4DL5XX9SG8)",
+                    "--mac-package-identifier", "org.cip4.alces"
+            ]
+            icon = "src/main/dist/alces.icns"
+        }
+        if (currentOs.windows) {
+            installerOptions += [
+                    "--win-dir-chooser",
+                    "--win-menu",
+                    "--win-upgrade-uuid", "12abef0e-2d7f-4c51-9c8b-72ecb743bddc",
+                    "--vendor", "CIP4 Organization"
+            ]
+        }
+        imageOptions += ["--icon", icon]
+        appVersion = project.version == "development" ? "1.0.0" : project.version
+    }
 }

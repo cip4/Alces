@@ -2,87 +2,117 @@ name: Snapshot
 
 on:
   push:
-    branches: [ master ]
-
+    branches: [ main ]
+env: 
+  tool: Alces
 jobs:
   linux-build:
     runs-on: ubuntu-latest
     steps:
-      - name: Setup JDK 11
-        uses: actions/setup-java@v1
+      - name: Setup JDK 15
+        uses: actions/setup-java@v2
         with:
-          java-version: 11
+          java-version: 15
 
       - name: Check out sources...
         uses: actions/checkout@v2
 
       - name: Build with Gradle
-        run: ./gradlew assembleDist
+        run: ./gradlew test distZip distTar
 
       - name: Rename .ZIP
-        run: mv build/distributions/Alces-development.zip build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.zip
+        run: mv build/distributions/${{ env.tool }}-development.zip build/distributions/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.zip
 
       - name: Rename .TAR
-        run: mv build/distributions/Alces-development.tar build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.tar
-
-      - name: Display structure of downloaded files
-        run: ls -R
-        working-directory: build/distributions
+        run: mv build/distributions/${{ env.tool }}-development.tar build/distributions/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.tar
 
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:
           name: binaries
-          path: build/distributions/Alces-SNAPSHOT-*.*
+          path: build/distributions/${{ env.tool }}-SNAPSHOT-*.*
 
   macos-build:
     runs-on: macos-latest
     steps:
-      - name: Setup JDK 11
-        uses: actions/setup-java@v1
+      - name: Setup JDK 15
+        uses: actions/setup-java@v2
         with:
-          java-version: 11
+          distribution: 'adopt'
+          java-version: 15
+          check-latest: true
+
+      - name: Setup Tooling
+        run: |
+          brew tap mitchellh/gon
+          brew install mitchellh/gon/gon
+
+      - name: Install the Apple certificate
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.APPLE_CERTIFICATE}}
+          P12_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+        run: |
+          # create variables
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN_PATH=$RUNNER_TEMP/app-signing.keychain-db
+
+          # import certificate and provisioning profile from secrets
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode --output $CERTIFICATE_PATH
+
+          # create temporary keychain
+          security create-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+          security set-keychain-settings -lut 21600 $KEYCHAIN_PATH
+          security unlock-keychain -p $KEYCHAIN_PASSWORD $KEYCHAIN_PATH
+
+          # import certificate to keychain
+          security import $CERTIFICATE_PATH -P $P12_PASSWORD -A -t cert -f pkcs12 -k $KEYCHAIN_PATH
+          security list-keychain -d user -s $KEYCHAIN_PATH
 
       - name: Check out sources...
         uses: actions/checkout@v2
 
       - name: Build with Gradle
-        run: ./gradlew createDmg
+        run: ./gradlew test jpackage
 
-      - name: Rename .DMG
-        run: mv build/distributions/Alces-development.dmg build/distributions/Alces-SNAPSHOT-${{ github.run_number }}.dmg
+      - name: ✏️Notarize
+        env:
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD}}
+        run: |
+          mv ./build/jpackage/${{ env.tool }}-*.dmg ./build/jpackage/${{ env.tool }}.dmg
+          gon .github/workflows/macos/gon-notarize.json
+          mv build/jpackage/${{ env.tool }}.dmg build/jpackage/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.dmg
 
       - name: Upload Binaries
         uses: actions/upload-artifact@v2
         with:
           name: binaries
-          path: build/distributions/Alces-SNAPSHOT-*.*
+          path: build/jpackage/${{ env.tool }}-SNAPSHOT-*.*
 
   windows-build:
     runs-on: windows-latest
     steps:
-      - name: Setup JDK 11
-        uses: actions/setup-java@v1
+      - name: Setup JDK 15
+        uses: actions/setup-java@v2
         with:
-          java-version: 11
+          distribution: 'adopt'
+          java-version: 15
+          check-latest: true
 
       - name: Check out sources...
         uses: actions/checkout@v2
 
       - name: Build with Gradle
-        run: ./gradlew createExe
+        run: ./gradlew test jpackage
 
       - name: Rename binaries
-        run: mv build/launch4j/Alces-development.exe build/launch4j/Alces-SNAPSHOT-${{ github.run_number }}.exe
+        run: mv build/jpackage/${{ env.tool }}*.msi build/jpackage/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.msi
 
-      - name: Debug
-        run: ls -l build/launch4j
-
-      - name: Upload EXE
+      - name: Upload Binaries
         uses: actions/upload-artifact@v2
         with:
           name: binaries
-          path: build/launch4j/Alces-SNAPSHOT-*.exe
+          path: build/jpackage/${{ env.tool }}-SNAPSHOT-*.msi
 
   publish-snapshot:
     needs:
@@ -106,5 +136,5 @@ jobs:
           username: ${{ secrets.ATLASSIAN_USER }}
           password: ${{ secrets.ATLASSIAN_TOKEN }}
           contentId: 1457554021
-          label: 'alces-snapshot,snapshot'
-          filePattern: 'binaries/**/Alces-SNAPSHOT-*.*'
+          label: '${{ env.tool }}-snapshot,snapshot'
+          filePattern: 'binaries/**/${{ env.tool }}-SNAPSHOT-*.*'
