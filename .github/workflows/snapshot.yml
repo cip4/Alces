@@ -3,8 +3,10 @@ name: Snapshot
 on:
   push:
     branches: [ main ]
-env: 
+env:
   tool: Alces
+  confluence-label: alces
+  confluence-content-id: 1457554021
 jobs:
   linux-build:
     runs-on: ubuntu-latest
@@ -19,13 +21,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build with Gradle
-        run: ./gradlew test distZip distTar
+        run: ./gradlew test shadowDistZip shadowDistTar
 
       - name: Rename .ZIP
-        run: mv build/distributions/${{ env.tool }}-development.zip build/distributions/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.zip
+        run: mv build/distributions/${{ env.tool }}-shadow-development.zip build/distributions/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.zip
 
       - name: Rename .TAR
-        run: mv build/distributions/${{ env.tool }}-development.tar build/distributions/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.tar
+        run: mv build/distributions/${{ env.tool }}-shadow-development.tar build/distributions/${{ env.tool }}-SNAPSHOT-${{ github.run_number }}.tar
 
       - name: Upload binaries
         uses: actions/upload-artifact@v2
@@ -136,6 +138,6 @@ jobs:
           url: 'https://cip4.atlassian.net/wiki'
           username: ${{ secrets.ATLASSIAN_USER }}
           password: ${{ secrets.ATLASSIAN_TOKEN }}
-          contentId: 1457554021
-          label: '${{ env.tool }}-snapshot,snapshot'
+          contentId: ${{ env.confluence-content-id }}
+          label: '${{ env.confluence-label }}-snapshot,snapshot'
           filePattern: 'binaries/**/${{ env.tool }}-SNAPSHOT-*.*'
