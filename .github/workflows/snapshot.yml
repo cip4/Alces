@@ -10,7 +10,7 @@ env:
   confluence-content-id: -1
 jobs:
   call-tool-snapshot:
-    name: 🏭 Build Snapshot
+    name: 🏭
     uses: cip4/.github/.github/workflows/tool-snapshot.yml@workflow-tool-snapshot
     with:
       tool: Alces
