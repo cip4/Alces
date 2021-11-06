@@ -17,6 +17,7 @@ jobs:
       confluence-label: alces
       confluence-content-id: 1457554021
       apple-bundle-id: org.cip4.alces
+    secrets:
       APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
       APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}
       APPLE_CERTIFICATE_PASSWORD: ${{ secrets.APPLE_CERTIFICATE_PASSWORD }}
