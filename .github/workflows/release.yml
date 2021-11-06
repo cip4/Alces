@@ -7,12 +7,11 @@ on:
 jobs:
   call-tool-release:
     name: 🏭
-    uses: cip4/.github/.github/workflows/tool-release.yml@workflow-tool-snapshot
+    uses: cip4/.github/.github/workflows/tool-release.yml@v1
     with:
       tool: Alces
       confluence-label: alces
-      # TODO: replace with correct ID (1181122563) once test is completed
-      confluence-content-id: 1377338047
+      confluence-content-id: 1181122563
       apple-bundle-id: org.cip4.alces
     secrets:
       APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}

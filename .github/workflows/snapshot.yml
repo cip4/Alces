@@ -3,11 +3,11 @@ name: Snapshot
 on:
   workflow_dispatch:
   push:
-    branches: [ main, extract-workflows ]
+    branches: [ main ]
 jobs:
   call-tool-snapshot:
     name: 🏭
-    uses: cip4/.github/.github/workflows/tool-snapshot.yml@workflow-tool-snapshot
+    uses: cip4/.github/.github/workflows/tool-snapshot.yml@v1
     with:
       tool: Alces
       confluence-label: alces
