@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
   push:
     branches: [ main, extract-workflows ]
-env:
-  tool: Alces
-  confluence-label: alces
-  confluence-content-id: -1
 jobs:
   call-tool-snapshot:
     name: 🏭
