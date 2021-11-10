@@ -3,6 +3,7 @@ package org.cip4.tools.alces.test;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.List;
 
 import javax.mail.Multipart;
 
@@ -15,6 +16,7 @@ import org.cip4.jdflib.node.JDFNode;
 import org.cip4.jdflib.util.MimeUtil;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.message.InMessage;
+import org.cip4.tools.alces.message.InMessageImpl;
 import org.cip4.tools.alces.message.OutMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
@@ -24,12 +26,16 @@ import org.cip4.tools.alces.preprocessor.jdf.UrlResolvingPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.SenderIDPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.URLPreprocessor;
-import org.cip4.tools.alces.transport.HttpDispatcher;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.NotDirFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * This is the class in the Alces framework that is responsible for creating test sessions during which JMF messages are sent, received, and tested. Example
@@ -52,8 +58,6 @@ public class TestRunner {
 	private static Logger log = LoggerFactory.getLogger(TestRunner.class);
 
 	private TestSuite _suite = null;
-
-	private HttpDispatcher _dispatcher = null;
 
 	private ConfigurationHandler _confHand = null;
 
@@ -86,7 +90,6 @@ public class TestRunner {
 	 * 
 	 * @param targetUrl the URL to send the test data to
 	 * @param testDataDir the directory containing the test data
-	 * @param props the configuration properties
 	 * @return the XML file containing the test suite's results
 	 * @throws Exception
 	 */
@@ -200,7 +203,7 @@ public class TestRunner {
 			_confHand.configureOutgoingTests(session);
 			// Send message
 			log.debug("Starting test session and sending message...");
-			session.sendMessage(outMessage, _dispatcher);
+			session.sendMessage(outMessage);
 			return session;
 		}
 	}
@@ -235,38 +238,6 @@ public class TestRunner {
 			log.error("Could not write MIME package: " + e.getMessage(), e);
 		}
 		return mimeMessage;
-	}
-
-	/**
-	 * Configures the message dispatcher.
-	 * 
-	 * @return
-	 */
-	private HttpDispatcher configureHttpDispatcher() {
-		int maxConnections;
-		try {
-			maxConnections = Integer.parseInt(_confHand.getProp(ConfigurationHandler.OUTGOING_CONNECTIONS));
-		} catch (NumberFormatException nfe) {
-			maxConnections = -1;
-		}
-		final HttpDispatcher dispatcher;
-		if (Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.PROXY_ENABLED))) {
-			// Dispatcher that uses a proxy
-			int proxyPort;
-			try {
-				proxyPort = Integer.parseInt(_confHand.getProp(ConfigurationHandler.PROXY_PORT));
-			} catch (NumberFormatException nfe) {
-				proxyPort = -1;
-			}
-			String proxyHost = _confHand.getProp(ConfigurationHandler.PROXY_HOST);
-			log.info("Using proxy: " + proxyHost + ":" + proxyPort);
-			dispatcher = new HttpDispatcher(proxyHost, proxyPort, _confHand.getProp(ConfigurationHandler.PROXY_USER), _confHand.getProp(ConfigurationHandler.PROXY_PASSWORD), maxConnections,
-					maxConnections);
-		} else {
-			// Dispatcher without a proxy
-			dispatcher = new HttpDispatcher(maxConnections, maxConnections);
-		}
-		return dispatcher;
 	}
 
 	/**
@@ -311,7 +282,6 @@ public class TestRunner {
 			// _httpReceiver = new HttpReceiver(_suite);
 			// _httpReceiver.startServer(host, port, contextPath, resourceBase);
 			// Configure message dispatcher
-			_dispatcher = configureHttpDispatcher();
 			log.debug("Test environment initialized.");
 		} catch (Exception e) {
 			log.error("Could not initialize test environment.", e);
@@ -321,7 +291,6 @@ public class TestRunner {
 //				log.warn("Could not stop HTTP receiver while aborting test environment initialization.", e1);
 //			}
 //			_httpReceiver = null;
-			_dispatcher = null;
 			throw e;
 		}
 	}
@@ -337,7 +306,6 @@ public class TestRunner {
 //			_httpReceiver.stopServer();
 //			_httpReceiver = null;
 //		}
-		_dispatcher = null;
 		log.debug("Cleaned up test environment.");
 	}
 
@@ -359,7 +327,17 @@ public class TestRunner {
 		} else {
 			preprocessJMF(message, context);
 		}
-		return _dispatcher.dispatch(message, targetUrl);
+
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.set("Content-Type", message.getContentType());
+		HttpEntity<String> request = new HttpEntity<>(message.getBody(), httpHeaders);
+
+		RestTemplate restTemplate = ApplicationContextUtil.getBean(RestTemplate.class);
+		ResponseEntity<String> responseEntity = restTemplate.postForEntity(targetUrl, request, String.class);
+
+		List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");
+
+		return new InMessageImpl(responseHeaders.get(0), "n. a.", responseEntity.getBody(), false);
 	}
 
 	/**
@@ -410,8 +388,6 @@ public class TestRunner {
 	 * @param targetUrl the URL to submit it to
 	 * @param preprocessJdf <code>true</code> to preprocess the JDF file before submitting it; <code>false</code> otherwise
 	 * @return the test session
-	 * @see #startTestSessionWithResubmitQueueEntry(File, String, String, String)
-	 * @see #publishJDFWithFileUrls(File, String)
 	 */
 	public TestSession startTestSessionWithSubmitQueueEntryWithHttpUrls(File jdfFile, String targetUrl, boolean preprocessJdf) {
 		return startTestSessionWithSubmitQueueEntry(jdfFile, targetUrl, preprocessJdf, false, getPublishedJDFBaseURL());
@@ -425,8 +401,6 @@ public class TestRunner {
 	 * @param targetUrl the URL to submit it to
 	 * @param preprocessJdf if <code>true</code> the JDF file is preprocessed before sent
 	 * @return the test session
-	 * @see #startTestSessionWithResubmitQueueEntry(File, String, String, String)
-	 * @see #publishJDFWithFileUrls(File, String)
 	 */
 	public TestSession startTestSessionWithSubmitQueueEntryWithFileUrls(File jdfFile, String targetUrl, boolean preprocessJdf) {
 		return startTestSessionWithSubmitQueueEntry(jdfFile, targetUrl, preprocessJdf, false, jdfFile.getParentFile().toURI().toASCIIString());
@@ -489,9 +463,7 @@ public class TestRunner {
 	 * @param jobId the /JDF/@JobID of the job to resubmit
 	 * @param targetUrl the URL to submit it to
 	 * @return the test session
-	 * @see #startTestSessionWithResubmitQueueEntry(File, String, String, String)
-	 * @see #publishJDFWithHttpUrls(File, String)
-	 */
+
 	public TestSession startTestSessionWithResubmitQueueEntryWithHttpUrls(File jdfFile, String queueEntryId, String jobId, String targetUrl) {
 		return startTestSessionWithResubmitQueueEntry(jdfFile, queueEntryId, jobId, targetUrl, getPublishedJDFBaseURL(), true, false);
 	}
@@ -505,8 +477,6 @@ public class TestRunner {
 	 * @param jobId the /JDF/@JobID of the job to resubmit
 	 * @param targetUrl the URL to submit it to
 	 * @return the test session
-	 * @see #startTestSessionWithResubmitQueueEntry(File, String, String, String)
-	 * @see #publishJDFWithFileUrls(File, String)
 	 */
 	public TestSession startTestSessionWithResubmitQueueEntryWithFileUrls(File jdfFile, String queueEntryId, String jobId, String targetUrl) {
 		return startTestSessionWithResubmitQueueEntry(jdfFile, queueEntryId, jobId, targetUrl, jdfFile.getAbsolutePath(), true, false);
@@ -519,8 +489,7 @@ public class TestRunner {
 	 * 
 	 * If <code>asMime</code> is <code>false</code>, the JDF job, the JDF file is published to this TestRunners HTTP server and the resulting http URL is used
 	 * in the <i>ResubmitQueueEntry</i> JMF message. Any relative URLs in the JDF file will be resolved against <code>baseUrl</code> and replaced with an
-	 * absolute URL, see {@link #publishJDF(File, String, String)}.
-	 * 
+	 *
 	 * @param jdfFile the JDF file to submit
 	 * @param queueEntryId the queue entry ID of the job to resubmit
 	 * @param jobId the /JDF/@JobID of the job to resubmit
@@ -637,7 +606,7 @@ public class TestRunner {
 	 */
 	private OutMessage preprocessMIME(OutMessage message, PreprocessorContext context) {
 		String mjmEnableStr = ConfigurationHandler.getInstance().getProp(ConfigurationHandler.MJM_MIME_FILE_PARSE);
-		boolean mjmEnabled = new Boolean(mjmEnableStr);
+		boolean mjmEnabled = Boolean.parseBoolean(mjmEnableStr);
 		// 3 steps are here: separate MIME message, preprocess JMF part, glue it back.
 		if (mjmEnabled) {
 			// take JMF part from MIME

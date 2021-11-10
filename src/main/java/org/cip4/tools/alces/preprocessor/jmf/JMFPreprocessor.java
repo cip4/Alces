@@ -31,6 +31,7 @@ import org.slf4j.LoggerFactory;
  * @author Claes Buckwalter (clabu@itn.liu.se)
  * @deprecated This Preprocessor has ben split up into separate preprocessors for the different types of preprocessing.
  */
+@Deprecated
 public class JMFPreprocessor implements Preprocessor {
 
 	public static final String JDF_NS_PREFIX = "jdf";
@@ -101,8 +102,6 @@ public class JMFPreprocessor implements Preprocessor {
 
 	/**
 	 * Preprocesses a JMF message by replacing SenderID, TimeStamp, and IDs of any Query, Command, Signal, Acknowledge, or Response.
-	 * 
-	 * @see org.mule.transformers.AbstractTransformer#doTransform(java.lang.Object)
 	 */
 	public Message preprocess(final Message message) throws PreprocessorException {
 		if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {

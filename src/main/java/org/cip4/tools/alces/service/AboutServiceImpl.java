@@ -1,7 +1,6 @@
 package org.cip4.tools.alces.service;
 
 import org.cip4.jdflib.core.JDFAudit;
-import org.cip4.tools.alces.util.JDFConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

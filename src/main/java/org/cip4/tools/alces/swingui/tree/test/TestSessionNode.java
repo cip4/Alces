@@ -17,7 +17,6 @@ import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.TestSessionListener;
 import org.cip4.tools.alces.test.tests.Test;
-import org.cip4.tools.alces.transport.HttpDispatcher;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.ThreadedExecutor;
@@ -95,16 +94,14 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	/**
 	 * Wraps the <code>OutMessage</code> in a <code>OutMessageNode</code> if necessary, then adds the message as a direct child to this tree node if it is an
 	 * initiating message.
-	 * 
-	 * @see org.cip4.tools.alces.TestSession#sendMessage(org.cip4.tools.alces.OutMessage)
 	 */
-	public void sendMessage(final OutMessage message, final HttpDispatcher dispatcher) {
+	public void sendMessage(final OutMessage message) {
 		if (_asynchronous) {
 			log.debug("Sending message asynchronously...");
 			try {
 				_executor.execute(new Runnable() {
 					public void run() {
-						sendMessageSync(message, dispatcher);
+						sendMessageSync(message);
 					}
 				});
 				log.debug("Message sent asynchronously.");
@@ -113,7 +110,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 			}
 		} else {
 			log.debug("Sending message synchronously...");
-			sendMessageSync(message, dispatcher);
+			sendMessageSync(message);
 			log.debug("Sent message synchronously.");
 		}
 	}
@@ -123,7 +120,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * @param message
 	 * @retn
 	 */
-	public void sendMessageSync(OutMessage message, HttpDispatcher dispatcher) {
+	public void sendMessageSync(OutMessage message) {
 		final MutableTreeNode thisNode = this;
 		final MutableTreeNode messageNode;
 		if (message instanceof MutableTreeNode) {
@@ -146,14 +143,13 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 			log.debug("Queueing OutMessage for insertion as child to TestSession in tree model...");
 			SwingUtilities.invokeLater(addOutMessage);
 		}
-		_wrappedTestSession.sendMessage((OutMessage) messageNode, dispatcher);
+		_wrappedTestSession.sendMessage((OutMessage) messageNode);
 	}
 
 	/**
 	 * Wraps the <code>InMessage</code> in a <code>InMessageNode</code> if necessary, then adds the InMessage as a direct child to this tree node if it is an
 	 * initiating message.
 	 * @param message the incoming message to receive
-	 * @see org.cip4.tools.alces.TestSession#receiveMessage(org.cip4.tools.alces.InMessage)
 	 */
 	public void receiveMessage(InMessage message) {
 		log.debug("Receiving InMessage...");

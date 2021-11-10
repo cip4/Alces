@@ -13,20 +13,21 @@ import java.util.Vector;
 import org.apache.commons.io.IOUtils;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.Message;
-import org.cip4.tools.alces.message.OutMessage;
-import org.cip4.tools.alces.message.OutMessageImpl;
+import org.cip4.tools.alces.message.*;
 import org.cip4.tools.alces.message.util.mime.MimePackageException;
 import org.cip4.tools.alces.message.util.mime.MimeReader;
 import org.cip4.tools.alces.test.tests.Test;
-import org.cip4.tools.alces.transport.HttpDispatcher;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.jdom.Attribute;
 import org.jdom.Namespace;
 import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
 /**
  * @author Claes Buckwalter
@@ -35,41 +36,42 @@ public class TestSessionImpl implements TestSession {
 
 	private static Logger log = LoggerFactory.getLogger(TestSessionImpl.class);
 
-	private String _targetUrl;
+	private String targetUrl;
 
-	private final List<OutMessage> _outgoingMessages;
+	private final List<OutMessage> outMessages;
 
-	private final List<InMessage> _incomingMessages;
+	private final List<InMessage> inMessages;
 
-	private final List<Test> _outgoingTests;
+	private final List<Test> outTests;
 
-	private final List<Test> _incomingTests;
+	private final List<Test> inTests;
 
-	private final List<TestResult> _testResults;
+	private final List<TestResult> testResults;
 
-	private final List<TestSessionListener> _listeners;
+	private final List<TestSessionListener> testSessionListeners;
 
-	private Message _initMessage = null;
+	private Message message = null;
 
 	/**
-	 * Creates a new test session that sends messages to the specified URL. A test session lasts for a max duration of time. After the specified duration of
-	 * time has elapsed the test session is ended and any further messages received will be ignored.
+	 * Creates a new test session that sends messages to the specified URL. A test session lasts
+	 * for a max duration of time. After the specified duration of time has elapsed the test session
+	 * is ended and any further messages received will be ignored.
 	 * 
 	 * @param targetUrl the URL to send messages to during this session
 	 */
 	public TestSessionImpl(String targetUrl) {
 		setTargetUrl(targetUrl);
-		_outgoingMessages = new Vector<OutMessage>();
-		_incomingMessages = new Vector<InMessage>();
-		_outgoingTests = new Vector<Test>();
-		_incomingTests = new Vector<Test>();
-		_testResults = new Vector<TestResult>(); // TODO Sort test results based on time?
-		_listeners = new Vector<TestSessionListener>();
+		outMessages = new Vector<>();
+		inMessages = new Vector<>();
+		outTests = new Vector<>();
+		inTests = new Vector<>();
+		testResults = new Vector<>(); // TODO Sort test results based on time?
+		testSessionListeners = new Vector<TestSessionListener>();
 	}
 
 	@Override
 	public String toString() {
-		return "TestSession[ targetUrl=" + _targetUrl + " ]";
+		return "TestSession[ targetUrl=" + targetUrl + " ]";
 	}
 
 	/**
@@ -77,23 +79,40 @@ public class TestSessionImpl implements TestSession {
 	 * 
 	 * @param message
 	 */
-	public synchronized void sendMessage(OutMessage message, HttpDispatcher dispatcher) {
-		// Log message
-		if (_outgoingMessages.size() == 0 && _incomingMessages.size() == 0) {
-			_initMessage = message;
-		}
-		_outgoingMessages.add(message);
+	public synchronized void sendMessage(OutMessage message) {
 
-		// Run outgoing tests on message and log results
-		runTests(_outgoingTests, message);
-		// Send message
-		InMessage responseMessage;
-		try {
-			responseMessage = dispatcher.dispatch(message, _targetUrl);
-			receiveMessage(responseMessage, message);
-		} catch (IOException e) {
-			log.error("Could not send message to '" + _targetUrl + "': " + e, e);
+		// log message
+		if (outMessages.size() == 0 && inMessages.size() == 0) {
+			this.message = message;
 		}
+		outMessages.add(message);
+
+		// run outgoing tests on message and log results
+		runTests(outTests, message);
+
+		// send message
+		HttpHeaders httpHeaders = new HttpHeaders();
+		httpHeaders.set("Content-Type", message.getContentType());
+		HttpEntity<String> request = new HttpEntity<>(message.getBody(), httpHeaders);
+
+		RestTemplate restTemplate = ApplicationContextUtil.getBean(RestTemplate.class);
+		ResponseEntity<String> responseEntity = restTemplate.postForEntity(targetUrl, request, String.class);
+
+		List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");
+
+		InMessage responseMessage = new InMessageImpl(responseHeaders.get(0), "n. a.", responseEntity.getBody(), false);
+
+		receiveMessage(responseMessage, message);
+
+//		InMessage responseMessage;
+//		try {
+//
+//
+//			responseMessage = dispatcher.dispatch(message, targetUrl);
+//			receiveMessage(responseMessage, message);
+//		} catch (IOException e) {
+//			log.error("Could not send message to '" + targetUrl + "': " + e, e);
+//		}
 	}
 
 	/**
@@ -119,12 +138,12 @@ public class TestSessionImpl implements TestSession {
 		if (log.isDebugEnabled()) {
 			log.debug("Received message: " + inMessage);
 		}
-		if (_outgoingMessages.size() == 0 && _incomingMessages.size() == 0) {
-			_initMessage = inMessage;
+		if (outMessages.size() == 0 && inMessages.size() == 0) {
+			message = inMessage;
 		}
-		_incomingMessages.add(inMessage);
+		inMessages.add(inMessage);
 		// Run incoming tests on message
-		runTests(_incomingTests, inMessage); // Tests must be run before
+		runTests(inTests, inMessage); // Tests must be run before
 		// adding InMessage to
 		// OutMessage
 
@@ -140,7 +159,7 @@ public class TestSessionImpl implements TestSession {
 	 * @param test
 	 */
 	public void addOutgoingTest(Test test) {
-		_outgoingTests.add(test);
+		outTests.add(test);
 	}
 
 	/**
@@ -149,7 +168,7 @@ public class TestSessionImpl implements TestSession {
 	 * @param test
 	 */
 	public void addIncomingTest(Test test) {
-		_incomingTests.add(test);
+		inTests.add(test);
 	}
 
 	/**
@@ -158,7 +177,7 @@ public class TestSessionImpl implements TestSession {
 	 * @param testResult
 	 */
 	public void addTestResult(TestResult testResult) {
-		_testResults.add(testResult);
+		testResults.add(testResult);
 	}
 
 	/**
@@ -182,26 +201,26 @@ public class TestSessionImpl implements TestSession {
 	 * Gets a <code>List</code> of <code>InMessage</code> s that have been received during this <code>TestSession</code>.
 	 */
 	public List<InMessage> getIncomingMessages() {
-		return _incomingMessages;
+		return inMessages;
 	}
 
 	/**
 	 * Returns a <code>List</code> of <code>OutMessage</code> s that have been sent during this <code>TestSession</code>.
 	 */
 	public List<OutMessage> getOutgoingMessages() {
-		return _outgoingMessages;
+		return outMessages;
 	}
 
 	public List<TestResult> getTestResults() {
-		return _testResults;
+		return testResults;
 	}
 
 	public void setTargetUrl(String targetUrl) {
-		_targetUrl = targetUrl;
+		this.targetUrl = targetUrl;
 	}
 
 	public String getTargetUrl() {
-		return _targetUrl;
+		return targetUrl;
 	}
 
 	/*
@@ -272,9 +291,9 @@ public class TestSessionImpl implements TestSession {
 			XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@refID='" + refID + "']"); // bug fixed: no @ID in InMessage
 			idXPath.addNamespace(jdfNamespace);
 
-			synchronized (_incomingMessages) {
+			synchronized (inMessages) {
 				// Go through all messages sent during a session
-				for (InMessage msgIn : _incomingMessages) {
+				for (InMessage msgIn : inMessages) {
 					// Execute XPath for ID
 					if (idXPath.selectSingleNode(msgIn.getBodyAsJDOM()) != null) {
 						log.debug("Found ID matching refID: " + refID);
@@ -290,7 +309,7 @@ public class TestSessionImpl implements TestSession {
 	}
 
 	public Message getInitiatingMessage() {
-		return _initMessage;
+		return message;
 	}
 
 	/**
@@ -357,11 +376,11 @@ public class TestSessionImpl implements TestSession {
 	}
 
 	public void addListener(TestSessionListener listener) {
-		_listeners.add(listener);
+		testSessionListeners.add(listener);
 	}
 
 	public void removeListener(TestSessionListener listener) {
-		_listeners.remove(listener);
+		testSessionListeners.remove(listener);
 	}
 
 	/**
@@ -371,10 +390,10 @@ public class TestSessionImpl implements TestSession {
 	 * @param testSession the message's test session
 	 */
 	protected void notifyListeners(InMessage message, TestSession testSession) {
-		if (_listeners == null || _listeners.size() == 0) {
+		if (testSessionListeners == null || testSessionListeners.size() == 0) {
 			return;
 		}
-		TestSessionListener[] listeners = _listeners.toArray(new TestSessionListener[_listeners.size()]);
+		TestSessionListener[] listeners = testSessionListeners.toArray(new TestSessionListener[testSessionListeners.size()]);
 		for (int i = 0; i < listeners.length; i++) {
 			listeners[i].messageReceived(message, testSession);
 		}

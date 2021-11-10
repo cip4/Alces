@@ -7,7 +7,6 @@ import org.cip4.tools.alces.message.InMessage;
 import org.cip4.tools.alces.swingui.Alces;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.TestSuite;
-import org.cip4.tools.alces.transport.util.HttpHeaderUtils;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.slf4j.Logger;
@@ -16,13 +15,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Enumeration;
 
 @RestController
 public class JmfController {
@@ -37,11 +35,12 @@ public class JmfController {
 
     private final String testDataDir = AlcesPathUtil.ALCES_TEST_DATA_DIR;
 
-    private TestSuite testSuite;
-
-    @PostConstruct
-    public void init() {
-        this.testSuite = Alces.getInstance().getTestSuite();
+    /**
+     * Private helper method to get the current test suite instance.
+     * @return The curren test suite.
+     */
+    private TestSuite getTestSuite() {
+        return Alces.getInstance().getTestSuite();
     }
 
     @RequestMapping(value = "/jdf/{filename}", method = RequestMethod.GET, produces = MediaType.TEXT_XML_VALUE)
@@ -64,8 +63,8 @@ public class JmfController {
         log.info("Receiving message from {} @ {} ({})...", userAgent, request.getRemoteHost(), request.getRemoteAddr());
 
         String remoteAddr = request.getRemoteAddr();
-        String header = HttpHeaderUtils.convertHttpHeadersToString(request);
-        final InMessage inMessage = testSuite.createInMessage(contentType, header, messageBody, false);
+        String header = convertHttpHeadersToString(request);
+        final InMessage inMessage = getTestSuite().createInMessage(contentType, header, messageBody, false);
 
         // create and send response
         final JDFJMF jmfIn = inMessage.getBodyAsJMF();
@@ -117,12 +116,31 @@ public class JmfController {
     }
 
     /**
+     * Converts the headers in a <code>HttpServletRequest</code> to a
+     * <code>String</code>.
+     *
+     * @param request
+     * @return
+     */
+    private static String convertHttpHeadersToString(HttpServletRequest request) {
+        StringBuffer header = new StringBuffer();
+        for (Enumeration e = request.getHeaderNames(); e.hasMoreElements();) {
+            String headerName = (String) e.nextElement();
+            header.append(headerName);
+            header.append(": ");
+            header.append(request.getHeader(headerName));
+            header.append("\n");
+        }
+        return header.toString();
+    }
+
+    /**
      * Helper method to start a test session
      */
     private void startTestSession(InMessage inMessage, String remoteAddr) {
 
             // get test sesstion for in-message
-            TestSession testSession = testSuite.findTestSession(inMessage);
+            TestSession testSession = getTestSuite().findTestSession(inMessage);
 
             // Add the message to the TestSession
             if (testSession != null) {
@@ -133,11 +151,11 @@ public class JmfController {
                 log.info("Creating new TestSession for InMessage...");
 
                 // Create a objects using factory
-                InMessage newMessage = testSuite.createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
-                testSession = testSuite.createTestSession(remoteAddr);
+                InMessage newMessage = getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
+                testSession = getTestSuite().createTestSession(remoteAddr);
 
                 // Add TestSession to suite
-                testSuite.addTestSession(testSession);
+                getTestSuite().addTestSession(testSession);
 
                 // Configure tests
                 configurationHandler.configureIncomingTests(testSession);

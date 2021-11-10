@@ -79,7 +79,6 @@ import org.cip4.tools.alces.message.InMessage;
 import org.cip4.tools.alces.message.OutMessage;
 import org.cip4.tools.alces.message.OutMessageImpl;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
-import org.cip4.tools.alces.service.AboutService;
 import org.cip4.tools.alces.swingui.actions.ActionCollapse;
 import org.cip4.tools.alces.swingui.actions.ActionCollapseAll;
 import org.cip4.tools.alces.swingui.actions.ActionSaveRequestsResponcesToDisk;
@@ -94,20 +93,11 @@ import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.event.EventListener;
+import org.springframework.context.annotation.Bean;
 
 /**
  * The Alces Swing GUI application for interactive testing.
- * 
- * @author Claes Buckwalter (clabu@itn.liu.se)
  */
-@SpringBootApplication
-@ComponentScan({"org.cip4.tools.alces"})
 public class Alces extends JFrame implements ActionListener, TreeModelListener, TreeSelectionListener, MouseListener {
 
 	// -----------------------------------------------------
@@ -214,13 +204,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	private final JButton batchStartButton, batchStopButton;
 	private static boolean isBatchRunned;
 
-	@Autowired
-	private AboutService aboutService;
-
 	/**
 	 * Creates a new instance of the Alces Swing application using the specified locale.
 	 * 
-	 * @param locale the <code>Locale</code> used for labels in the user interface
 	 * @throws Exception
 	 */
 	public Alces() throws Exception {
@@ -434,6 +420,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		// save the current instance
 		THE_INSTANCE = this;
+
+		this.setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
 	}
 
 	/**
@@ -450,23 +438,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 */
 	public TestSuite getTestSuite() {
 		return this._testSuite;
-	}
-
-	/**
-	 * Applications main entrance point.
-	 * @param args Applications parameter.
-	 */
-	public static void main(String[] args) {
-		SpringApplication.run(Alces.class, args);
-	}
-
-	/**
-	 * Event is called after applications start up.
-	 */
-	@EventListener(ApplicationReadyEvent.class)
-	public void onStartUp() {
-		this.setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
-		log.warn(String.format("%s %s has started. (buildtime: %s)", aboutService.getAppName(), aboutService.getAppVersion(), aboutService.getBuildTime()));
 	}
 
 	/**

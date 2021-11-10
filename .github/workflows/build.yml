@@ -9,7 +9,7 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        java: [ 15 ]
+        java: [ 16 ]
     runs-on: ${{ matrix.os }}
     name: Java build on ${{ matrix.os }} with JDK ${{ matrix.java }}
     steps:

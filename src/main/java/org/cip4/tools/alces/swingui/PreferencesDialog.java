@@ -275,13 +275,13 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 
 		JPanel noContentTypePanel = new JPanel();
 		noContentTypePanel.setLayout(new BorderLayout());
-		Boolean noContentTypeEnabled = new Boolean(_confHand.getProp(ConfigurationHandler.NO_CONTENT_TYPE));
+		Boolean noContentTypeEnabled = Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.NO_CONTENT_TYPE));
 		noContentTypeCheckBox = new JCheckBox("Treat incoming messages with empty Content-Type as JMF", noContentTypeEnabled);
 		noContentTypePanel.add(noContentTypeCheckBox, BorderLayout.NORTH);
 
 		JPanel connectMsgPanel = new JPanel();
 		connectMsgPanel.setLayout(new BorderLayout());
-		Boolean showConnectMessagesEnabled = new Boolean(_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES));
+		Boolean showConnectMessagesEnabled = Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES));
 		JCheckBox showConnectMsgCheckBox = new JCheckBox("Show JMF messages sent during connect handshake", showConnectMessagesEnabled);
 		showConnectMsgCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ie) {
@@ -297,7 +297,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		JPanel ipPanel = new JPanel();
 		ipPanel.setLayout(new BorderLayout());
 
-		specificIpCheckBox = new JCheckBox("Use specified IP-address", new Boolean(_confHand.getProp(ConfigurationHandler.USE_SPECIFIED_IP)));
+		specificIpCheckBox = new JCheckBox("Use specified IP-address", Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.USE_SPECIFIED_IP)));
 		ipPanel.add(new JLabel("Reply IP-address to use:"), BorderLayout.WEST);
 		ipComboBox = new JComboBox();
 		ipComboBox.setEditable(true);
@@ -398,7 +398,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		sendMjmMimeFilePanel.setLayout(new BorderLayout());
 
 		String mjmCheckedStr = _confHand.getProp(ConfigurationHandler.MJM_MIME_FILE_PARSE);
-		boolean mjmChecked = new Boolean(mjmCheckedStr);
+		boolean mjmChecked = Boolean.parseBoolean(mjmCheckedStr);
 		JCheckBox fileParsingCheck = new JCheckBox("Enable .MJM MIME file parsing", mjmChecked);
 		fileParsingCheck.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ie) {
@@ -456,7 +456,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		messageIdPreprocessorLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 10));
 		westPanel.add(messageIdPreprocessorLabel);
 
-		checked = new Boolean(_confHand.getProp(ConfigurationHandler.UPDATE_MESSAGEID));
+		checked = Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.UPDATE_MESSAGEID));
 		JCheckBox updateMessageIdCheckBox = new JCheckBox("Update Message-ID (Query@ID, Command@ID)", checked);
 		updateMessageIdCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ie) {
@@ -473,7 +473,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		urlPreprocessorLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 5, 10));
 		westPanel.add(urlPreprocessorLabel);
 
-		checked = new Boolean(_confHand.getProp(ConfigurationHandler.UPDATE_ACKNOWLEDGEURL));
+		checked = Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.UPDATE_ACKNOWLEDGEURL));
 		JCheckBox updateAcknowledgeUrlCheckBox = new JCheckBox("Update AcknowledgeURL", checked);
 		updateAcknowledgeUrlCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ie) {
@@ -486,7 +486,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		});
 		westPanel.add(updateAcknowledgeUrlCheckBox);
 
-		checked = new Boolean(_confHand.getProp(ConfigurationHandler.UPDATE_RETURNURL));
+		checked = Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.UPDATE_RETURNURL));
 		JCheckBox updateReturnUrlCheckBox = new JCheckBox("Update ReturnURL", checked);
 		updateReturnUrlCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ie) {
@@ -499,7 +499,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		});
 		westPanel.add(updateReturnUrlCheckBox);
 
-		checked = new Boolean(_confHand.getProp(ConfigurationHandler.UPDATE_RETURNURL));
+		checked = Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.UPDATE_RETURNURL));
 		JCheckBox updateReturnJmfCheckBox = new JCheckBox("Update ReturnJMF", checked);
 		updateReturnJmfCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ie) {
@@ -512,7 +512,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		});
 		westPanel.add(updateReturnJmfCheckBox);
 
-		checked = new Boolean(_confHand.getProp(ConfigurationHandler.UPDATE_WATCHURL));
+		checked = Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.UPDATE_WATCHURL));
 		JCheckBox updateWatchUrlCheckBox = new JCheckBox("Update WatchURL", checked);
 		updateWatchUrlCheckBox.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent ie) {
@@ -532,7 +532,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		JPanel panel = new JPanel();
 		String value = _confHand.getProp(ConfigurationHandler.BATCHMODE_DELAYTONEXT_FILE);
 		final JSpinner s = new JSpinner();
-		s.setValue(new Integer(value));
+		s.setValue(Integer.parseInt(value));
 		s.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
 				_confHand.putProp(ConfigurationHandler.BATCHMODE_DELAYTONEXT_FILE, "" + (Integer) s.getValue());
