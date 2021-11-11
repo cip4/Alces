@@ -9,10 +9,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.jdom.Document;
 import org.jdom.Namespace;
 import org.jdom.xpath.XPath;
@@ -52,12 +53,12 @@ public class ConfigurableXPathsTest extends Test {
 	 * @see org.cip4.tools.alces.test.tests.Test#runTest(org.cip4.tools.alces.message.Message)
 	 */
 	@Override
-	public TestResult runTest(Message message) {
+	public TestResult runTest(AbstractJmfMessage message) {
 		boolean passedTest = true;
 		String logMsg = "";
 		try {
 			long t0 = System.currentTimeMillis();
-			Document doc = message.getBodyAsJDOM();
+			Document doc = JmfUtil.getBodyAsJDOM(message);
 
 			for (Iterator i = _xpaths.keySet().iterator(); i.hasNext();) {
 				// Get XPath test

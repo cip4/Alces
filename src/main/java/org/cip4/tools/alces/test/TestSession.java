@@ -5,9 +5,9 @@ package org.cip4.tools.alces.test;
 
 import java.util.List;
 
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.Message;
-import org.cip4.tools.alces.message.OutMessage;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.test.tests.Test;
 
 /**
@@ -37,14 +37,14 @@ public interface TestSession {
 	 * 
 	 * @param message The message to be sent.
 	 */
-	void sendMessage(OutMessage message);
+	void sendMessage(OutgoingJmfMessage message);
 
 	/**
 	 * Called when a new message is received by this test session.
 	 * 
 	 * @param message
 	 */
-	void receiveMessage(InMessage message);
+	void receiveMessage(IncomingJmfMessage message);
 
 	/**
 	 * Adds a test to perform on outgoing messages.
@@ -71,7 +71,7 @@ public interface TestSession {
 	 * Gets a <code>List</code> of <code>InMessage</code>s that have been
 	 * received during this <code>TestSession</code>.
 	 */
-	List<InMessage> getIncomingMessages();
+	List<IncomingJmfMessage> getIncomingMessages();
 
 	/**
 	 * Returns the incoming message (<code>InMessage</code>) that the
@@ -83,13 +83,13 @@ public interface TestSession {
 	 * @return the incoming message that the outgoing message is a response to;
 	 *         <code>null</code> if no incoming message can be found
 	 */
-	InMessage getIncomingMessage(OutMessage message);
+	IncomingJmfMessage getIncomingMessage(OutgoingJmfMessage message);
 
 	/**
 	 * Returns a <code>List</code> of <code>OutMessage</code>s that have
 	 * been sent during this <code>TestSession</code>.
 	 */
-	List<OutMessage> getOutgoingMessages();
+	List<OutgoingJmfMessage> getOutgoingMessages();
 
 	/**
 	 * Returns the outgoing message (<code>OutMessage</code>) that the
@@ -101,7 +101,7 @@ public interface TestSession {
 	 *         <code>null</code> if the incoming message is cannot be match to
 	 *         any outgoing message
 	 */
-	OutMessage getOutgoingMessage(InMessage message);
+	OutgoingJmfMessage getOutgoingMessage(IncomingJmfMessage message);
 
 	/**
 	 * Gets a list of all the test results associated with this test session.
@@ -110,7 +110,7 @@ public interface TestSession {
 	 */
 	List<TestResult> getTestResults();
 
-	Message getInitiatingMessage();
+	AbstractJmfMessage getInitiatingMessage();
 
 	/**
 	 * Adds a listener to this TestSession. Each time a new message is received

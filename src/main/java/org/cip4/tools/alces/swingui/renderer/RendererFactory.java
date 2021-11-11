@@ -18,12 +18,13 @@ import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.ElementName;
 import org.cip4.jdflib.core.JDFComment;
 import org.cip4.jdflib.datatypes.JDFAttributeMap;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.swingui.actions.ActionWordWrap;
 import org.cip4.tools.alces.swingui.tree.test.TestResultNode;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.tests.XsltTestResult;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.jdom.output.Format;
@@ -46,8 +47,8 @@ public class RendererFactory {
 	 */
 	public static Component getRenderer(final Object content) {
 		final Component renderer;
-		if (content instanceof Message) {
-			renderer = getRenderer((Message) content);
+		if (content instanceof AbstractJmfMessage) {
+			renderer = getRenderer((AbstractJmfMessage) content);
 		} else if (content instanceof TestResultNode) {
 			TestResult testResult = ((TestResultNode) content).getWrappedTestResult();
 			if (testResult instanceof XsltTestResult) {
@@ -65,9 +66,9 @@ public class RendererFactory {
 		return renderer;
 	}
 
-	public static synchronized Component getRenderer(final Message content) {
+	public static synchronized Component getRenderer(final AbstractJmfMessage content) {
 		if (content.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
-			JDFComment comment = (JDFComment) content.getBodyAsJMF().getChildByTagName(ElementName.COMMENT, null, 0, new JDFAttributeMap(AttributeName.NAME, "AgfaICSReport"), false, true);
+			JDFComment comment = (JDFComment) JmfUtil.getBodyAsJMF(content).getChildByTagName(ElementName.COMMENT, null, 0, new JDFAttributeMap(AttributeName.NAME, "AgfaICSReport"), false, true);
 			if (comment != null) {
 				return getAgfaICSReportRenderer(comment);
 			}

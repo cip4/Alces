@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.util.JDFConstants;
@@ -83,7 +83,7 @@ public class XPathPreprocessor implements Preprocessor {
 	/**
 	 * Preprocesses a message replacing all values that match the configured XPath expressions with their value pairs.
 	 */
-	public Message preprocess(Message message, PreprocessorContext context) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message, PreprocessorContext context) throws PreprocessorException {
 		if (!(message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE) || message.getContentType().startsWith(JDFConstants.JDF_CONTENT_TYPE) || message.getContentType().startsWith(
 				JDFConstants.XML_CONTENT_TYPE))) {
 			log.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
@@ -184,7 +184,7 @@ public class XPathPreprocessor implements Preprocessor {
 		return doc;
 	}
 
-	public Message preprocess(final Message message) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message) throws PreprocessorException {
 		return preprocess(message, null);
 	}
 }

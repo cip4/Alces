@@ -3,7 +3,7 @@
  */
 package org.cip4.tools.alces.test;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.tests.Test;
 
 /**
@@ -45,7 +45,7 @@ public interface TestResult {
 	 * 
 	 * @return
 	 */
-	public Message getMessage();
+	public AbstractJmfMessage getMessage();
 
 	/**
 	 * Returns <code>true</code> if the <code>Message</code> passed the

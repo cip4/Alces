@@ -3,7 +3,7 @@
  */
 package org.cip4.tools.alces.test;
 
-import org.cip4.tools.alces.message.InMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
 
 public interface TestSessionListener {
 
@@ -15,5 +15,5 @@ public interface TestSessionListener {
 	 * @param testSession
 	 *            the test session the message belongs to
 	 */
-	public void messageReceived(InMessage inMessage, TestSession testSession);
+	public void messageReceived(IncomingJmfMessage inMessage, TestSession testSession);
 }

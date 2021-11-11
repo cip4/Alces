@@ -1,14 +1,10 @@
 package org.cip4.tools.alces.test.tests;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A test for testing <code>Message</code>s.
- * 
- * @author Claes Buckwalter (clabu@itn.liu.se)
  */
 public abstract class Test {
 
@@ -42,7 +38,7 @@ public abstract class Test {
 	 * @param message the <code>Message</code> to test
 	 * @return a <code>TestResult</code> that describes the result of the test
 	 */
-	public abstract TestResult runTest(Message message);
+	public abstract TestResult runTest(AbstractJmfMessage message);
 
 	@Override
 	public String toString() {

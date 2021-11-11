@@ -16,11 +16,12 @@ import org.cip4.jdflib.core.ElementName;
 import org.cip4.jdflib.core.KElement;
 import org.cip4.jdflib.datatypes.JDFAttributeMap;
 import org.cip4.jdflib.jmf.JDFJMF;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +50,7 @@ public class PreviewTest extends Test {
 	}
 
 	@Override
-	public TestResult runTest(Message message) {
+	public TestResult runTest(AbstractJmfMessage message) {
 		if (!isJMF(message)) {
 			// Ignore if not JMF
 			return new TestResultImpl(this, message, Result.IGNORED,
@@ -60,7 +61,7 @@ public class PreviewTest extends Test {
 		int ignored = 0;
 		int failed = 0;
 		int passed = 0;
-		final JDFJMF jmf = message.getBodyAsJMF();
+		final JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 		File jmfDumpDir = new File(previewDir, jmf.getID());
 		List<KElement> previews = jmf.getChildrenByTagName(ElementName.PREVIEW, null, new JDFAttributeMap(AttributeName.URL, "*"), false, false, 0);
 		for (KElement preview : previews) {		
@@ -120,7 +121,7 @@ public class PreviewTest extends Test {
 		return filename.toString();
 	}
 
-	private boolean isJMF(Message message) {
+	private boolean isJMF(AbstractJmfMessage message) {
 		return message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE);
 	}
 

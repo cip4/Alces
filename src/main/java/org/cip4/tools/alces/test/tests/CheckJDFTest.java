@@ -6,7 +6,7 @@ package org.cip4.tools.alces.test.tests;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
@@ -43,7 +43,7 @@ public class CheckJDFTest extends ConfigurableTest {
 	 * @param message the message to validate
 	 */
 	@Override
-	public TestResult runTest(Message message) {
+	public TestResult runTest(AbstractJmfMessage message) {
 		TestResult result;
 		StringBuffer logMsg = new StringBuffer();
 		try {

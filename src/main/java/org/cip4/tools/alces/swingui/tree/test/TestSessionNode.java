@@ -8,9 +8,9 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.Message;
-import org.cip4.tools.alces.message.OutMessage;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.swingui.tree.message.InMessageNode;
 import org.cip4.tools.alces.swingui.tree.message.OutMessageNode;
 import org.cip4.tools.alces.test.TestResult;
@@ -26,34 +26,22 @@ import org.slf4j.LoggerFactory;
 /**
  * A <code>DefaultMutableTreeNode</code> implementation of a <code>TestSession</code>. This class wraps a non-Swing TestSession implementation. The wrapped
  * TestSession contains the logic, this class is simply a wrapper allowing the TestSession to be displayed in a Swing JTree.
- * 
- * @author Claes Buckwalter
  */
-public class TestSessionNode extends DefaultMutableTreeNode implements TestSession {
+public class TestSessionNode extends DefaultMutableTreeNode {
 
 	private static final long serialVersionUID = 865715767294195142L;
 
 	protected static Logger log = LoggerFactory.getLogger(TestSessionNode.class);
 
-	private TestSession _wrappedTestSession = null;
+	private TestSession testSession;
 
 	public boolean valid;
 
-	private Executor _executor = null;
+	private Executor _executor;
 
-	private boolean _asynchronous = true;
+	private boolean _asynchronous;
 
-	private DefaultTreeModel _treeModel = null;
-
-	// /**
-	// * Creates an TestSession that is a TreeNode and wraps a non-Swing TestSession
-	// * implementation. The wrapped TestSession contains the logic, this class is simply
-	// * a wrapper allowing the TestSession to be displayed in a JTree.
-	// * @param treeModel the tree model this node belongs to
-	// */
-	// public TestSessionNode(String targetUrl, DefaultTreeModel treeModel) {
-	// this(new TestSessionImpl(targetUrl), treeModel);
-	// }
+	private DefaultTreeModel _treeModel;
 
 	/**
 	 * Creates an TestSession that is a TreeNode and wraps a non-Swing TestSession implementation. The wrapped TestSession contains the logic, this class is
@@ -78,32 +66,28 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 		}
 		_asynchronous = asyncMode;
 		_treeModel = treeModel;
-		_wrappedTestSession = testSession;
+		this.testSession = testSession;
 		_executor = new ThreadedExecutor();
 		setUserObject(testSession.getTargetUrl());
 	}
 
 	public String getTargetUrl() {
-		return _wrappedTestSession.getTargetUrl();
+		return testSession.getTargetUrl();
 	}
 
 	public void setTargetUrl(String targetUrl) {
-		_wrappedTestSession.setTargetUrl(targetUrl);
+		testSession.setTargetUrl(targetUrl);
 	}
 
 	/**
 	 * Wraps the <code>OutMessage</code> in a <code>OutMessageNode</code> if necessary, then adds the message as a direct child to this tree node if it is an
 	 * initiating message.
 	 */
-	public void sendMessage(final OutMessage message) {
+	public void sendMessage(final OutgoingJmfMessage message) {
 		if (_asynchronous) {
 			log.debug("Sending message asynchronously...");
 			try {
-				_executor.execute(new Runnable() {
-					public void run() {
-						sendMessageSync(message);
-					}
-				});
+				_executor.execute(() -> sendMessageSync(message));
 				log.debug("Message sent asynchronously.");
 			} catch (InterruptedException ie) {
 				log.error("Could not send message asynchronously: " + message, ie);
@@ -120,7 +104,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * @param message
 	 * @retn
 	 */
-	public void sendMessageSync(OutMessage message) {
+	public void sendMessageSync(OutgoingJmfMessage message) {
 		final MutableTreeNode thisNode = this;
 		final MutableTreeNode messageNode;
 		if (message instanceof MutableTreeNode) {
@@ -132,18 +116,17 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 		if (message.isSessionInitiator()) {
 			log.debug("Adding initiating OutMessage to TestSession...");
 			setUserObject(messageNode + " - " + getTargetUrl());
+
 			// Update tree model using Swing's event-dispatching thread
-			Runnable addOutMessage = new Runnable() {
-				public void run() {
-					log.debug("Inserting OutMessage as child to TestSession in tree model...");
-					_treeModel.insertNodeInto(messageNode, thisNode, thisNode.getChildCount());
-					log.debug("Inserted OutMessage in tree model.");
-				}
+			Runnable addOutMessage = () -> {
+				log.debug("Inserting OutMessage as child to TestSession in tree model...");
+				_treeModel.insertNodeInto(messageNode, thisNode, thisNode.getChildCount());
+				log.debug("Inserted OutMessage in tree model.");
 			};
 			log.debug("Queueing OutMessage for insertion as child to TestSession in tree model...");
 			SwingUtilities.invokeLater(addOutMessage);
 		}
-		_wrappedTestSession.sendMessage((OutMessage) messageNode);
+		testSession.sendMessage((OutgoingJmfMessage) messageNode);
 	}
 
 	/**
@@ -151,7 +134,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * initiating message.
 	 * @param message the incoming message to receive
 	 */
-	public void receiveMessage(InMessage message) {
+	public void receiveMessage(IncomingJmfMessage message) {
 		log.debug("Receiving InMessage...");
 		final MutableTreeNode thisNode = this;
 		final MutableTreeNode messageNode;
@@ -174,7 +157,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 			log.debug("Queueing InMessage for insertion as child to TestSession in tree model...");
 			SwingUtilities.invokeLater(addMessage);
 		}
-		_wrappedTestSession.receiveMessage(message);
+		testSession.receiveMessage(message);
 		setUserObject(getInitiatingMessage() + " - " + getTargetUrl()); // XXX invokeLater
 	}
 
@@ -183,7 +166,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * @see org.cip4.tools.alces.TestSession#addOutgoingTest(org.cip4.tools.alces.tests.Test)
 	 */
 	public void addOutgoingTest(Test test) {
-		_wrappedTestSession.addOutgoingTest(test);
+		testSession.addOutgoingTest(test);
 	}
 
 	/*
@@ -191,7 +174,7 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * @see org.cip4.tools.alces.TestSession#addIncomingTest(org.cip4.tools.alces.tests.Test)
 	 */
 	public void addIncomingTest(Test test) {
-		_wrappedTestSession.addIncomingTest(test);
+		testSession.addIncomingTest(test);
 	}
 
 	/*
@@ -199,23 +182,23 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * @see org.cip4.tools.alces.TestSession#addTestResult(org.cip4.tools.alces.TestResult)
 	 */
 	public void addTestResult(TestResult testResult) {
-		_wrappedTestSession.addTestResult(testResult);
+		testSession.addTestResult(testResult);
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.cip4.tools.alces.TestSession#getIncomingMessages()
 	 */
-	public List<InMessage> getIncomingMessages() {
-		return _wrappedTestSession.getIncomingMessages();
+	public List<IncomingJmfMessage> getIncomingMessages() {
+		return testSession.getIncomingMessages();
 	}
 
 	/*
 	 * (non-Javadoc)
 	 * @see org.cip4.tools.alces.TestSession#getOutgoingMessages()
 	 */
-	public List<OutMessage> getOutgoingMessages() {
-		return _wrappedTestSession.getOutgoingMessages();
+	public List<OutgoingJmfMessage> getOutgoingMessages() {
+		return testSession.getOutgoingMessages();
 	}
 
 	/*
@@ -223,19 +206,19 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	 * @see org.cip4.tools.alces.TestSession#getTestResults()
 	 */
 	public List<TestResult> getTestResults() {
-		return _wrappedTestSession.getTestResults();
+		return testSession.getTestResults();
 	}
 
-	public OutMessage getOutgoingMessage(InMessage message) {
-		return _wrappedTestSession.getOutgoingMessage(message);
+	public OutgoingJmfMessage getOutgoingMessage(IncomingJmfMessage message) {
+		return testSession.getOutgoingMessage(message);
 	}
 
-	public InMessage getIncomingMessage(OutMessage message) {
-		return _wrappedTestSession.getIncomingMessage(message);
+	public IncomingJmfMessage getIncomingMessage(OutgoingJmfMessage message) {
+		return testSession.getIncomingMessage(message);
 	}
 
-	public Message getInitiatingMessage() {
-		return _wrappedTestSession.getInitiatingMessage();
+	public AbstractJmfMessage getInitiatingMessage() {
+		return testSession.getInitiatingMessage();
 	}
 
 	public boolean isValid() {
@@ -247,14 +230,14 @@ public class TestSessionNode extends DefaultMutableTreeNode implements TestSessi
 	}
 
 	public void addListener(TestSessionListener listener) {
-		_wrappedTestSession.addListener(listener);
+		testSession.addListener(listener);
 	}
 
 	public void removeListener(TestSessionListener listener) {
-		_wrappedTestSession.removeListener(listener);
+		testSession.removeListener(listener);
 	}
 
 	public boolean hasPassedAllTests() {
-		return _wrappedTestSession.hasPassedAllTests();
+		return testSession.hasPassedAllTests();
 	}
 }

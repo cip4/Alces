@@ -84,20 +84,20 @@ public class ActionSaveRequestsResponcesToDisk extends AbstractAction {
 					// messageNode.toString().trim() + ".xml");
 					String extension = JDFConstants.XML_EXTENSION;
 					// TODO: see JDFConstants
-					if (messageNode.getContentType().contains(JDFConstants.JMF_CONTENT_TYPE)) {
+					if (messageNode.getJmfMessage().getContentType().contains(JDFConstants.JMF_CONTENT_TYPE)) {
 						extension = JDFConstants.JMF_EXTENSION;
-					} else if (messageNode.getContentType().contains(JDFConstants.JDF_CONTENT_TYPE)) {
+					} else if (messageNode.getJmfMessage().getContentType().contains(JDFConstants.JDF_CONTENT_TYPE)) {
 						extension = JDFConstants.JDF_EXTENSION;
-					} else if (messageNode.getContentType().contains(JDFConstants.MIME_CONTENT_TYPE)) {
+					} else if (messageNode.getJmfMessage().getContentType().contains(JDFConstants.MIME_CONTENT_TYPE)) {
 						extension = JDFConstants.JMF_MIME_EXTENSION;
 					}
 
 					String fileName = updateString(messageNode.toString().trim());
 					fileName += extension;
 					log.info("File name = " + fileName);
-					log.info("file content type = " + messageNode.getContentType());
-					log.info("file content = " + messageNode.getBody());
-					save(folderName, fileName, messageNode.getBody());
+					log.info("file content type = " + messageNode.getJmfMessage().getContentType());
+					log.info("file content = " + messageNode.getJmfMessage().getBody());
+					save(folderName, fileName, messageNode.getJmfMessage().getBody());
 				}
 				findReqRes(n, folderName);
 			}

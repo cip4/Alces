@@ -9,13 +9,12 @@ import java.util.Vector;
 
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.InMessageImpl;
-import org.cip4.tools.alces.message.Message;
-import org.cip4.tools.alces.message.OutMessage;
-import org.cip4.tools.alces.message.OutMessageImpl;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,13 +27,13 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 
 	private static Logger log = LoggerFactory.getLogger(TestSuiteImpl.class);
 
-	private final List<TestSession> _testSessions;
+	private final List<TestSession> testSessions;
 
-	private final List<TestSessionListener> _listeners;
+	private final List<TestSessionListener> testSessionListeners;
 
 	public TestSuiteImpl() {
-		_testSessions = new Vector<TestSession>();
-		_listeners = new ArrayList<TestSessionListener>();
+		testSessions = new Vector<>();
+		testSessionListeners = new ArrayList<>();
 	}
 
 	/**
@@ -43,7 +42,7 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 	 * @param testSession
 	 */
 	public synchronized TestSession addTestSession(TestSession testSession) {
-		_testSessions.add(testSession);
+		testSessions.add(testSession);
 		testSession.addListener(this);
 		return testSession;
 	}
@@ -55,7 +54,7 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 	 * @return
 	 */
 	public synchronized boolean removeTestSession(TestSession testSession) {
-		return _testSessions.remove(testSession);
+		return testSessions.remove(testSession);
 	}
 
 	/**
@@ -64,8 +63,8 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 	 * @param message
 	 * @return
 	 */
-	public synchronized TestSession findTestSession(Message message) {
-		final JDFJMF jmf = message.getBodyAsJMF();
+	public synchronized TestSession findTestSession(AbstractJmfMessage message) {
+		final JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 		if (jmf == null) {
 			log.debug("Incoming message does not contain JMF; TestSession not found.");
 			return null;
@@ -73,9 +72,9 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 		final JDFMessage jmfMsg = jmf.getMessageElement(null, null, 0);
 		final String refId = jmfMsg.getrefID();
 		log.debug("Searching for test session for incoming JMF message with refID '" + refId + "'...");
-		for (TestSession s : _testSessions) {
-			for (Message mOut : s.getOutgoingMessages()) {
-				JDFJMF jmfOut = mOut.getBodyAsJMF();
+		for (TestSession testSession : testSessions) {
+			for (AbstractJmfMessage mOut : testSession.getOutgoingMessages()) {
+				JDFJMF jmfOut = JmfUtil.getBodyAsJMF(mOut);
 				if (jmfOut == null) {
 					log.debug("TestSession's outgoing message does not contain JMF; incoming message cannot be matched to outgoing message.");
 					continue;
@@ -83,7 +82,7 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 				JDFMessage jmfMsgOut = jmfOut.getMessageElement(null, null, 0);
 				if (refId.startsWith(jmfMsgOut.getID())) {
 					log.debug("Found test session with refID '" + jmfMsgOut.getID() + "' that matches incoming message with refID '" + refId + "'.");
-					return s;
+					return testSession;
 				}
 			}
 		}
@@ -92,36 +91,36 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 	}
 
 	public List<TestSession> getTestSessions() {
-		return _testSessions;
+		return testSessions;
 	}
 
-	public InMessage createInMessage(String contentType, String header, String body, boolean isSessionInitiator) {
-		return new InMessageImpl(contentType, header, body, isSessionInitiator);
+	public IncomingJmfMessage createInMessage(String contentType, String header, String body, boolean isSessionInitiator) {
+		return new IncomingJmfMessage(contentType, header, body, isSessionInitiator);
 	}
 
-	public OutMessage createOutMessage(String contentType, String header, String body, boolean isSessionInitiator) {
-		return new OutMessageImpl(contentType, header, body, isSessionInitiator);
+	public OutgoingJmfMessage createOutMessage(String contentType, String header, String body, boolean isSessionInitiator) {
+		return new OutgoingJmfMessage(contentType, header, body, isSessionInitiator);
 	}
 
 	public TestSession createTestSession(String targetUrl) {
 		return new TestSessionImpl(targetUrl);
 	}
 
-	public TestResult createTestResult(Test test, Message testedMessage, Result result, String testLog) {
+	public TestResult createTestResult(Test test, AbstractJmfMessage testedMessage, Result result, String testLog) {
 		return new TestResultImpl(test, testedMessage, result, testLog);
 	}
 
 	// TestSession listeners
 
 	public void addTestSessionListener(TestSessionListener listener) {
-		_listeners.add(listener);
+		testSessionListeners.add(listener);
 	}
 
 	public void removeTestSessionListener(TestSessionListener listener) {
-		_listeners.remove(listener);
+		testSessionListeners.remove(listener);
 	}
 
-	public void messageReceived(InMessage inMessage, TestSession testSession) {
+	public void messageReceived(IncomingJmfMessage inMessage, TestSession testSession) {
 		notifyListeners(inMessage, testSession);
 	}
 
@@ -131,11 +130,11 @@ public class TestSuiteImpl implements TestSuite, TestSessionListener {
 	 * @param message the received message
 	 * @param testSession the message's test session
 	 */
-	protected void notifyListeners(InMessage message, TestSession testSession) {
-		if (_listeners == null || _listeners.size() == 0) {
+	protected void notifyListeners(IncomingJmfMessage message, TestSession testSession) {
+		if (testSessionListeners == null || testSessionListeners.size() == 0) {
 			return;
 		}
-		TestSessionListener[] listeners = _listeners.toArray(new TestSessionListener[_listeners.size()]);
+		TestSessionListener[] listeners = testSessionListeners.toArray(new TestSessionListener[testSessionListeners.size()]);
 		for (int i = 0; i < listeners.length; i++) {
 			listeners[i].messageReceived(message, testSession);
 		}

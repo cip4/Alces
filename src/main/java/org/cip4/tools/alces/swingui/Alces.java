@@ -75,9 +75,8 @@ import org.cip4.jdflib.resource.JDFDevice;
 import org.cip4.jdflib.resource.JDFDeviceList;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.jmf.JMFMessageFactory;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.OutMessage;
-import org.cip4.tools.alces.message.OutMessageImpl;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.swingui.actions.ActionCollapse;
 import org.cip4.tools.alces.swingui.actions.ActionCollapseAll;
@@ -91,6 +90,7 @@ import org.cip4.tools.alces.test.TestSuite;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -217,7 +217,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		_confHand.loadConfiguration(_confHand.getProp(ConfigurationHandler.PROPERTIES_FILE));
 
 		_testSuite = new TestSuiteNode();
-		testRunner = new TestRunner(_testSuite);// _deviceUrl, queuePanel,
+		testRunner = new TestRunner(_testSuite.getTestSuite());// _deviceUrl, queuePanel,
 
 		// MAIN PANEL
 		Container pane = getContentPane();
@@ -437,7 +437,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @return The test suite
 	 */
 	public TestSuite getTestSuite() {
-		return this._testSuite;
+		return this._testSuite.getTestSuite();
 	}
 
 	/**
@@ -449,8 +449,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 */
 	private JDFJMF sendKnownDevices() throws IOException {
 		log.info("Sending KnownDevices...");
-		final OutMessage outMessage = createMessage("Connect_KnownDevices");
-		InMessage inMessage = null;
+		final OutgoingJmfMessage outMessage = createMessage("Connect_KnownDevices");
+		IncomingJmfMessage inMessage = null;
 		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
 			inMessage = testRunner.sendMessage(outMessage, getDeviceUrl());
 		} else {
@@ -468,7 +468,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			inMessage = testSession.getIncomingMessage(outMessage);
 		}
 
-		final JDFJMF jmf = inMessage.getBodyAsJMF();
+		final JDFJMF jmf = JmfUtil.getBodyAsJMF(inMessage);
 		log.info("Sending KnownDevices...done");
 		return jmf;
 	}
@@ -480,8 +480,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 */
 	private JDFJMF sendQueueStatus() throws IOException {
 		log.info("Sending QueueStatus...");
-		final OutMessage outMessage = createMessage("Connect_QueueStatus");
-		InMessage inMessage = null;
+		final OutgoingJmfMessage outMessage = createMessage("Connect_QueueStatus");
+		IncomingJmfMessage inMessage = null;
 		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
 			inMessage = testRunner.sendMessage(outMessage, getDeviceUrl());
 		} else {
@@ -499,7 +499,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			inMessage = testSession.getIncomingMessage(outMessage);
 		}
 
-		final JDFJMF jmf = inMessage.getBodyAsJMF();
+		final JDFJMF jmf = JmfUtil.getBodyAsJMF(inMessage);
 		log.info("Sending QueueStatus...done");
 		return jmf;
 	}
@@ -512,8 +512,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	/**
 	 * Updates the combobox listing known devices.
-	 * 
-	 * @param knownDevices a JMF message containing a KnownDevices response
 	 */
 	private void setKnownDevices(JDFJMF knownDevicesResponse) {
 		// Remove old known devices first
@@ -591,8 +589,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 */
 	private JDFJMF sendKnownMessages() throws IOException {
 		log.info("Sending KnownMessages...");
-		OutMessage outMessage = createMessage("Connect_KnownMessages");
-		InMessage inMessage = null;
+		OutgoingJmfMessage outMessage = createMessage("Connect_KnownMessages");
+		IncomingJmfMessage inMessage = null;
 		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
 			inMessage = testRunner.sendMessage(outMessage, getDeviceUrl());
 		} else {
@@ -610,7 +608,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			inMessage = testSession.getIncomingMessage(outMessage);
 		}
 
-		JDFJMF jmf = inMessage.getBodyAsJMF();
+		JDFJMF jmf = JmfUtil.getBodyAsJMF(inMessage);
 		log.info("Sending KnownMessages...done");
 		return jmf;
 	}
@@ -728,7 +726,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @param messageTemplate the name of the message's template
 	 * @return a message generated from the specified template
 	 */
-	public OutMessageImpl createMessage(String messageTemplate) {
+	public OutgoingJmfMessage createMessage(String messageTemplate) {
 		String header = null;
 		String body = null;
 		header = "Content-Type: application/vnd.cip4-jmf+xml";
@@ -737,10 +735,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			jmf.setDeviceID("" + deviceListComboBox.getSelectedItem());
 		}
 		body = jmf.getOwnerDocument_KElement().write2String(2);
-		return new OutMessageImpl(header, body, true);
+		return new OutgoingJmfMessage(header, body, true);
 	}
 
-	private OutMessage createSubmitQueueEntry(File jdfFile) {
+	private OutgoingJmfMessage createSubmitQueueEntry(File jdfFile) {
 		log.debug("Creating a SubmitQueueEntry message for submitting JDF '" + jdfFile.getAbsolutePath() + "'...");
 		String publicDirPath = _confHand.getProp(ConfigurationHandler.RESOURCE_BASE);
 
@@ -774,9 +772,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 
 		// Load SubmitQueueEntry template
-		OutMessage sqeMsg = createMessage("Template_SubmitQueueEntry");
+		OutgoingJmfMessage sqeMsg = createMessage("Template_SubmitQueueEntry");
 		// Set URL in SubmitQueueEntry to JDF URL
-		JDFJMF sqeJmf = sqeMsg.getBodyAsJMF();
+		JDFJMF sqeJmf = JmfUtil.getBodyAsJMF(sqeMsg);
 		sqeJmf.setDeviceID("" + deviceListComboBox.getSelectedItem());
 		sqeJmf.getCommand(0).getQueueSubmissionParams(0).setURL(publicJdfUrl);
 		sqeMsg.setBody(sqeJmf.getOwnerDocument_KElement().write2String(2));
@@ -994,7 +992,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		String queueEntryId;
 		String jobId;
 
-		OutMessage outMessage;
+		OutgoingJmfMessage outMessage;
 
 		String actionCommand = e.getActionCommand();
 		log.info("New action event received: '{}'", actionCommand);
@@ -1239,7 +1237,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				if (queueEntryId != null) {
-					OutMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
+					OutgoingJmfMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
 					testRunner.startTestSession(message, getDeviceUrl());
 				} else {
 					testRunner.startTestSession(createMessage(actionCommand), getDeviceUrl());
@@ -1302,8 +1300,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		Object[] children = e.getChildren();
 		for (int i = 0; i < children.length; i++) {
 			Object child = children[i];
-			if (child instanceof InMessage) {
-				JDFJMF jmf = ((InMessage) child).getBodyAsJMF();
+			if (child instanceof IncomingJmfMessage) {
+				JDFJMF jmf = JmfUtil.getBodyAsJMF((IncomingJmfMessage) child);
 				if (jmf != null) {
 					processReceivedJMF(jmf);
 				}
@@ -1373,16 +1371,16 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			if (log.isDebugEnabled()) {
 				log.debug("Rendering tree cell " + value.getClass() + " - " + value + "...");
 			}
-			if (value instanceof OutMessage) {
-				if (((OutMessage) value).hasPassedAllTests()) {
+			if (value instanceof OutgoingJmfMessage) {
+				if (((OutgoingJmfMessage) value).hasPassedAllTests()) {
 					setIcon(messageOutPassIcon);
 					setToolTipText("Outgoing message");
 				} else {
 					setIcon(messageOutFailIcon);
 					setToolTipText("Outgoing message");
 				}
-			} else if (value instanceof InMessage) {
-				if (((InMessage) value).hasPassedAllTests()) {
+			} else if (value instanceof IncomingJmfMessage) {
+				if (((IncomingJmfMessage) value).hasPassedAllTests()) {
 					setIcon(messageInPassIcon);
 					setToolTipText("Incoming message");
 				} else {

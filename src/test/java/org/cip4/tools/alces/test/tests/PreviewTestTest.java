@@ -2,8 +2,8 @@ package org.cip4.tools.alces.test.tests;
 
 import org.apache.commons.lang.StringUtils;
 import org.cip4.tools.alces.junit.AlcesTestCase;
-import org.cip4.tools.alces.message.InMessageImpl;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.junit.jupiter.api.Assertions;
@@ -17,7 +17,7 @@ public class PreviewTestTest extends AlcesTestCase {
     public void testRunTest_OnePreview() throws IOException {
         // Load JMF
         String jmf = getTestFileAsString("ResourceSignal_Preview_first.jmf");
-        Message message = new InMessageImpl(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
+        AbstractJmfMessage message = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
         // Configure test
         File previewDir = new File(System.getProperty("java.io.tmpdir"), "PreviewTestTest");
         Test test = new PreviewTest(previewDir);
@@ -33,7 +33,7 @@ public class PreviewTestTest extends AlcesTestCase {
     public void testRunTest_FourPreviews() throws IOException {
         // Load JMF
         String jmf = getTestFileAsString("ResourceCMD_Preview_all.jmf");
-        Message message = new InMessageImpl(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
+        AbstractJmfMessage message = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
         // Configure test
         File previewDir = new File(System.getProperty("java.io.tmpdir"), "PreviewTestTest");
         Test test = new PreviewTest(previewDir);
@@ -49,7 +49,7 @@ public class PreviewTestTest extends AlcesTestCase {
     public void testRunTest_Fail() throws IOException {
         // Load JMF
         String jmf = getTestFileAsString("ResourceSignal_Preview_all.jmf");
-        Message message = new InMessageImpl(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
+        AbstractJmfMessage message = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
         // Configure test
         File previewDir = new File(System.getProperty("java.io.tmpdir"), "PreviewTestTest");
         Test test = new PreviewTest(previewDir);

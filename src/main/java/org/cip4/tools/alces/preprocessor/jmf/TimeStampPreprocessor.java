@@ -5,10 +5,11 @@ package org.cip4.tools.alces.preprocessor.jmf;
 
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.util.JDFDate;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,7 +28,7 @@ public class TimeStampPreprocessor implements Preprocessor {
 	/**
 	 * Preprocesses a JMF message by replacing JMF/@TimeStamp
 	 */
-	public Message preprocess(Message message, PreprocessorContext context) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message, PreprocessorContext context) throws PreprocessorException {
 		if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
 			log.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
 			return message;
@@ -36,7 +37,7 @@ public class TimeStampPreprocessor implements Preprocessor {
 			log.debug("Preprocessor input: " + message.toString());
 		}
 
-		JDFJMF jmf = message.getBodyAsJMF();
+		JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 		jmf.setTimeStamp(new JDFDate());
 		message.setBody(jmf.toXML());
 
@@ -46,7 +47,7 @@ public class TimeStampPreprocessor implements Preprocessor {
 		return message;
 	}
 
-	public Message preprocess(Message message) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message) throws PreprocessorException {
 		return preprocess(message, null);
 	}
 }

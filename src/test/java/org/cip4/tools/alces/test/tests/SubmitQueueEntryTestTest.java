@@ -8,8 +8,7 @@ import org.apache.commons.vfs.FileSystemManager;
 import org.apache.commons.vfs.VFS;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.tools.alces.junit.AlcesTestCase;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.InMessageImpl;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.junit.jupiter.api.Assertions;
@@ -43,7 +42,7 @@ public class SubmitQueueEntryTestTest extends AlcesTestCase {
         Assertions.assertTrue(jdfFile.exists(), "JDF file referenced by JMF does not exist: " + jdfFile.getAbsolutePath());
         jmf.getCommand(0).getQueueSubmissionParams(0).setURL(jdfFile.toURI().toASCIIString());
         // Create Message and run test
-        InMessage msg = new InMessageImpl(JDFConstants.JMF_CONTENT_TYPE, jmf.toXML(), true);
+        IncomingJmfMessage msg = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf.toXML(), true);
         SubmitQueueEntryTest test = new SubmitQueueEntryTest();
         TestResult result = test.runTest(msg);
         System.out.println("Validated: " + result.isPassed());

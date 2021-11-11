@@ -17,11 +17,12 @@ import org.cip4.jdflib.jmf.JDFCommand;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage.EnumFamily;
 import org.cip4.jdflib.jmf.JDFMessage.EnumType;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +80,7 @@ public class SubmitQueueEntryTest extends ConfigurableTest {
 	 * @see SubmitQueueEntryTest
 	 */
 	@Override
-	public TestResult runTest(Message message) {
+	public TestResult runTest(AbstractJmfMessage message) {
 		final StringBuffer testLog = new StringBuffer();
 		final TestResult testResult;
 		// Test that message is JMF
@@ -87,7 +88,7 @@ public class SubmitQueueEntryTest extends ConfigurableTest {
 			testLog.append("Test ignored because message did not contain JMF. Message content-type was: " + message.getContentType());
 			testResult = new TestResultImpl(this, message, Result.IGNORED, testLog.toString());
 		} else {
-			JDFJMF jmf = message.getBodyAsJMF();
+			JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 			List<JDFCommand> jmfCommands = getJMFCommands(jmf);
 			if (jmfCommands.size() == 0) {
 				testResult = new TestResultImpl(this, message, Result.IGNORED, "Test ignored.");

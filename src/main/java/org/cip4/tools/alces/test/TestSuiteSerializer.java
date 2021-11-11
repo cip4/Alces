@@ -23,11 +23,12 @@ import org.apache.commons.lang.StringEscapeUtils;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.jdflib.node.JDFNode;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.Message;
-import org.cip4.tools.alces.message.OutMessage;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,7 +71,6 @@ public class TestSuiteSerializer {
 	 * Serializes a TestSuite writing it to the specified base output directory. If the base output directory does not exist it is created.
 	 * 
 	 * @param suite the TestSuite to serialize
-	 * @param outputDir the base output directory to where the TestSuite and its resources will be written
 	 * @return the XML file the TestSuite was serialized to
 	 * @throws IOException
 	 */
@@ -137,7 +137,6 @@ public class TestSuiteSerializer {
 	/**
 	 * Serializes a TestSuite
 	 * 
-	 * @param session the TestSession to serialize
 	 * @param outputDir the output directory to write referenced files to
 	 * @param out the Writer used to append to the TestSuites's log file
 	 * @throws IOException
@@ -156,17 +155,17 @@ public class TestSuiteSerializer {
 		out.write("<session url='");
 		out.write(session.getTargetUrl());
 		out.write("'>\n");
-		Message message = session.getInitiatingMessage();
+		AbstractJmfMessage message = session.getInitiatingMessage();
 		serializeMessage(message, outputDir, out);
 		out.write("</session>\n");
 	}
 
-	private void serializeMessage(Message message, File outputDir, Writer out) throws IOException {
+	private void serializeMessage(AbstractJmfMessage message, File outputDir, Writer out) throws IOException {
 		log.debug("Serializing message...");
 		out.write("<message type='");
-		if (message instanceof OutMessage) {
+		if (message instanceof OutgoingJmfMessage) {
 			out.write("out");
-		} else if (message instanceof InMessage) {
+		} else if (message instanceof IncomingJmfMessage) {
 			out.write("in");
 		}
 		out.write("'>\n");
@@ -198,15 +197,18 @@ public class TestSuiteSerializer {
 			serializeTestResult(result, outputDir, out);
 		}
 		out.write("</tests>\n");
-		List<? extends Message> messages = null;
-		if (message instanceof OutMessage) {
-			messages = ((OutMessage) message).getInMessages();
-		} else if (message instanceof InMessage) {
-			messages = ((InMessage) message).getOutMessages();
+		List<? extends AbstractJmfMessage> messages = null;
+
+		if (message instanceof OutgoingJmfMessage) {
+			messages = ((OutgoingJmfMessage) message).getIncomingJmfMessages();
+
+		} else if (message instanceof IncomingJmfMessage) {
+			messages = ((IncomingJmfMessage) message).getOutgoingJmfMessages();
+
 		}
 		if (message != null && messages.size() != 0) {
 			out.write("<messages>\n");
-			for (Message subMessage : messages) {
+			for (AbstractJmfMessage subMessage : messages) {
 				serializeMessage(subMessage, outputDir, out);
 			}
 			out.write("</messages>\n");
@@ -241,12 +243,12 @@ public class TestSuiteSerializer {
 	 * @param outputDir
 	 * @return a URL to the file containing the message body
 	 */
-	private String saveMessageBody(Message message, File outputDir) throws IOException {
+	private String saveMessageBody(AbstractJmfMessage message, File outputDir) throws IOException {
 		final String filename;
 		final String extension;
 
 		if (message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
-			JDFJMF jmf = message.getBodyAsJMF();
+			JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 			if (jmf != null) {
 				JDFMessage msg = jmf.getMessageElement(null, null, 0);
 				filename = normalize(jmf.getTimeStamp().getDateTimeISO()) + "_" + msg.getTagName() + msg.getType() + "_" + msg.getID() + "_" + RandomStringUtils.randomAlphanumeric(6);
@@ -254,14 +256,6 @@ public class TestSuiteSerializer {
 				filename = RandomStringUtils.randomAlphanumeric(16);
 			}
 			extension = JDFConstants.JMF_EXTENSION;
-		} else if (message.getContentType().startsWith(JDFConstants.JDF_CONTENT_TYPE)) {
-			JDFNode jdf = message.getBodyAsJDF();
-			if (jdf != null) {
-				filename = normalize(jdf.getJobID(true)) + "_" + jdf.getID() + "_" + RandomStringUtils.randomAlphanumeric(6);
-			} else {
-				filename = RandomStringUtils.randomAlphanumeric(16);
-			}
-			extension = JDFConstants.JDF_EXTENSION;
 		} else if (message.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE)) {
 			filename = RandomStringUtils.randomAlphanumeric(16);
 			extension = JDFConstants.JMF_MIME_EXTENSION;
