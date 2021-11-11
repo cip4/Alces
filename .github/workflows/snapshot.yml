@@ -3,11 +3,11 @@ name: Snapshot
 on:
   workflow_dispatch:
   push:
-    branches: [ main, extract-name-from-gradle ]
+    branches: [ main ]
 jobs:
   call-tool-snapshot:
     name: 🏭
-    uses: cip4/.github/.github/workflows/tool-snapshot.yml@extract-name-from-gradle
+    uses: cip4/.github/.github/workflows/tool-snapshot.yml@v1
     with:
       java-version: 16
       confluence-label: alces
