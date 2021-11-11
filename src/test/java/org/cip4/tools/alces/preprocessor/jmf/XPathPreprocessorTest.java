@@ -4,8 +4,8 @@
 package org.cip4.tools.alces.preprocessor.jmf;
 
 import org.cip4.tools.alces.junit.AlcesTestCase;
-import org.cip4.tools.alces.message.Message;
-import org.cip4.tools.alces.message.OutMessageImpl;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -20,7 +20,7 @@ public class XPathPreprocessorTest extends AlcesTestCase {
     @Test
     public void testPreprocess() throws Exception {
         XPathPreprocessor pp;
-        Message jmf = new OutMessageImpl(null,
+        AbstractJmfMessage jmf = new OutgoingJmfMessage(null,
                 getTestFileAsString("QueryKnownDevices.jmf"), true);
         pp = new XPathPreprocessor();
         Map xpathValuePairs = new Properties();

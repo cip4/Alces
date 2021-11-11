@@ -6,7 +6,7 @@ package org.cip4.tools.alces.preprocessor.jmf;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.util.ConfigurationHandler;
@@ -64,7 +64,7 @@ public class URLPreprocessor extends XPathPreprocessor {
     }
 
     @Override
-	public Message preprocess(Message message, PreprocessorContext context) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message, PreprocessorContext context) throws PreprocessorException {
     	if (context != null && context.getAttribute(URL_ATTR) != null) {
     		setURL((String) context.getAttribute(URL_ATTR));
     	}

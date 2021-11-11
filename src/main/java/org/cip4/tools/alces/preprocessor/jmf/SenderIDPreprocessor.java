@@ -4,9 +4,10 @@
 package org.cip4.tools.alces.preprocessor.jmf;
 
 import org.cip4.jdflib.jmf.JDFJMF;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,14 +42,12 @@ public class SenderIDPreprocessor implements Preprocessor {
 
 	/**
 	 * Preprocesses a JMF message by replacing SenderID.
-	 * 
-	 * @see org.mule.transformers.AbstractTransformer#doTransform(java.lang.Object)
 	 */
-	public Message preprocess(final Message message) {
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message) {
 		return preprocess(message, null);
 	}
 
-	public Message preprocess(Message message, PreprocessorContext context) {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message, PreprocessorContext context) {
 		if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
 			log.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
 			return message;
@@ -67,7 +66,7 @@ public class SenderIDPreprocessor implements Preprocessor {
 			log.debug("Preprocessor input: " + message.toString());
 		}
 
-		JDFJMF jmf = message.getBodyAsJMF();
+		JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 		jmf.setSenderID(senderId);
 		message.setBody(jmf.toXML());
 

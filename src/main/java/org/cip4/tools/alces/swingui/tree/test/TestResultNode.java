@@ -7,7 +7,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.test.tests.Test;
@@ -18,10 +18,9 @@ import org.cip4.tools.alces.test.tests.Test;
  * 
  * @author Claes Buckwalter (clabu@itn.liu.se)
  */
-public class TestResultNode extends DefaultMutableTreeNode implements
-        TestResult {
+public class TestResultNode extends DefaultMutableTreeNode {
 
-    private final TestResult wrappedTestResult;
+    private final TestResult testResult;
     private final DefaultTreeModel treeModel;
 
     /** 
@@ -30,8 +29,8 @@ public class TestResultNode extends DefaultMutableTreeNode implements
      * a wrapper allowing the TestResult to be displayed in a JTree. 
      * @param treeModel the tree model this node belongs to
      */
-    public TestResultNode(Test test, Message message, Result result,
-            String resultString, DefaultTreeModel treeModel) {
+    public TestResultNode(Test test, AbstractJmfMessage message, TestResult.Result result,
+                          String resultString, DefaultTreeModel treeModel) {
         this(new TestResultImpl(test, message, result, resultString), treeModel);
 
     }
@@ -50,7 +49,7 @@ public class TestResultNode extends DefaultMutableTreeNode implements
                     "The testResult may not be TreeNode.");
         }
         this.treeModel = treeModel;
-        this.wrappedTestResult = testResult;
+        this.testResult = testResult;
         setUserObject(testResult.getTest().getDescription()); //XXX invokeLater
     }
 
@@ -60,7 +59,7 @@ public class TestResultNode extends DefaultMutableTreeNode implements
      * @see org.cip4.tools.alces.test.TestResult#getLogMessage()
      */
     public String getResultString() {
-        return wrappedTestResult.getResultString();
+        return testResult.getResultString();
     }
 
     /*
@@ -68,8 +67,8 @@ public class TestResultNode extends DefaultMutableTreeNode implements
      * 
      * @see org.cip4.tools.alces.test.TestResult#getMessage()
      */
-    public Message getMessage() {
-        return wrappedTestResult.getMessage();
+    public AbstractJmfMessage getMessage() {
+        return testResult.getMessage();
     }
 
     /*
@@ -78,7 +77,7 @@ public class TestResultNode extends DefaultMutableTreeNode implements
      * @see org.cip4.tools.alces.test.TestResult#isPassed()
      */
     public boolean isPassed() {
-        return wrappedTestResult.isPassed();
+        return testResult.isPassed();
     }
 
     /*
@@ -87,18 +86,18 @@ public class TestResultNode extends DefaultMutableTreeNode implements
      * @see org.cip4.tools.alces.test.TestResult#getTest()
      */
     public Test getTest() {
-        return wrappedTestResult.getTest();
+        return testResult.getTest();
     }
     
     public TestResult getWrappedTestResult() {
-    	return wrappedTestResult;    	
+    	return testResult;
     }
 
-	public Result getResult() {
-		return wrappedTestResult.getResult();
+	public TestResult.Result getResult() {
+		return testResult.getResult();
 	}
 
 	public boolean isIgnored() {
-		return wrappedTestResult.isIgnored();
+		return testResult.isIgnored();
 	}
 }

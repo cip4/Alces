@@ -4,6 +4,7 @@
 package org.cip4.tools.alces.message.util.mime;
 
 import org.cip4.tools.alces.junit.AlcesTestCase;
+import org.cip4.tools.alces.util.MimeUtil;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -28,7 +29,7 @@ public class MimeReaderTest extends AlcesTestCase {
      * Extracts a JMF and a JDF from a MIME package.
      */
     @Test
-    public void testParseMime_JMF_JDF() throws IOException, MimePackageException, URISyntaxException {
+    public void testParseMime_JMF_JDF() throws IOException, URISyntaxException {
         // Setup path to MIME package
         String mimeResource = "SubmitQueueEntry.jmf_Approval.jdf.mjm";
         // Setup output dir
@@ -43,8 +44,7 @@ public class MimeReaderTest extends AlcesTestCase {
         // Extract files form MIME package
         InputStream mimeStream = getTestFileAsStream(mimeResource);
         Assertions.assertNotNull(mimeStream, "Input stream was null for file: " + mimeResource);
-        MimeReader mimeReader = new MimeReader();
-        String[] fileUrls = mimeReader.extractMimePackage(mimeStream,
+        String[] fileUrls = MimeUtil.extractMimePackage(mimeStream,
                 outputDir.toURI().toURL().toExternalForm());
         Assertions.assertTrue(fileUrls.length == 2);
         for (int i = 0; i < fileUrls.length; i++) {

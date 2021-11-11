@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.cip4.jdflib.util.JDFDate;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.util.JDFConstants;
@@ -103,7 +103,7 @@ public class JMFPreprocessor implements Preprocessor {
 	/**
 	 * Preprocesses a JMF message by replacing SenderID, TimeStamp, and IDs of any Query, Command, Signal, Acknowledge, or Response.
 	 */
-	public Message preprocess(final Message message) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message) throws PreprocessorException {
 		if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
 			log.debug("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
 			return message;
@@ -303,7 +303,7 @@ public class JMFPreprocessor implements Preprocessor {
 		}
 	}
 
-	public Message preprocess(Message message, PreprocessorContext context) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message, PreprocessorContext context) throws PreprocessorException {
 		return preprocess(message);
 	}
 

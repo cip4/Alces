@@ -3,7 +3,7 @@
  */
 package org.cip4.tools.alces.test.tests;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
@@ -29,12 +29,8 @@ public class JDFContentTest extends Test {
                         + "HTTP header Content-type.");
     }
 
-    /**
-     * 
-     * @see org.cip4.tools.alces.test.tests.Test#runTest(org.cip4.tools.alces.message.Message)
-     */
     @Override
-	public TestResult runTest(Message message) {
+	public TestResult runTest(AbstractJmfMessage message) {
         boolean passedTest = false;
         String logMsg = "Passed test.";
         String body = message.getBody();

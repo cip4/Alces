@@ -3,7 +3,7 @@
  */
 package org.cip4.tools.alces.test;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.tests.Test;
 
 
@@ -14,10 +14,10 @@ public class TestResultImpl implements TestResult {
 
     private final String resultString;
     private final Result result;
-    private final Message message;
+    private final AbstractJmfMessage message;
     private final Test test;
     
-    public TestResultImpl(Test test, Message message, Result result, String resultString) {
+    public TestResultImpl(Test test, AbstractJmfMessage message, Result result, String resultString) {
         this.test = test;
         this.message = message;
         this.result= result;
@@ -28,7 +28,7 @@ public class TestResultImpl implements TestResult {
         return resultString;
     }
 
-    public Message getMessage() {
+    public AbstractJmfMessage getMessage() {
         return message;
     }
 

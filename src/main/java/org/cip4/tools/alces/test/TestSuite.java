@@ -1,17 +1,12 @@
-/*
- * Created on May 3, 2005
- */
 package org.cip4.tools.alces.test;
 
 import java.util.List;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 
 /**
  * A class that represents a collection of <code>TestSession</code>s acts as
  * a factory for test-related objects.
- * 
- * @author Claes Buckwalter
  */
 public interface TestSuite extends TestFactory {
 
@@ -39,7 +34,7 @@ public interface TestSuite extends TestFactory {
 	 *         belongs to; <code>null</code> if the <code>Message</code> has
 	 *         no <code>TestSession</code>
 	 */
-	public TestSession findTestSession(Message message);
+	public TestSession findTestSession(AbstractJmfMessage message);
 
 	public List<TestSession> getTestSessions();
 	

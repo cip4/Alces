@@ -16,7 +16,7 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,24 +40,17 @@ public class XsltTestResult extends TestResultImpl {
 	 * @param xslFilePath the path to the XSL file that defines the XSLT transform
 	 * @param test
 	 * @param message
-	 * @param passedTest
 	 * @param logMessage
 	 * @throws FileNotFoundException
 	 */
-	public XsltTestResult(String xslFilePath, Test test, Message message, Result result, String logMessage) throws FileNotFoundException {
+	public XsltTestResult(String xslFilePath, Test test, AbstractJmfMessage message, Result result, String logMessage) throws FileNotFoundException {
 		this(new FileInputStream(xslFilePath), test, message, result, logMessage);
 	}
 
 	/**
 	 * Creates a TestResult that transforms the result string using an XSLT transformation.
-	 * 
-	 * @param xslFile the File object that represents the XSL file that defines the XSLT transform
-	 * @param test
-	 * @param message
-	 * @param passedTest
-	 * @param logMessage
 	 */
-	public XsltTestResult(InputStream isXslFile, Test test, Message message, Result result, String logMessage) {
+	public XsltTestResult(InputStream isXslFile, Test test, AbstractJmfMessage message, Result result, String logMessage) {
 		super(test, message, result, logMessage);
 		this.isXslFile = isXslFile;
 	}

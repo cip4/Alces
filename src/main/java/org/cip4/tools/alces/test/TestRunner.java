@@ -15,9 +15,8 @@ import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.node.JDFNode;
 import org.cip4.jdflib.util.MimeUtil;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.InMessageImpl;
-import org.cip4.tools.alces.message.OutMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jdf.JobIDPreprocessor;
@@ -26,10 +25,7 @@ import org.cip4.tools.alces.preprocessor.jdf.UrlResolvingPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.SenderIDPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.URLPreprocessor;
-import org.cip4.tools.alces.util.ApplicationContextUtil;
-import org.cip4.tools.alces.util.ConfigurationHandler;
-import org.cip4.tools.alces.util.JDFConstants;
-import org.cip4.tools.alces.util.NotDirFilter;
+import org.cip4.tools.alces.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
@@ -130,7 +126,7 @@ public class TestRunner {
 		return startTestSession(new File(testFile), targetUrl);
 	}
 
-	public TestSession startTestSession(OutMessage message, String targetUrl) {
+	public TestSession startTestSession(OutgoingJmfMessage message, String targetUrl) {
 		return startTestSession(message, null, new PreprocessorContext(), targetUrl);
 	}
 
@@ -159,7 +155,7 @@ public class TestRunner {
 	 * @param targetUrl the URL to send the outgoing message to
 	 * @return the started test session
 	 */
-	public TestSession startTestSession(OutMessage outMessage, File jdfFile, PreprocessorContext context, String targetUrl) {
+	public TestSession startTestSession(OutgoingJmfMessage outMessage, File jdfFile, PreprocessorContext context, String targetUrl) {
 		return startTestSession(outMessage, jdfFile, context, targetUrl, false);
 	}
 
@@ -173,7 +169,7 @@ public class TestRunner {
 	 * @param asMime <code>true</code> to package the JDF file, its content files, and the SubmitQueueEntry JMF message in a MIME package
 	 * @return
 	 */
-	public TestSession startTestSession(OutMessage outMessage, File jdfFile, PreprocessorContext context, String targetUrl, boolean asMime) {
+	public TestSession startTestSession(OutgoingJmfMessage outMessage, File jdfFile, PreprocessorContext context, String targetUrl, boolean asMime) {
 		// Preprocess message
 		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, ConfigurationHandler.getSenderId());
 		context.addAttribute(URLPreprocessor.URL_ATTR, _confHand.getServerJmfUrl());
@@ -186,7 +182,7 @@ public class TestRunner {
 		// Preprocess JDF
 		if (jdfFile != null) {
 			context.addAttribute(NodeInfoPreprocessor.SUBSCRIPTION_URL_ATTR, _confHand.getServerJmfUrl());
-			context.addAttribute(NodeInfoPreprocessor.MESSAGEID_PREFIX_ATTR, outMessage.getBodyAsJMF().getMessageElement(null, null, 0).getID());
+			context.addAttribute(NodeInfoPreprocessor.MESSAGEID_PREFIX_ATTR, JmfUtil.getBodyAsJMF(outMessage).getMessageElement(null, null, 0).getID());
 			preprocessJDF(jdfFile, context);
 		}
 		if (asMime) {
@@ -217,15 +213,15 @@ public class TestRunner {
 	 * @return an OutMessage which body is the MIME package
 	 * @todo Refactor! We really need a smarter base implementation of Message that does no hold the entire message in memory. MIME packages can be huge...
 	 */
-	public OutMessage packageAsMime(OutMessage outMessage, File jdfFile) {
+	public OutgoingJmfMessage packageAsMime(OutgoingJmfMessage outMessage, File jdfFile) {
 		JDFDoc jdfDoc = new JDFParser().parseFile(jdfFile.getAbsolutePath());
 		if (jdfFile instanceof PublishedFile) {
 			jdfDoc.setOriginalFileName(((PublishedFile) jdfFile).getOriginalFile().getAbsolutePath());
 		}
-		JDFDoc jmfDoc = new JDFDoc(outMessage.getBodyAsJMF().getOwnerDocument());
+		JDFDoc jmfDoc = new JDFDoc(JmfUtil.getBodyAsJMF(outMessage).getOwnerDocument());
 		jmfDoc.setOriginalFileName("message.jmf");
 		Multipart multipart = MimeUtil.buildMimePackage(jmfDoc, jdfDoc);
-		OutMessage mimeMessage = null;
+		OutgoingJmfMessage mimeMessage = null;
 		try {
 			File mjmFile = File.createTempFile("alces", ".mjm");
 			mjmFile.deleteOnExit();
@@ -318,7 +314,7 @@ public class TestRunner {
 	 * @return
 	 * @throws IOException if an communication exception occurs during the message sending
 	 */
-	public InMessage sendMessage(OutMessage message, String targetUrl) throws IOException {
+	public IncomingJmfMessage sendMessage(OutgoingJmfMessage message, String targetUrl) throws IOException {
 		PreprocessorContext context = new PreprocessorContext();
 		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, ConfigurationHandler.getSenderId());
 		boolean mjmDetected = message.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
@@ -337,7 +333,7 @@ public class TestRunner {
 
 		List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");
 
-		return new InMessageImpl(responseHeaders.get(0), "n. a.", responseEntity.getBody(), false);
+		return new IncomingJmfMessage(responseHeaders.get(0), "n. a.", responseEntity.getBody(), false);
 	}
 
 	/**
@@ -346,7 +342,7 @@ public class TestRunner {
 	 * @param file
 	 * @return
 	 */
-	public OutMessage loadMessage(File file) {
+	public OutgoingJmfMessage loadMessage(File file) {
 		log.debug("Loading message from file '" + file.getAbsolutePath() + "'...");
 		String contentType = null;
 		String header = null;
@@ -372,7 +368,7 @@ public class TestRunner {
 		}
 		log.debug("Loaded message from file.");
 
-		OutMessage message = _suite.createOutMessage(contentType, header, body, true); // new
+		OutgoingJmfMessage message = _suite.createOutMessage(contentType, header, body, true); // new
 		// OutMessageImpl(contentType,
 		// header,
 		// body,
@@ -424,7 +420,7 @@ public class TestRunner {
 		context.addAttribute(JDFPreprocessor.PREPROCESSING_ENABLED, Boolean.toString(preprocessJdf));
 		context.addAttribute(UrlResolvingPreprocessor.BASEURL_ATTR, baseUrl);
 		// String jdfUrl = publishJDF(jdfFile, replaceJobId, baseUrl);
-		OutMessage message = JMFMessageBuilder.buildSubmitQueueEntry(resolvePublishedJDF(jdfFile));
+		OutgoingJmfMessage message = JMFMessageBuilder.buildSubmitQueueEntry(resolvePublishedJDF(jdfFile));
 		return startTestSession(message, jdfFile, context, targetUrl, asMime);
 	}
 
@@ -506,7 +502,7 @@ public class TestRunner {
 		context.addAttribute(JDFPreprocessor.PREPROCESSING_ENABLED, Boolean.toString(preprocessJdf));
 		context.addAttribute(JobIDPreprocessor.JOBID_ATTR, jobId);
 		context.addAttribute(UrlResolvingPreprocessor.BASEURL_ATTR, baseUrl);
-		OutMessage message = JMFMessageBuilder.buildResubmitQueueEntry(resolvePublishedJDF(jdfFile), queueEntryId);
+		OutgoingJmfMessage message = JMFMessageBuilder.buildResubmitQueueEntry(resolvePublishedJDF(jdfFile), queueEntryId);
 		return startTestSession(message, jdfFile, context, targetUrl, asMime);
 	}
 
@@ -604,18 +600,18 @@ public class TestRunner {
 	 * @author Alex Khilov
 	 * @since 0.9.9.3
 	 */
-	private OutMessage preprocessMIME(OutMessage message, PreprocessorContext context) {
+	private OutgoingJmfMessage preprocessMIME(OutgoingJmfMessage message, PreprocessorContext context) {
 		String mjmEnableStr = ConfigurationHandler.getInstance().getProp(ConfigurationHandler.MJM_MIME_FILE_PARSE);
 		boolean mjmEnabled = Boolean.parseBoolean(mjmEnableStr);
 		// 3 steps are here: separate MIME message, preprocess JMF part, glue it back.
 		if (mjmEnabled) {
 			// take JMF part from MIME
-			OutMessage jmfMessage = (OutMessage) TestSessionImpl.getJMFFromMime(message);
+			OutgoingJmfMessage jmfMessage = (OutgoingJmfMessage) TestSessionImpl.getJMFFromMime(message);
 			// preprocess JMF part
 			jmfMessage = preprocessJMF(jmfMessage, context);
 			// glue it back
 			JDFDoc jdfDoc = new JDFParser().parseFile(TestSessionImpl.getJDFFileFromMime(message));
-			JDFDoc jmfDoc = new JDFDoc(jmfMessage.getBodyAsJMF().getOwnerDocument());
+			JDFDoc jmfDoc = new JDFDoc(JmfUtil.getBodyAsJMF(jmfMessage).getOwnerDocument());
 			Multipart multipart = MimeUtil.buildMimePackage(jmfDoc, jdfDoc);
 			try {
 				File mjmFile = File.createTempFile("alces-PACKAGE-PREPARING-", ".mjm");
@@ -635,10 +631,9 @@ public class TestRunner {
 	 * Applies all preprocessors in the List to the Message. Preprocessors are applied in the order they occur in the list. If a preprocessor fails it does so
 	 * quietly and preprocessing continues.
 	 * 
-	 * @param preprocessors
 	 * @param message
 	 */
-	private OutMessage preprocessJMF(OutMessage message, PreprocessorContext context) {
+	private OutgoingJmfMessage preprocessJMF(OutgoingJmfMessage message, PreprocessorContext context) {
 		Preprocessor[] preprocessors = _confHand.getJMFPreprocessors();
 		log.debug("Preprocessing message with " + preprocessors.length + " preprocessors...");
 		for (int i = 0; i < preprocessors.length; i++) {

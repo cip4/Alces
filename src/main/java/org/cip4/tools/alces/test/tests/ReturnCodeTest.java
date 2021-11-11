@@ -4,11 +4,12 @@ import java.util.List;
 
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
 import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 
 /**
  * Checks whether the ReturnCode of JDFResponses and JDFAcknowledges equals 0
@@ -25,7 +26,7 @@ public class ReturnCodeTest extends Test {
     }
 
     @Override
-	public TestResult runTest(Message message) {
+	public TestResult runTest(AbstractJmfMessage message) {
         final TestResult result;    
         if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
         	result = new TestResultImpl(this, message, Result.IGNORED, 
@@ -33,7 +34,7 @@ public class ReturnCodeTest extends Test {
         			+ message.getContentType());
         } else {
         	boolean passedTest = true;	        
-        	JDFJMF jmf = message.getBodyAsJMF();
+        	JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 	        List responses = jmf.getMessageVector(JDFMessage.EnumFamily.Response, null);
 	        List acknowledges = jmf.getMessageVector(JDFMessage.EnumFamily.Acknowledge, null);
 	        int numResponses = -1;

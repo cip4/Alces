@@ -3,12 +3,13 @@ package org.cip4.tools.alces.controller;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
-import org.cip4.tools.alces.message.InMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.swingui.Alces;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.TestSuite;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -64,10 +65,10 @@ public class JmfController {
 
         String remoteAddr = request.getRemoteAddr();
         String header = convertHttpHeadersToString(request);
-        final InMessage inMessage = getTestSuite().createInMessage(contentType, header, messageBody, false);
+        final IncomingJmfMessage inMessage = getTestSuite().createInMessage(contentType, header, messageBody, false);
 
         // create and send response
-        final JDFJMF jmfIn = inMessage.getBodyAsJMF();
+        final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(inMessage);
         ResponseEntity<String> responseEntity;
 
         if (jmfIn != null) {
@@ -137,7 +138,7 @@ public class JmfController {
     /**
      * Helper method to start a test session
      */
-    private void startTestSession(InMessage inMessage, String remoteAddr) {
+    private void startTestSession(IncomingJmfMessage inMessage, String remoteAddr) {
 
             // get test sesstion for in-message
             TestSession testSession = getTestSuite().findTestSession(inMessage);
@@ -151,7 +152,7 @@ public class JmfController {
                 log.info("Creating new TestSession for InMessage...");
 
                 // Create a objects using factory
-                InMessage newMessage = getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
+                IncomingJmfMessage newMessage = getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
                 testSession = getTestSuite().createTestSession(remoteAddr);
 
                 // Add TestSession to suite

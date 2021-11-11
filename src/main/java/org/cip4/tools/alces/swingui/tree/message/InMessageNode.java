@@ -1,45 +1,36 @@
-/*
- * Created on May 4, 2005
- */
 package org.cip4.tools.alces.swingui.tree.message;
 
 import java.util.List;
-import java.util.Vector;
 
 import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeNode;
 
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.InMessageImpl;
-import org.cip4.tools.alces.message.OutMessage;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.swingui.tree.test.TestResultNode;
 import org.cip4.tools.alces.test.TestResult;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
  * An <code>DefaultMutableTreeNode</code> implementation of an <code>InMessage</code>.
- * 
- * @see javax.swing.tree.DefaultMutableTreeNode
- * @see org.cip4.tools.alces.message.InMessage
- * @author Claes Buckwalter
  */
-public class InMessageNode extends AbstractMessageNode implements
-        InMessage {
+public class InMessageNode extends AbstractMessageNode {
+
+    protected static Logger log = LoggerFactory.getLogger(InMessageNode.class);
     
-    private List<OutMessage> _outMessages = null;    
-    
-    /** 
+    /**
      * Creates an InMessage that is a TreeNode and wraps a non-Swing InMessage
      * implementation. The wrapped InMessage contains the logic, this class is simply
      * a wrapper allowing the InMessage to be displayed in a JTree. 
-     * @param message   The Message to wrap. This object may not be an instance of TreeNode.
+     * @param jmfMessage   The Message to wrap. This object may not be an instance of TreeNode.
      * @param treeModel the tree model this node belongs to
      */
-    public InMessageNode(InMessage message, DefaultTreeModel treeModel) {
-        super(message, treeModel);        
-        _outMessages = new Vector<OutMessage>();
+    public InMessageNode(IncomingJmfMessage jmfMessage, DefaultTreeModel treeModel) {
+        super(jmfMessage, treeModel);
     }
     
     /** 
@@ -49,44 +40,37 @@ public class InMessageNode extends AbstractMessageNode implements
      * @param treeModel the tree model this node belongs to
      */
     public InMessageNode(String header, String body, boolean isSessionInitiator, DefaultTreeModel treeModel) {
-        this(new InMessageImpl(header, body, isSessionInitiator), treeModel);
+        this(new IncomingJmfMessage(header, body, isSessionInitiator), treeModel);
     }
     
-    public List<OutMessage> getOutMessages() {
-        return _outMessages;
+    public List<OutgoingJmfMessage> getOutMessages() {
+        return ((IncomingJmfMessage) getJmfMessage()).getOutgoingJmfMessages();
     }
     
-    public void addOutMessage(OutMessage message) {
+    public void addOutMessage(OutgoingJmfMessage message) {
         log.debug("Adding OutMessage to message/tree: " + message);
         final MutableTreeNode thisNode = this;
-        final OutMessageNode messageNode;
-        if (message instanceof OutMessageNode ) {
-            messageNode = (OutMessageNode) message;
-        } else {
-            messageNode = new OutMessageNode(message, _treeModel);
+
+        final OutMessageNode messageNode = new OutMessageNode(message, getTreeModel());
             // Add TestResults to OutMessage            
-            for (TestResult testResult : messageNode.getTestResults()) {                
+            for (TestResult testResult : messageNode.getJmfMessage().getTestResults()) {
                 if(!(testResult instanceof TreeNode && isNodeChild((TreeNode)testResult))) {
-                    messageNode.add(new TestResultNode(testResult, _treeModel));           
+                    messageNode.add(new TestResultNode(testResult, getTreeModel()));
                     log.debug("Added TestResult to " + messageNode.getClass().getName() + ".");
                 }
             }
-        }
-        _outMessages.add(messageNode);
+
+
+        getOutMessages().add((OutgoingJmfMessage) messageNode.getJmfMessage());
+
         // Add OutMessage to tree
         // Update model using Swing's event-dispatching thread
-        Runnable addOutMessage = new Runnable() {
-            public void run() {
-                log.debug("Inserting OutMessage as child to InMessage in tree model...");
-                _treeModel.insertNodeInto(messageNode, thisNode, thisNode.getChildCount());                
-                log.debug("Inserted OutMessage in tree model.");
-            }
+        Runnable addOutMessage = () -> {
+            log.debug("Inserting OutMessage as child to InMessage in tree model...");
+            getTreeModel().insertNodeInto(messageNode, thisNode, thisNode.getChildCount());
+            log.debug("Inserted OutMessage in tree model.");
         };
         log.debug("Queueing OutMessage for insertion as chld to InMessage in tree model...");
         SwingUtilities.invokeLater(addOutMessage);   
     }
-
-	public boolean hasPassedAllTests() {
-		return _wrappedMessage.hasPassedAllTests();		
-	}
 }
