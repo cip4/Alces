@@ -78,7 +78,6 @@ import org.cip4.tools.alces.swingui.renderer.RendererFactory;
 import org.cip4.tools.alces.swingui.tree.test.TestSuiteTreeNode;
 import org.cip4.tools.alces.test.TestRunner;
 import org.cip4.tools.alces.test.TestSession;
-import org.cip4.tools.alces.test.TestSuite;
 import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
@@ -767,7 +766,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		// create JTree object
 		JTree tree = new JTree(defaultTreeModel);
-		tree.setRootVisible(false);
+		tree.setRootVisible(true);
 		tree.setShowsRootHandles(true);
 		tree.addTreeSelectionListener(this);
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);

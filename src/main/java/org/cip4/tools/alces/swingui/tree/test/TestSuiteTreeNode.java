@@ -33,7 +33,7 @@ public class TestSuiteTreeNode extends DefaultMutableTreeNode {
 	 * Private default constructor.
 	 */
 	public TestSuiteTreeNode(TestSuite testSuite) {
-		super("Tests");
+		super("TestSessions");
 		this.testSuite = testSuite;
 	}
 
