@@ -7,8 +7,6 @@ import java.awt.Dimension;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
@@ -33,10 +31,7 @@ import javax.swing.Action;
 import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
-import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -47,7 +42,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTextArea;
-import javax.swing.JToolBar;
 import javax.swing.JTree;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
@@ -57,7 +51,6 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
@@ -77,13 +70,12 @@ import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.jmf.JMFMessageFactory;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.swingui.actions.ActionCollapse;
 import org.cip4.tools.alces.swingui.actions.ActionCollapseAll;
 import org.cip4.tools.alces.swingui.actions.ActionSaveRequestsResponcesToDisk;
+import org.cip4.tools.alces.swingui.renderer.AlcesTreeCellRenderer;
 import org.cip4.tools.alces.swingui.renderer.RendererFactory;
 import org.cip4.tools.alces.swingui.tree.test.TestSuiteNode;
-import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestRunner;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.TestSuite;
@@ -93,7 +85,6 @@ import org.cip4.tools.alces.util.JMFFileFilter;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.Bean;
 
 /**
  * The Alces Swing GUI application for interactive testing.
@@ -116,82 +107,38 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	// | | | |
 	// -----------------------------------------------------
 
-	private static Logger log = LoggerFactory.getLogger(Alces.class);
+	private static final Logger log = LoggerFactory.getLogger(Alces.class);
+
+	private String deviceUrl;
 
 	private static Alces THE_INSTANCE;
 
-	private static String RES_LOG4J_TPL = "/org/cip4/tools/alces/conf/log4j.xml.tpl";
+	private final ConfigurationHandler configurationHandler;
+	private final TestRunner testRunner;
+	private final TestSuiteNode testSuiteNode;
 
-	private DefaultTreeModel _treeModel = null;
+	private final JSplitPane mainSplitPane;
+	private JSplitPane sessionSplitPane;
+	private JScrollPane sessionInfoScrollPane;
+	private JSplitPane infoQueueSplitPane;
 
-	private ConfigurationHandler _confHand = null;
+	private JPanel messagesPanel;
+	private JComboBox<String> addressComboBox;
+	private JComboBox<String> deviceListComboBox;
+	private JButton connectButton;
+	private JLabel deviceStatusValue;
+	private JLabel batchModeLabel;
+	private JTextArea deviceInfoTextArea;
+	private JTree sessionTree;
 
-	private TestRunner testRunner = null;
-
-	private TestSuiteNode _testSuite = null;
-
-	JPanel addressBarPanel = null;
-
-	JLabel addressLabel = null;
-
-	JComboBox addressComboBox = null;
-
-	JButton connectButton = null;
-
-	JButton prefButton = null;
-
-	JToolBar toolBar = null;
-
-	JSplitPane mainSplitPane = null;
-
-	JSplitPane sessionQueueSplitPane = null;
-
-	JScrollPane deviceScrollPane = null;
-
-	JPanel devicePanel = null;
-
-	JPanel deviceInfoPanel = null;
-
-	JComboBox deviceListComboBox = null;
-
-	JLabel deviceStatusValue = null;
-
-	JTextArea deviceInfoTextArea = null;
-
-	JPanel messagesPanel = null;
-
-	JSplitPane infoQueueSplitPane = null;
-
-	JScrollPane sessionTreeScrollPane = null;
-
-	JPanel sessionTreePanel = null;
-
-	JTree sessionTree = null;
-
-	JButton refreshButton = null;
-
-	JScrollPane sessionInfoScrollPane = null;
-
-	JTextArea sessionInfoTextArea = null;
-
-	JScrollPane logScrollPane = null;
-
-	AlcesTreeCellRenderer cellRenderer = null;
+	private QueuePanel queuePanel;
 
 	private JDFDeviceList knownDevices;
-
-	private final QueuePanel queuePanel;
-
 	private ConnectThread connectThread;
 
 	private static final String ACTION_CONNECT = "ACTION_CONNECT";
-
 	private static final String ACTION_CONNECT_CANCEL = "ACTION_CONNECT_CANCEL";
-
 	private static final String ACTION_SELECT_DEVICE = "ACTION_SELECT_DEVICE";
-
-	private static final String ACTION_SHOW_PREFERENCES = "ACTION_SHOW_PREFERENCES";
-
 	private static final String ACTION_SEND_FILE = "ACTION_SEND_FILE";
 
 	// variables related to Batch-execution
@@ -199,122 +146,163 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	private static final String ACTION_BATCH_SELECT_FOLDER = "ACTION_BATCH_SELECT_FOLDER";
 	private static final String ACTION_BATCH_START = "ACTION_BATCH_START";
 	private static final String ACTION_BATCH_STOP = "ACTION_BATCH_STOP";
-	private final JLabel batchModeLabel;
-	private final List<File> filesToSendInBatch = new ArrayList<File>();
-	private final JButton batchStartButton, batchStopButton;
+	private final List<File> filesToSendInBatch = new ArrayList<>();
+	private JButton batchStartButton;
+	private JButton batchStopButton;
 	private static boolean isBatchRunned;
 
 	/**
-	 * Creates a new instance of the Alces Swing application using the specified locale.
-	 * 
-	 * @throws Exception
+	 * Default constructor. Creates a new instance of the Alces Swing application.
 	 */
-	public Alces() throws Exception {
+	public Alces()  {
 		super();
-		setIconImage(Toolkit.getDefaultToolkit().getImage(Alces.class.getResource("/org/cip4/tools/alces/alces.png")));
 
-		_confHand = ConfigurationHandler.getInstance();
-		_confHand.loadConfiguration(_confHand.getProp(ConfigurationHandler.PROPERTIES_FILE));
+		// get configurations handler
+		configurationHandler = ConfigurationHandler.getInstance();
+		configurationHandler.loadConfiguration(configurationHandler.getProp(ConfigurationHandler.PROPERTIES_FILE));
 
-		_testSuite = new TestSuiteNode();
-		testRunner = new TestRunner(_testSuite.getTestSuite());// _deviceUrl, queuePanel,
+		testSuiteNode = new TestSuiteNode();
+		testRunner = new TestRunner(testSuiteNode.getTestSuite());
 
-		// MAIN PANEL
-		Container pane = getContentPane();
-		pane.setLayout(new BorderLayout());
+		// initialize window (main panel)
+		Container mainPanel = getContentPane();
+		mainPanel.setLayout(new BorderLayout());
+		mainPanel.add(initAddressBarPanel(), BorderLayout.NORTH);
+
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+		mainSplitPane.setDividerLocation(configurationHandler.getMainPaneHeight());
+		mainPanel.add(mainSplitPane, BorderLayout.CENTER);
 
-		// ADDRESS BAR
-		addressBarPanel = new JPanel();
+		mainSplitPane.add(initControlPanel(), JSplitPane.LEFT);
+		mainSplitPane.add(initSessionPanel(), JSplitPane.RIGHT);
+
+		// window configurations
+		setIconImage(Toolkit.getDefaultToolkit().getImage(Alces.class.getResource("/org/cip4/tools/alces/alces.png")));
+		this.setTitle(ConfigurationHandler.getSenderId() + "  -  " + configurationHandler.getServerJmfUrl());
+		this.addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent we) {
+				quitAlces();
+			}
+		});
+		this.setVisible(true);
+		connectButton.requestFocusInWindow();
+
+		// apply window preferences
+		this.setSize(configurationHandler.getWindowWidth(), configurationHandler.getWindowHeight());
+		sessionSplitPane.setDividerLocation(configurationHandler.getDevicePaneWidth());
+		infoQueueSplitPane.setDividerLocation(configurationHandler.getTestPaneWidth());
+
+		// save the current instance
+		THE_INSTANCE = this;
+	}
+
+	/**
+	 * Initializes the address bar panel.
+	 * @return The initialized address bar panel
+	 */
+	private JPanel initAddressBarPanel() {
+
+		// address bar panel
+		JPanel addressBarPanel = new JPanel();
 		addressBarPanel.setLayout(new BoxLayout(addressBarPanel, BoxLayout.X_AXIS));
 		addressBarPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 11));
-		pane.add(addressBarPanel, BorderLayout.NORTH);
-		// Preferences Button
-		prefButton = new JButton(_confHand.getLabel("Preferences...", "Preferences..."));
-		prefButton.setActionCommand(ACTION_SHOW_PREFERENCES);
-		prefButton.addActionListener(this);
-		addressBarPanel.add(prefButton);
+
+		// preferences Button
+		JButton preferenceButton = new JButton("Preferences...");
+		preferenceButton.addActionListener(e -> showPreferencesDialog());
+		addressBarPanel.add(preferenceButton);
 		addressBarPanel.add(Box.createRigidArea(new Dimension(11, 0)));
-		// Address Field
-		addressLabel = new JLabel(_confHand.getLabel("Address", "Device/Controller URL") + ":");
+
+		// address field
+		JLabel addressLabel = new JLabel("Device/Controller URL:");
 		addressLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
 		addressBarPanel.add(addressLabel);
-		addressComboBox = new JComboBox(_confHand.loadHistory());
+
+		addressComboBox = new JComboBox<>(configurationHandler.loadHistory());
 		addressComboBox.setEditable(true);
-		addressComboBox.addActionListener(this);
-		// Add an Enter-Key listener
+		addressComboBox.addActionListener(e -> {
+			JComboBox<String> obj = (JComboBox) e.getSource();
+			obj.insertItemAt(obj.getSelectedItem().toString(), 0);
+			this.deviceUrl = obj.getSelectedItem().toString();
+		});
+		addressBarPanel.add(addressComboBox);
+		this.deviceUrl = addressComboBox.getSelectedItem().toString();
 		addressComboBox.getEditor().getEditorComponent().addKeyListener(new KeyAdapter() {
 			@Override
 			public void keyPressed(KeyEvent e) {
-				if (e.getKeyCode() == e.VK_ENTER) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
 					connect();
 				}
 			}
 		});
-		addressBarPanel.add(addressComboBox);
-		// Connect Button
-		connectButton = new JButton(_confHand.getLabel("Connect", "Connect"));
+
+		// connect button
+		connectButton = new JButton("Connect");
 		connectButton.setActionCommand(ACTION_CONNECT);
 		connectButton.addActionListener(this);
 		addressBarPanel.add(connectButton);
-		// Proxy checkbox
-		JCheckBox proxyCheckBox = new JCheckBox();
-		proxyCheckBox.setToolTipText(_confHand.getLabel("Connect.through.proxy", "Connect through proxy") + ": " + _confHand.getProp(ConfigurationHandler.PROXY_HOST) + ":"
-				+ _confHand.getProp(ConfigurationHandler.PROXY_PORT));
-		proxyCheckBox.setSelected(Boolean.parseBoolean(_confHand.getProp(ConfigurationHandler.PROXY_ENABLED)));
-		proxyCheckBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent e) {
-				_confHand.putProp(ConfigurationHandler.PROXY_ENABLED, Boolean.toString(e.getStateChange() == ItemEvent.SELECTED));
-			}
-		});
-		addressBarPanel.add(proxyCheckBox);
 
-		// DEVICES AND MESSAGES
-		deviceScrollPane = new JScrollPane();
-		// Known Devices
-		devicePanel = new JPanel(new BorderLayout());
-		deviceInfoPanel = new JPanel();
+		return addressBarPanel;
+	}
+
+	/**
+	 * Initialize the left side control panel.
+	 * @return The initialized control panel.
+	 */
+	private JScrollPane initControlPanel() {
+
+		JScrollPane controlPanel = new JScrollPane();
+
+		// known devices
+		JPanel devicePanel = new JPanel(new BorderLayout());
+		JPanel deviceInfoPanel = new JPanel();
 		deviceInfoPanel.setLayout(new BoxLayout(deviceInfoPanel, BoxLayout.Y_AXIS));
 		deviceListComboBox = new JComboBox();
 		deviceListComboBox.setEnabled(false);
 		deviceListComboBox.setActionCommand(ACTION_SELECT_DEVICE);
 		deviceListComboBox.addActionListener(this);
 		deviceInfoPanel.add(deviceListComboBox);
-		// Device status
+
+		// device status
 		deviceStatusValue = new JLabel(" ");
 		deviceStatusValue.setBorder(BorderFactory.createEmptyBorder(5, 6, 5, 0));
 		JPanel statusPanel = new JPanel(new BorderLayout());
-		statusPanel.add(new JLabel(_confHand.getLabel("device.status", "Device Status") + ":"), BorderLayout.WEST);
+		statusPanel.add(new JLabel(configurationHandler.getLabel("device.status", "Device Status") + ":"), BorderLayout.WEST);
 		statusPanel.add(deviceStatusValue, BorderLayout.CENTER);
 		deviceInfoPanel.add(statusPanel);
-		// Device info
+
+		// device info
 		deviceInfoTextArea = new JTextArea();
 		deviceInfoTextArea.setEditable(false);
 		JScrollPane deviceInfoScrollPane = new JScrollPane(deviceInfoTextArea, ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		deviceInfoScrollPane.setPreferredSize(new Dimension(150, 100));
 		deviceInfoPanel.add(deviceInfoScrollPane);
 		deviceInfoPanel.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 6, 0, 6), BorderFactory.createTitledBorder(_confHand.getLabel("known.devices", "Known Devices"))),
+				BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 6, 0, 6), BorderFactory.createTitledBorder(configurationHandler.getLabel("known.devices", "Known Devices"))),
 				BorderFactory.createEmptyBorder(0, 5, 5, 5)));
 		devicePanel.add(deviceInfoPanel, BorderLayout.NORTH);
-		// Known Messages
+
+		// known messages
 		messagesPanel = new JPanel();
 		messagesPanel.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 6, 6, 6), BorderFactory.createTitledBorder(_confHand.getLabel("known.messages", "Known Messages"))),
+				BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 6, 6, 6), BorderFactory.createTitledBorder(configurationHandler.getLabel("known.messages", "Known Messages"))),
 				BorderFactory.createEmptyBorder(0, 5, 5, 5)));
 		messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
 		devicePanel.add(messagesPanel, BorderLayout.CENTER);
 
-		// Batch Panel
+		// batch panel
 		JPanel batchPanel = new JPanel();
 		batchPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 6, 6, 6), BorderFactory.createTitledBorder("Batch Mode")),
 				BorderFactory.createEmptyBorder(0, 5, 5, 5)));
 		batchPanel.setLayout(new BoxLayout(batchPanel, BoxLayout.Y_AXIS));
 		batchPanel.add(createMessageButton("Select file", "", ACTION_BATCH_SELECT_FILE));
 		batchPanel.add(createMessageButton("Select folder", "", ACTION_BATCH_SELECT_FOLDER));
+
 		batchModeLabel = new JLabel();
 		batchModeLabel.setText("Batch: File or Folder");
 		batchPanel.add(batchModeLabel);
+
 		batchStartButton = createMessageButton("Start execution", null, ACTION_BATCH_START);
 		batchStartButton.setEnabled(false);
 		batchStopButton = createMessageButton("Stop execution", null, ACTION_BATCH_STOP);
@@ -322,17 +310,29 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		batchPanel.add(batchStartButton);
 		batchPanel.add(batchStopButton);
 		devicePanel.add(batchPanel, BorderLayout.SOUTH);
-		deviceScrollPane.setViewportView(devicePanel);
+		controlPanel.setViewportView(devicePanel);
 
-		// SESSION TREE, SESSION/MESSAGE INFO, QUEUE
-		sessionQueueSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-		infoQueueSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		// Session tree
-		sessionTreePanel = new JPanel(new BorderLayout());
-		sessionTreeScrollPane = new JScrollPane();
-		sessionTree = initTree();
+		// return control panel
+		return controlPanel;
+	}
+
+	/**
+	 * Initializes the Session panel.
+	 * @return The initialized session panel.
+	 */
+	private JSplitPane initSessionPanel() {
+
+		sessionSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+
+		// session tree panel
+		JPanel sessionPanel = new JPanel(new BorderLayout());
+		sessionSplitPane.add(sessionPanel, JSplitPane.LEFT);
+
+		JScrollPane sessionTreeScrollPane = new JScrollPane();
+
+		sessionTree = initTree(); // DEEPT INIT !!
 		sessionTreeScrollPane.setViewportView(sessionTree);
-		sessionTreePanel.add(sessionTreeScrollPane, BorderLayout.CENTER);
+		sessionPanel.add(sessionTreeScrollPane, BorderLayout.CENTER);
 		sessionTree.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -353,7 +353,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 						popUp.addSeparator();
 
 						ActionSaveRequestsResponcesToDisk actionSaveReqResToDisk = new ActionSaveRequestsResponcesToDisk(sessionTree, path);
-						actionSaveReqResToDisk.putValue(Action.NAME, "Save Selection To: " + StringUtils.substring(_confHand.getProp(ConfigurationHandler.PATH_TO_SAVE), 0, 25));
+						actionSaveReqResToDisk.putValue(Action.NAME, "Save Selection To: " + StringUtils.substring(configurationHandler.getProp(ConfigurationHandler.PATH_TO_SAVE), 0, 25));
 						popUp.add(actionSaveReqResToDisk);
 					}
 
@@ -362,66 +362,43 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			}
 		});
 
-		// Buttons
-		JPanel p = new JPanel();
+		JPanel sessionButtonPanel = new JPanel();
+		sessionPanel.add(sessionButtonPanel, BorderLayout.SOUTH);
+
 		JButton clearButton = new JButton("Clear All");
+		sessionButtonPanel.add(clearButton);
+		clearButton.addActionListener(e -> {
+			DefaultTreeModel model = (DefaultTreeModel) sessionTree.getModel();
+			testSuiteNode.removeAllChildren();
+			model.reload();
+			sessionTree.setSelectionPath(new TreePath(""));
+			queuePanel.clearQueue();
+		});
+
 		JButton removeSelectedButton = new JButton("Clear Selected");
-		clearButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				DefaultTreeModel model = (DefaultTreeModel) sessionTree.getModel();
-				_testSuite.removeAllChildren();
-				model.reload();
-				sessionTree.setSelectionPath(new TreePath(""));
-				queuePanel.clearQueue();
-			}
+		sessionButtonPanel.add(removeSelectedButton);
+		removeSelectedButton.addActionListener(e -> {
+			DefaultTreeModel model = (DefaultTreeModel) sessionTree.getModel();
+			if (!(sessionTree.getLastSelectedPathComponent() instanceof DefaultMutableTreeNode selectedNode))
+				return;
+			model.removeNodeFromParent(selectedNode);
 		});
-		removeSelectedButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				DefaultTreeModel model = (DefaultTreeModel) sessionTree.getModel();
-				if (!(sessionTree.getLastSelectedPathComponent() instanceof DefaultMutableTreeNode))
-					return;
-				DefaultMutableTreeNode selectedNode = (DefaultMutableTreeNode) sessionTree.getLastSelectedPathComponent();
-				if (selectedNode != null)
-					model.removeNodeFromParent(selectedNode);
-			}
-		});
-		p.add(clearButton);
-		p.add(removeSelectedButton);
-		sessionTreePanel.add(p, BorderLayout.SOUTH);
-		// Session/message info
+
+		// session/message/queue info
+		infoQueueSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		sessionSplitPane.add(infoQueueSplitPane, JSplitPane.RIGHT);
+
 		sessionInfoScrollPane = new JScrollPane();
-		sessionInfoTextArea = new JTextArea();
+		JTextArea sessionInfoTextArea = new JTextArea();
 		sessionInfoTextArea.setEditable(false);
 		sessionInfoScrollPane.setViewportView(sessionInfoTextArea);
 		infoQueueSplitPane.add(sessionInfoScrollPane, JSplitPane.TOP);
-		sessionQueueSplitPane.add(sessionTreePanel, JSplitPane.LEFT);
-		sessionQueueSplitPane.add(infoQueueSplitPane, JSplitPane.RIGHT);
-		mainSplitPane.add(deviceScrollPane, JSplitPane.LEFT);
-		mainSplitPane.add(sessionQueueSplitPane, JSplitPane.RIGHT);
-		// Queue
+
 		queuePanel = new QueuePanel(this);
 		infoQueueSplitPane.add(queuePanel, JSplitPane.BOTTOM);
-		pane.add(mainSplitPane, BorderLayout.CENTER);
 
-		// LAYOUT UI
-		this.setSize(_confHand.getWindowWidth(), _confHand.getWindowHeight());
-		sessionQueueSplitPane.setDividerLocation(_confHand.getDevicePaneWidth());
-		infoQueueSplitPane.setDividerLocation(_confHand.getTestPaneWidth());
-		mainSplitPane.setDividerLocation(_confHand.getMainPaneHeight());
-
-		this.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent we) {
-				quitAlces();
-			}
-		});
-		this.setVisible(true);
-		connectButton.requestFocusInWindow();
-
-		// save the current instance
-		THE_INSTANCE = this;
-
-		this.setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
+		// return session panel
+		return sessionSplitPane;
 	}
 
 	/**
@@ -437,24 +414,23 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @return The test suite
 	 */
 	public TestSuite getTestSuite() {
-		return this._testSuite.getTestSuite();
+		return this.testSuiteNode.getTestSuite();
 	}
 
 	/**
 	 * Sends a KnownDevices messages.
-	 * 
-	 * @throws IOException
-	 * 
-	 * @throws PreprocessorException
 	 */
 	private JDFJMF sendKnownDevices() throws IOException {
 		log.info("Sending KnownDevices...");
-		final OutgoingJmfMessage outMessage = createMessage("Connect_KnownDevices");
-		IncomingJmfMessage inMessage = null;
-		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
-			inMessage = testRunner.sendMessage(outMessage, getDeviceUrl());
+		final OutgoingJmfMessage outgoingJmfMessage = createMessage("Connect_KnownDevices");
+		IncomingJmfMessage incomingJmfMessage;
+
+		if (configurationHandler.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
+			incomingJmfMessage = testRunner.sendMessage(outgoingJmfMessage, getDeviceUrl());
+
 		} else {
-			TestSession testSession = testRunner.startTestSession(outMessage, getDeviceUrl());
+			TestSession testSession = testRunner.startTestSession(outgoingJmfMessage, getDeviceUrl());
+
 			int i = 0;
 			while (testSession.getIncomingMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
 			{
@@ -465,27 +441,29 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				i++;
 			}
-			inMessage = testSession.getIncomingMessage(outMessage);
+
+			incomingJmfMessage = testSession.getIncomingMessage(outgoingJmfMessage);
 		}
 
-		final JDFJMF jmf = JmfUtil.getBodyAsJMF(inMessage);
+		final JDFJMF jmf = JmfUtil.getBodyAsJMF(incomingJmfMessage);
 		log.info("Sending KnownDevices...done");
 		return jmf;
 	}
 
 	/**
 	 * Sends a JMF message containing a Status message with a QueueInfo='true' and QueueStatus message.
-	 * 
-	 * @throws IOException
 	 */
 	private JDFJMF sendQueueStatus() throws IOException {
 		log.info("Sending QueueStatus...");
-		final OutgoingJmfMessage outMessage = createMessage("Connect_QueueStatus");
-		IncomingJmfMessage inMessage = null;
-		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
-			inMessage = testRunner.sendMessage(outMessage, getDeviceUrl());
+		final OutgoingJmfMessage outgoingJmfMessage = createMessage("Connect_QueueStatus");
+		IncomingJmfMessage incomingJmfMessage;
+
+		if (configurationHandler.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
+			incomingJmfMessage = testRunner.sendMessage(outgoingJmfMessage, getDeviceUrl());
+
 		} else {
-			TestSession testSession = testRunner.startTestSession(outMessage, getDeviceUrl());
+			TestSession testSession = testRunner.startTestSession(outgoingJmfMessage, getDeviceUrl());
+
 			int i = 0;
 			while (testSession.getIncomingMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
 			{
@@ -496,10 +474,11 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				i++;
 			}
-			inMessage = testSession.getIncomingMessage(outMessage);
+
+			incomingJmfMessage = testSession.getIncomingMessage(outgoingJmfMessage);
 		}
 
-		final JDFJMF jmf = JmfUtil.getBodyAsJMF(inMessage);
+		final JDFJMF jmf = JmfUtil.getBodyAsJMF(incomingJmfMessage);
 		log.info("Sending QueueStatus...done");
 		return jmf;
 	}
@@ -514,20 +493,23 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * Updates the combobox listing known devices.
 	 */
 	private void setKnownDevices(JDFJMF knownDevicesResponse) {
-		// Remove old known devices first
+
+		// remove old known devices first
 		clearKnownDevices();
 		clearActiveDevice();
 		log.debug("Updating Known Devices combobox...");
 		if (knownDevicesResponse == null) {
 			return;
 		}
-		// Get list of known devices
+
+		// get list of known devices
 		final JDFResponse response = knownDevicesResponse.getResponse(0);
 		final JDFDeviceList deviceList = response.getDeviceList(0);
 		this.knownDevices = deviceList;
 		if (response.getDeviceList(0) == null) {
 			return;
 		}
+
 		// Fill combobox with known devices
 		for (int i = 0, imax = deviceList.getLength(); i < imax; i++) {
 			String deviceID = deviceList.getDeviceInfo(i).getDeviceID();
@@ -565,18 +547,18 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		JDFDevice device = deviceInfo.getDevice();
 		setDeviceStatus(deviceInfo);
 		deviceInfoTextArea.setText("");
-		deviceInfoTextArea.append(_confHand.getLabel("DeviceID", "DeviceID: ") + device.getDeviceID() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("JMFSenderID", "JMFSenderID: ") + device.getJMFSenderID() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("JMFURL", "JMFURL: ") + device.getJMFURL() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("JDFVersions", "JDFVersions: ") + device.getJDFVersions() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("ICSVersions", "ICSVersions: ") + device.getAttribute(AttributeName.ICSVERSIONS) + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("DescriptiveName", "DescriptiveName: ") + device.getDescriptiveName() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("AgentName", "AgentName: ") + device.getAgentName() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("AgentVersion", "AgentVersion: ") + device.getAgentVersion() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("DeviceType", "DeviceType: ") + device.getDeviceType() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("Manufacturer", "Manufacturer: ") + device.getManufacturer() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("ModelName", "ModelName: ") + device.getModelName() + "\n");
-		deviceInfoTextArea.append(_confHand.getLabel("ModelNumber", "ModelNumber: ") + device.getModelNumber() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("DeviceID", "DeviceID: ") + device.getDeviceID() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("JMFSenderID", "JMFSenderID: ") + device.getJMFSenderID() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("JMFURL", "JMFURL: ") + device.getJMFURL() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("JDFVersions", "JDFVersions: ") + device.getJDFVersions() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("ICSVersions", "ICSVersions: ") + device.getAttribute(AttributeName.ICSVERSIONS) + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("DescriptiveName", "DescriptiveName: ") + device.getDescriptiveName() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("AgentName", "AgentName: ") + device.getAgentName() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("AgentVersion", "AgentVersion: ") + device.getAgentVersion() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("DeviceType", "DeviceType: ") + device.getDeviceType() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("Manufacturer", "Manufacturer: ") + device.getManufacturer() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("ModelName", "ModelName: ") + device.getModelName() + "\n");
+		deviceInfoTextArea.append(configurationHandler.getLabel("ModelNumber", "ModelNumber: ") + device.getModelNumber() + "\n");
 		deviceInfoTextArea.setCaretPosition(0);
 		deviceInfoTextArea.setEditable(false);
 		log.debug("Active device is now '" + device.getDeviceID() + "'.");
@@ -584,14 +566,12 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	/**
 	 * Sends a KnownMessages query to the configured device and populates the UI with the buttons representing all messages the device supports.
-	 * 
-	 * @throws IOException
 	 */
 	private JDFJMF sendKnownMessages() throws IOException {
 		log.info("Sending KnownMessages...");
 		OutgoingJmfMessage outMessage = createMessage("Connect_KnownMessages");
 		IncomingJmfMessage inMessage = null;
-		if (_confHand.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
+		if (configurationHandler.getProp(ConfigurationHandler.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
 			inMessage = testRunner.sendMessage(outMessage, getDeviceUrl());
 		} else {
 			TestSession testSession = testRunner.startTestSession(outMessage, getDeviceUrl());
@@ -630,7 +610,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	public void buildMessageButtons(JDFJMF knownMessages) {
 
 		// add 'Send File...' button (default)
-		JButton sendFileButton = createMessageButton(_confHand.getLabel("Send.File", "Send File..."), "Send File...", ACTION_SEND_FILE);
+		JButton sendFileButton = createMessageButton(configurationHandler.getLabel("Send.File", "Send File..."), "Send File...", ACTION_SEND_FILE);
 		sendFileButton.setMnemonic(KeyEvent.VK_D);
 		messagesPanel.add(sendFileButton);
 
@@ -720,9 +700,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	/**
 	 * Returns an instance of a <code>Message</code> generated from the specified message template.
-	 * 
-	 * TODO Cache loaded messages TODO Set message header
-	 * 
+	 *
 	 * @param messageTemplate the name of the message's template
 	 * @return a message generated from the specified template
 	 */
@@ -740,7 +718,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	private OutgoingJmfMessage createSubmitQueueEntry(File jdfFile) {
 		log.debug("Creating a SubmitQueueEntry message for submitting JDF '" + jdfFile.getAbsolutePath() + "'...");
-		String publicDirPath = _confHand.getProp(ConfigurationHandler.RESOURCE_BASE);
+		String publicDirPath = configurationHandler.getProp(ConfigurationHandler.RESOURCE_BASE);
 
 		File publicJdfDir = new File(publicDirPath, "jdf");
 		publicJdfDir.mkdir();
@@ -760,10 +738,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		// Build URL to public JDF
 		String publicJdfUrl = null;
 		try {
-			String host = _confHand.getProp(ConfigurationHandler.HOST);
+			String host = configurationHandler.getProp(ConfigurationHandler.HOST);
 			log.debug("The Host:" + host);
 
-			int port = Integer.parseInt(_confHand.getProp(ConfigurationHandler.PORT));
+			int port = Integer.parseInt(configurationHandler.getProp(ConfigurationHandler.PORT));
 			log.debug("port:" + port);
 			publicJdfUrl = "http://" + host + ":" + port + "/jdf/" + jdfFilename;
 		} catch (Exception uhe) {
@@ -783,23 +761,26 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	/**
 	 * Doing the init stuff for the Tree, it's Renderer and Model Sets the TreeModel in the ConfigurationHandler
-	 * 
+	 *
 	 * @return
 	 */
 	private JTree initTree() {
-		// Create TreeModel
-		_treeModel = new DefaultTreeModel(_testSuite);
-		// Givet the TestSuite a reference to the TreeModel
-		_testSuite.setTreeModel(_treeModel);
-		_treeModel.addTreeModelListener(this);
-		JTree tree = new JTree(_treeModel);
+
+		// create TreeModel
+		DefaultTreeModel treeModel = new DefaultTreeModel(testSuiteNode);
+
+		// give the TestSuite a reference to the TreeModel
+		testSuiteNode.setTreeModel(treeModel);
+		treeModel.addTreeModelListener(this);
+		JTree tree = new JTree(treeModel);
 		log.debug("Shows root handles: " + tree.getShowsRootHandles());
 		tree.setRootVisible(false);
 		tree.setShowsRootHandles(true);
 		tree.addTreeSelectionListener(this);
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		cellRenderer = new AlcesTreeCellRenderer();
-		tree.setCellRenderer(cellRenderer);
+		tree.setCellRenderer(new AlcesTreeCellRenderer());
+
+		// return tree
 		return tree;
 	}
 
@@ -857,7 +838,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	}
 
 	private String getDeviceUrl() {
-		return (String) addressComboBox.getSelectedItem();
+		return this.deviceUrl;
 	}
 
 	/**
@@ -869,7 +850,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		synchronized (testRunner) {
 			connectButton.setEnabled(false);
 			connectThread.cancel();
-			connectButton.setText(_confHand.getLabel("Connect", "Connect"));
+			connectButton.setText(configurationHandler.getLabel("Connect", "Connect"));
 			connectButton.setActionCommand(Alces.ACTION_CONNECT);
 			connectButton.setEnabled(true);
 		}
@@ -889,7 +870,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	private synchronized void connect() {
 		log.debug("Connecting...");
 
-		connectButton.setText(_confHand.getLabel("Cancel", "Cancel"));
+		connectButton.setText(configurationHandler.getLabel("Cancel", "Cancel"));
 		connectButton.setActionCommand(Alces.ACTION_CONNECT_CANCEL);
 
 		// Cleanup
@@ -897,6 +878,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		clearKnownDevices();
 		clearActiveDevice();
 		queuePanel.clearQueue();
+
 		// Create connect thread
 		connectThread = new ConnectThread() {
 			private boolean cancel = false;
@@ -957,7 +939,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
 					buildMessageButtons(null);
 				} finally {
-					connectButton.setText(_confHand.getLabel("Connect", "Connect"));
+					connectButton.setText(configurationHandler.getLabel("Connect", "Connect"));
 					connectButton.setActionCommand(Alces.ACTION_CONNECT);
 					connectButton.setEnabled(true);
 					if (cancel) {
@@ -977,11 +959,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @param e The action event.
 	 */
 	public void actionPerformed(ActionEvent e) {
-
-		if (e.getSource().equals(addressComboBox)) {
-			addressComboBox.insertItemAt(addressComboBox.getSelectedItem(), 0);
-			return;
-		}
 
 		// process action command
 		final JFileChooser fileChooser;
@@ -1007,7 +984,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				break;
 
 			case ACTION_SEND_FILE:
-				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser = new JFileChooser(configurationHandler.getProp(ConfigurationHandler.LAST_DIR));
 				fileChooser.addChoosableFileFilter(new JMFFileFilter());
 				fileChooser.setAcceptAllFileFilterUsed(true);
 				fileChooser.setDialogTitle("Select a File to Send");
@@ -1015,21 +992,21 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				// Store last used dir
 				// _props.put("last.dir",
 				// fc.getCurrentDirectory().getAbsolutePath());
-				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				configurationHandler.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					testRunner.startTestSession(testRunner.loadMessage(fileChooser.getSelectedFile()), getDeviceUrl());
 				}
 				break;
 
 			case ACTION_BATCH_SELECT_FILE:
-				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser = new JFileChooser(configurationHandler.getProp(ConfigurationHandler.LAST_DIR));
 				fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 				fileChooser.addChoosableFileFilter(new JMFFileFilter());
 				fileChooser.setAcceptAllFileFilterUsed(true);
 				fileChooser.setDialogTitle("Batch Mode: Select a File to Send");
 				returnValue = fileChooser.showOpenDialog(this);
 
-				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				configurationHandler.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					batchStartButton.setEnabled(true);
 					batchModeLabel.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -1040,14 +1017,14 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				break;
 
 			case ACTION_BATCH_SELECT_FOLDER:
-				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser = new JFileChooser(configurationHandler.getProp(ConfigurationHandler.LAST_DIR));
 				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 				fileChooser.addChoosableFileFilter(new JMFFileFilter());
 				fileChooser.setAcceptAllFileFilterUsed(true);
 				fileChooser.setDialogTitle("Batch Mode: Select a Folder to Send");
 				returnValue = fileChooser.showOpenDialog(this);
 
-				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				configurationHandler.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					batchStartButton.setEnabled(true);
 					batchModeLabel.setText(fileChooser.getSelectedFile().getAbsolutePath());
@@ -1079,7 +1056,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 										testRunner.loadMessage(f), getDeviceUrl());
 
 								try {
-									String delayStr = _confHand.getProp(ConfigurationHandler.BATCHMODE_DELAYTONEXT_FILE);
+									String delayStr = configurationHandler.getProp(ConfigurationHandler.BATCHMODE_DELAYTONEXT_FILE);
 									int delayMs = Integer.parseInt(delayStr);
 									Thread.sleep(delayMs);
 								} catch (InterruptedException e) {
@@ -1105,7 +1082,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				break;
 
 			case "CommandSubmitQueueEntry":
-				fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+				fileChooser = new JFileChooser(configurationHandler.getProp(ConfigurationHandler.LAST_DIR));
 				fileChooser.addChoosableFileFilter(new JDFFileFilter());
 				fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
 				packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
@@ -1117,7 +1094,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " - JDF preprocessing is disabled");
 				}
 				returnValue = fileChooser.showOpenDialog(this);
-				_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+				configurationHandler.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
 					testRunner.startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
 				}
@@ -1127,7 +1104,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				if (queueEntryId != null && jobId != null) {
-					fileChooser = new JFileChooser(_confHand.getProp(ConfigurationHandler.LAST_DIR));
+					fileChooser = new JFileChooser(configurationHandler.getProp(ConfigurationHandler.LAST_DIR));
 					fileChooser.addChoosableFileFilter(new JDFFileFilter());
 					fileChooser.setDialogTitle("Select a JDF Job Ticket to Resubmit");
 					packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
@@ -1139,20 +1116,20 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 						fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " - JDF preprocessing is disabled");
 					}
 					returnValue = fileChooser.showOpenDialog(this);
-					_confHand.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+					configurationHandler.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 					if (returnValue == JFileChooser.APPROVE_OPTION) {
 						testRunner.startTestSessionWithResubmitQueueEntry(fileChooser.getSelectedFile(), queueEntryId, jobId, getDeviceUrl(), !disablePreprocessing, packageAsMime);
 					}
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
 			case "CommandStopPersistentChannel":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
-				outMessage = JMFMessageBuilder.buildStopPersistentChannel(_confHand.getServerJmfUrl(), queueEntryId, jobId);
+				outMessage = JMFMessageBuilder.buildStopPersistentChannel(configurationHandler.getServerJmfUrl(), queueEntryId, jobId);
 				testRunner.startTestSession(outMessage, getDeviceUrl());
 				break;
 
@@ -1162,8 +1139,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					outMessage = JMFMessageBuilder.buildAbortQueueEntry(queueEntryId);
 					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
@@ -1173,8 +1150,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					outMessage = JMFMessageBuilder.buildHoldQueueEntry(queueEntryId);
 					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
@@ -1184,8 +1161,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					outMessage = JMFMessageBuilder.buildRemoveQueueEntry(queueEntryId);
 					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
@@ -1195,8 +1172,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					outMessage = JMFMessageBuilder.buildResumeQueueEntry(queueEntryId);
 					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
@@ -1206,8 +1183,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					outMessage = JMFMessageBuilder.buildSuspendQueueEntry(queueEntryId);
 					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
@@ -1217,8 +1194,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					outMessage = JMFMessageBuilder.buildSetQueueEntryPriority(queueEntryId, 100);
 					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
@@ -1228,8 +1205,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					outMessage = JMFMessageBuilder.buildSetQueueEntryPostion(queueEntryId, 0, null, null);
 					testRunner.startTestSession(outMessage, getDeviceUrl());
 				} else {
-					JOptionPane.showMessageDialog(this, _confHand.getLabel("please.select.row", "Please select a queue entry in the queue table"),
-							_confHand.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
+					JOptionPane.showMessageDialog(this, configurationHandler.getLabel("please.select.row", "Please select a queue entry in the queue table"),
+							configurationHandler.getLabel("No Row Selected", "No Row Selected"), JOptionPane.WARNING_MESSAGE);
 				}
 				break;
 
@@ -1268,10 +1245,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-			case ACTION_SHOW_PREFERENCES:
-				new PreferencesDialog(this, "Preferences");
-				setTitle(ConfigurationHandler.getSenderId() + "  -  " + _confHand.getServerJmfUrl());
-				break;
+//			case ACTION_SHOW_PREFERENCES:
+//				new PreferencesDialog(this, "Preferences");
+//				setTitle(ConfigurationHandler.getSenderId() + "  -  " + configurationHandler.getServerJmfUrl());
+//				break;
 
 			default:
 				testRunner.startTestSession(createMessage(actionCommand), getDeviceUrl());
@@ -1279,11 +1256,20 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 	}
 
+	/**
+	 * Show the preferences dialog.
+	 */
+	private void showPreferencesDialog() {
+		new PreferencesDialog(this, "Preferences");
+		setTitle(ConfigurationHandler.getSenderId() + "  -  " + configurationHandler.getServerJmfUrl());
+	}
+
 	// ----------------------------------------------------------------
 	// TreeModelListener
 	// ----------------------------------------------------------------
 
 	public void treeNodesChanged(TreeModelEvent e) {
+
 	}
 
 	public void treeNodesInserted(TreeModelEvent e) {
@@ -1326,116 +1312,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	}
 
 	// ----------------------------------------------------------------
-	// TreeCellRenderer
-	// ----------------------------------------------------------------
-
-	class AlcesTreeCellRenderer extends DefaultTreeCellRenderer {
-
-		Icon messageInPassIcon = null;
-
-		Icon messageInFailIcon = null;
-
-		Icon messageOutPassIcon = null;
-
-		Icon messageOutFailIcon = null;
-
-		Icon sessionIcon = null;
-
-		Icon testPassIcon = null;
-
-		Icon testFailIcon = null;
-
-		Icon testIgnoredIcon = null;
-		Icon sessionFailIcon = null;
-
-		Icon sessionPassIcon = null;
-
-		TestSession _testsession = null;
-
-		public AlcesTreeCellRenderer() {
-			sessionIcon = createIcon("/org/cip4/tools/alces/icons/session.gif");
-			messageInPassIcon = createIcon("/org/cip4/tools/alces/icons/message_in_pass.gif");
-			messageInFailIcon = createIcon("/org/cip4/tools/alces/icons/message_in_fail.gif");
-			messageOutPassIcon = createIcon("/org/cip4/tools/alces/icons/message_out_pass.gif");
-			messageOutFailIcon = createIcon("/org/cip4/tools/alces/icons/message_out_fail.gif");
-			testPassIcon = createIcon("/org/cip4/tools/alces/icons/test_pass.gif");
-			testFailIcon = createIcon("/org/cip4/tools/alces/icons/test_fail.gif");
-			testIgnoredIcon = createIcon("/org/cip4/tools/alces/icons/test_ignored.gif");
-			sessionFailIcon = createIcon("/org/cip4/tools/alces/icons/session_fail.gif");
-			sessionPassIcon = createIcon("/org/cip4/tools/alces/icons/session_pass.gif");
-		}
-
-		@Override
-		public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-			super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-			if (log.isDebugEnabled()) {
-				log.debug("Rendering tree cell " + value.getClass() + " - " + value + "...");
-			}
-			if (value instanceof OutgoingJmfMessage) {
-				if (((OutgoingJmfMessage) value).hasPassedAllTests()) {
-					setIcon(messageOutPassIcon);
-					setToolTipText("Outgoing message");
-				} else {
-					setIcon(messageOutFailIcon);
-					setToolTipText("Outgoing message");
-				}
-			} else if (value instanceof IncomingJmfMessage) {
-				if (((IncomingJmfMessage) value).hasPassedAllTests()) {
-					setIcon(messageInPassIcon);
-					setToolTipText("Incoming message");
-				} else {
-					setIcon(messageInFailIcon);
-					setToolTipText("Incoming message");
-				}
-			} else if (value instanceof TestSession) {
-				if (((TestSession) value).hasPassedAllTests()) {
-					setIcon(sessionPassIcon);
-				} else {
-					setIcon(sessionFailIcon);
-				}
-			} else if (value instanceof TestResult) {
-				TestResult result = (TestResult) value;
-				switch (result.getResult()) {
-				case PASSED:
-					setIcon(testPassIcon);
-					setToolTipText("Test passed");
-					break;
-				case FAILED:
-					setIcon(testFailIcon);
-					setToolTipText("Test failed");
-					break;
-				case IGNORED:
-					setIcon(testIgnoredIcon);
-					setToolTipText("Test ignored");
-					break;
-				default:
-				}
-			} else {
-				setIcon(null);
-				setToolTipText("No tooltip");
-			}
-			return this;
-		}
-
-		/**
-		 * Loads an icon.
-		 * 
-		 * @param path
-		 * @return
-		 */
-		private ImageIcon createIcon(String path) {
-			ImageIcon icon = null;
-			final java.net.URL imgURL = this.getClass().getResource(path);
-			if (imgURL != null) {
-				icon = new ImageIcon(imgURL);
-			} else {
-				log.warn("Could not load icon from path: " + path);
-			}
-			return icon;
-		}
-	}
-
-	// ----------------------------------------------------------------
 	// MouseListener
 	// ----------------------------------------------------------------
 
@@ -1453,21 +1329,26 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	}
 
-	public void mouseEntered(MouseEvent e) {
-
-	}
-
-	public void mouseExited(MouseEvent e) {
-
-	}
-
+	@Override
 	public void mousePressed(MouseEvent e) {
 
 	}
 
+	@Override
 	public void mouseReleased(MouseEvent e) {
 
 	}
+
+	@Override
+	public void mouseEntered(MouseEvent e) {
+
+	}
+
+	@Override
+	public void mouseExited(MouseEvent e) {
+
+	}
+
 
 	/**
 	 * Sends a JMF-Message selected with the "Send_JMF File..." button
@@ -1499,7 +1380,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		}
 		// Save test report
 		DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-hhmmss");
-		String outputDir = _confHand.getProp(ConfigurationHandler.OUTPUT_DIR) + dateFormat.format(new Date());
+		String outputDir = configurationHandler.getProp(ConfigurationHandler.OUTPUT_DIR) + dateFormat.format(new Date());
 		log.info("Writing test report to '" + outputDir + "'...");
 		String outputFile;
 		try {
@@ -1509,17 +1390,15 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 			log.error("Could not write test report.", e);
 		}
 		// Save configuration
-		_confHand.saveHistory(addressComboBox.getModel());
-		_confHand.saveConfiguration(this.getWidth(), this.getHeight(), sessionQueueSplitPane.getDividerLocation(), infoQueueSplitPane.getDividerLocation(), mainSplitPane.getDividerLocation());
+		configurationHandler.saveHistory(addressComboBox.getModel());
+		configurationHandler.saveConfiguration(this.getWidth(), this.getHeight(), sessionSplitPane.getDividerLocation(), infoQueueSplitPane.getDividerLocation(), mainSplitPane.getDividerLocation());
 		System.exit(0);
 	}
 
 	/**
 	 * Thread used during Alces's connect phase
-	 * 
-	 * @author Claes Buckwalter (clabu@itn.liu.se)
 	 */
-	abstract class ConnectThread extends Thread {
+	abstract static class ConnectThread extends Thread {
 		abstract void cancel();
 	}
 }
