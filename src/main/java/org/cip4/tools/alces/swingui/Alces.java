@@ -92,19 +92,19 @@ import org.slf4j.LoggerFactory;
 public class Alces extends JFrame implements ActionListener, TreeModelListener, TreeSelectionListener, MouseListener {
 
 	// -----------------------------------------------------
-	// | Address Bar |
+	// | Address Bar                                       |
 	// |---------------------------------------------------|
-	// | Device | Test | Test View |
-	// | Info | Session | |
-	// |---------| Tree | |
-	// | Message | | |
-	// | Buttons | | |
-	// | | | |
-	// | | | |
-	// | | |------------------------------|
-	// | | | Queue |
-	// | | | |
-	// | | | |
+	// | Device  | Test    | Test View                     |
+	// | Info    | Session |                               |
+	// |---------| Tree    |                               |
+	// | Message |         |                               |
+	// | Buttons |         |                               |
+	// |         |         |                               |
+	// |         |         |                               |
+	// |         |         |-------------------------------|
+	// |         |         | Queue                         |
+	// |         |         |                               |
+	// |         |         |                               |
 	// -----------------------------------------------------
 
 	private static final Logger log = LoggerFactory.getLogger(Alces.class);
