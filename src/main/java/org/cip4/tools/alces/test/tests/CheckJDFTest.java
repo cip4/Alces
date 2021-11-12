@@ -9,7 +9,7 @@ import java.util.Properties;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
-import org.cip4.tools.alces.test.TestResultImpl;
+import org.cip4.tools.alces.test.TestResult;
 
 /**
  * Uses CheckJDF to test if a <code>Message</code> contains a valid JDF instance or a JMF message.
@@ -56,7 +56,7 @@ public class CheckJDFTest extends ConfigurableTest {
 		} catch (Exception e) {
 			logMsg.append("An error occurred while validating the message body. Maybe the" + " message body does not contain a JDF instance or a JMF message?");
 			log.error("Could not validate message: ", e);
-			result = new TestResultImpl(this, message, Result.FAILED, logMsg.toString());
+			result = new TestResult(this, message, Result.FAILED, logMsg.toString());
 		}
 		return result;
 	}

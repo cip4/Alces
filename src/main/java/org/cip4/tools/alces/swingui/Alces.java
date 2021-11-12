@@ -214,7 +214,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		addressComboBox = new JComboBox<>(configurationHandler.loadHistory());
 		addressComboBox.setEditable(true);
 		addressComboBox.addActionListener(e -> {
-			JComboBox<String> obj = (JComboBox) e.getSource();
+			JComboBox<String> obj = (JComboBox<String>) e.getSource();
 			obj.insertItemAt(obj.getSelectedItem().toString(), 0);
 			this.deviceUrl = obj.getSelectedItem().toString();
 		});
@@ -250,7 +250,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		JPanel devicePanel = new JPanel(new BorderLayout());
 		JPanel deviceInfoPanel = new JPanel();
 		deviceInfoPanel.setLayout(new BoxLayout(deviceInfoPanel, BoxLayout.Y_AXIS));
-		deviceListComboBox = new JComboBox();
+		deviceListComboBox = new JComboBox<>();
 		deviceListComboBox.setEnabled(false);
 		deviceListComboBox.setActionCommand(ACTION_SELECT_DEVICE);
 		deviceListComboBox.addActionListener(this);
@@ -393,22 +393,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		// return session panel
 		return sessionSplitPane;
 	}
-
-//	/**
-//	 * Returns the current instance.
-//	 * @return The current instance.
-//	 */
-//	public static Alces getInstance() {
-//		return THE_INSTANCE;
-//	}
-
-//	/**
-//	 * Returns the test suite.
-//	 * @return The test suite
-//	 */
-//	// public TestSuite getTestSuite() {
-//		return this.testSuiteTreeNode.getTestSuite();
-//	}
 
 	/**
 	 * Sends a KnownDevices messages.
@@ -617,19 +601,15 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		// Get known message services
 		JDFMessage response = knownMessages.getResponse(0);
-		List services = response.getChildElementVector(ElementName.MESSAGESERVICE, null, null, true, 0, false);
+		List<org.cip4.jdflib.core.KElement> services = response.getChildElementVector(ElementName.MESSAGESERVICE, null, null, true, 0, false);
 		if (services.size() == 0) {
 			JOptionPane.showMessageDialog(this, "The device's reply to a KnownMessages query did not contain\n" + "any message services. You can still try sending JMF to the\n"
 					+ "device using the 'Send File...' button to the left.", "No Message Services", JOptionPane.WARNING_MESSAGE);
 			return;
 		}
 		// Sort services alphabetically
-		JDFMessageService[] jmfServices = (JDFMessageService[]) services.toArray(new JDFMessageService[0]);
-		Arrays.sort(jmfServices, new Comparator() {
-			public int compare(Object o1, Object o2) {
-				return ((JDFMessageService) o1).getType().compareTo(((JDFMessageService) o2).getType());
-			}
-		});
+		JDFMessageService[] jmfServices = services.toArray(new JDFMessageService[0]);
+		Arrays.sort(jmfServices, Comparator.comparing(o -> o.getType()));
 		// Create buttons
 		for (int i = 0; i < jmfServices.length; i++) {
 			if (jmfServices[i].getJMFRole() != null && jmfServices[i].getJMFRole().equals(EnumJMFRole.Sender)) {

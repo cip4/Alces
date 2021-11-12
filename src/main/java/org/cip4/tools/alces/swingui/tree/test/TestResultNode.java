@@ -9,7 +9,6 @@ import javax.swing.tree.TreeNode;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.test.tests.Test;
 
 /**
@@ -31,7 +30,7 @@ public class TestResultNode extends DefaultMutableTreeNode {
      */
     public TestResultNode(Test test, AbstractJmfMessage message, TestResult.Result result,
                           String resultString, DefaultTreeModel treeModel) {
-        this(new TestResultImpl(test, message, result, resultString), treeModel);
+        this(new TestResult(test, message, result, resultString), treeModel);
 
     }
     
