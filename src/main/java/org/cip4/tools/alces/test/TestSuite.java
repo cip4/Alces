@@ -100,11 +100,11 @@ public class TestSuite implements TestSessionListener {
 	}
 
 	public TestSession createTestSession(String targetUrl) {
-		return new TestSessionImpl(targetUrl);
+		return new TestSession(targetUrl);
 	}
 
 	public TestResult createTestResult(Test test, AbstractJmfMessage testedMessage, Result result, String testLog) {
-		return new TestResultImpl(test, testedMessage, result, testLog);
+		return new TestResult(test, testedMessage, result, testLog);
 	}
 
 	// TestSession listeners

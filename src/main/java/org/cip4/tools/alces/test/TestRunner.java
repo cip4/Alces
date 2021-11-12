@@ -34,17 +34,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * This is the class in the Alces framework that is responsible for creating test sessions during which JMF messages are sent, received, and tested. Example
- * usage:
- * <ol>
- * <li>Create a TestRunner, {@link #TestRunner()}.</li>
- * <li>Initialize the test environment {@link #init()}. This starts a HTTP server, etc.</li>
- * <li>Start a {@link TestSession} using one of the <code>startTestSession*</code>-methods.</li>
- * <li>Any incoming messages that Alces can associate with the outgoing message that started a <code>TestSession</code> will automatically be associated with
- * the <code>TestSession</code>. To receive events when an incoming message is received, register a listener with the <code>TestSession</code> using
- * {@link TestSession#addListener(TestSessionListener)}</li>
- * <li>When finished, destroy the test environment to release resources, {@link #destroy()}</li>
- * </ol>
+ * This is the class in the Alces framework that is responsible for creating test sessions during
+ * which JMF messages are sent, received, and tested.
  */
 public class TestRunner {
 
@@ -554,11 +545,11 @@ public class TestRunner {
 		// 3 steps are here: separate MIME message, preprocess JMF part, glue it back.
 		if (mjmEnabled) {
 			// take JMF part from MIME
-			OutgoingJmfMessage jmfMessage = (OutgoingJmfMessage) TestSessionImpl.getJMFFromMime(message);
+			OutgoingJmfMessage jmfMessage = (OutgoingJmfMessage) TestSession.getJMFFromMime(message);
 			// preprocess JMF part
 			jmfMessage = preprocessJMF(jmfMessage, context);
 			// glue it back
-			JDFDoc jdfDoc = new JDFParser().parseFile(TestSessionImpl.getJDFFileFromMime(message));
+			JDFDoc jdfDoc = new JDFParser().parseFile(TestSession.getJDFFileFromMime(message));
 			JDFDoc jmfDoc = new JDFDoc(JmfUtil.getBodyAsJMF(jmfMessage).getOwnerDocument());
 			Multipart multipart = MimeUtil.buildMimePackage(jmfDoc, jdfDoc);
 			try {

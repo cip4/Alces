@@ -6,7 +6,6 @@ package org.cip4.tools.alces.test.tests;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
-import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +86,6 @@ public class JDFContentTest extends Test {
             }            
         }
         log.debug(logMsg);
-        return new TestResultImpl(this, message, Result.getPassed(passedTest), logMsg);
+        return new TestResult(this, message, Result.getPassed(passedTest), logMsg);
     }
 }

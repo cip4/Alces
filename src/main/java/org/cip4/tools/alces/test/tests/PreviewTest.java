@@ -19,7 +19,6 @@ import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
-import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
@@ -53,7 +52,7 @@ public class PreviewTest extends Test {
 	public TestResult runTest(AbstractJmfMessage message) {
 		if (!isJMF(message)) {
 			// Ignore if not JMF
-			return new TestResultImpl(this, message, Result.IGNORED,
+			return new TestResult(this, message, Result.IGNORED,
 					"Test ignored because message did not contain JMF. Message content-type was: "
 							+ message.getContentType());
 		}
@@ -108,7 +107,7 @@ public class PreviewTest extends Test {
 		} else {
 			result = Result.IGNORED;
 		}
-		return new TestResultImpl(this, message, result, logMsg.toString());
+		return new TestResult(this, message, result, logMsg.toString());
 	}
 
 	private String buildPreviewFileName(KElement preview, String originalPath) {

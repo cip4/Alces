@@ -7,7 +7,6 @@ import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
-import org.cip4.tools.alces.test.TestResultImpl;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;
 
@@ -29,7 +28,7 @@ public class ReturnCodeTest extends Test {
 	public TestResult runTest(AbstractJmfMessage message) {
         final TestResult result;    
         if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
-        	result = new TestResultImpl(this, message, Result.IGNORED, 
+        	result = new TestResult(this, message, Result.IGNORED,
         			"Test ignored because message did not contain JMF. Message content-type was: " 
         			+ message.getContentType());
         } else {
@@ -80,7 +79,7 @@ public class ReturnCodeTest extends Test {
 	                    + " Acknowledge message(s) failed: \n" + failedResponses;
 	        }
 	
-	        result = new TestResultImpl(this, message, Result.getPassed(passedTest), logMsg);
+	        result = new TestResult(this, message, Result.getPassed(passedTest), logMsg);
         }
         return result;
     }

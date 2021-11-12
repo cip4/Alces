@@ -17,7 +17,7 @@ import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.test.TestResultImpl;
+import org.cip4.tools.alces.test.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +26,7 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Claes Buckwalter (claes.buckwalter@agfa.com)
  */
-public class XsltTestResult extends TestResultImpl {
+public class XsltTestResult extends TestResult {
 
 	private static Logger log = LoggerFactory.getLogger(XsltTestResult.class);
 

@@ -12,7 +12,7 @@ import java.util.Properties;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.test.TestResult.Result;
-import org.cip4.tools.alces.test.TestResultImpl;
+import org.cip4.tools.alces.test.TestResult;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.jdom.Document;
 import org.jdom.Namespace;
@@ -106,7 +106,7 @@ public class ConfigurableXPathsTest extends Test {
 		} catch (Exception e) {
 			logMsg = "An error occurred while validating the message body. Maybe the" + " message body does not contain a JDF instance or a JMF message?";
 		}
-		TestResult result = new TestResultImpl(this, message, Result.getPassed(passedTest), logMsg);
+		TestResult result = new TestResult(this, message, Result.getPassed(passedTest), logMsg);
 		return result;
 	}
 
