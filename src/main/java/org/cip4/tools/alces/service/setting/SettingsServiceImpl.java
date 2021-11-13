@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.util;
+package org.cip4.tools.alces.service.setting;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,33 +17,33 @@ import java.util.MissingResourceException;
 import java.util.Properties;
 import java.util.ResourceBundle;
 
+import javax.annotation.PostConstruct;
 import javax.swing.ComboBoxModel;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.service.AboutService;
+import org.cip4.tools.alces.service.about.AboutService;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.util.AlcesPathUtil;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
+import org.springframework.stereotype.Service;
 
 /**
- * Singleton used to load/save properties and configure test for incoming and outgoing tests
- * 
- * @author Marco Kornrumpf (Marco.Kornrumpf@Bertelsmann.de)
- * 
+ * Implementation of the settings service.
  */
-public class ConfigurationHandler {
+@Service
+public class SettingsServiceImpl implements SettingsService {
 
-	private static Logger log = LoggerFactory.getLogger(ConfigurationHandler.class);
+	private static Logger log = LoggerFactory.getLogger(SettingsServiceImpl.class);
 
 	private static final String RES_ALCES_PROPS = "/org/cip4/tools/alces/conf/alces.properties";
-
-	private static ConfigurationHandler _instance;
-
-	private ResourceBundle _messages = null;
 
 	private static final Properties DEFAULT_PROPERTIES;
 
@@ -232,25 +232,16 @@ public class ConfigurationHandler {
 	 * DefaultConstructor for the ConfigFacade is called from the getInstance() Method
 	 * 
 	 */
-	private ConfigurationHandler() {
+	public SettingsServiceImpl() {
 		_props = new Properties(DEFAULT_PROPERTIES);
-		try {
-			initResourceBundle();
-		} catch (MissingResourceException e) {
-			log.error("error", e);
-		}
 	}
 
 	/**
-	 * Singleton method
-	 * 
-	 * @return
+	 * Event is called after applications start up.
 	 */
-	public static synchronized ConfigurationHandler getInstance() {
-		if (_instance == null) {
-			_instance = new ConfigurationHandler();
-		}
-		return _instance;
+	@EventListener(ApplicationReadyEvent.class)
+	public void onStartUp() {
+		loadConfiguration(getProp(PROPERTIES_FILE));
 	}
 
 	/**
@@ -276,7 +267,7 @@ public class ConfigurationHandler {
 
 		// check if properties file exists
 		if (!propsFile.exists()) {
-			InputStream is = ConfigurationHandler.class.getResourceAsStream(RES_ALCES_PROPS);
+			InputStream is = SettingsServiceImpl.class.getResourceAsStream(RES_ALCES_PROPS);
 
 			try {
 				FileOutputStream fos = new FileOutputStream(propsFile);
@@ -322,8 +313,6 @@ public class ConfigurationHandler {
 	 * Returns the URL used for receiving JMF messages. The URL is built from the hostname, port, and context properties.
 	 * 
 	 * @return the server URL, for example http://localhost:9090/alces/jmf
-	 * @see #getServerHost()
-	 * @see #getServerPort()
 	 */
 	public String getServerJmfUrl() {
 		return "http://" + getServerHost() + ":" + getServerPort() + getServerJmfContextPath();
@@ -335,7 +324,7 @@ public class ConfigurationHandler {
 	public int getServerPort() {
 		int port;
 		try {
-			port = Integer.parseInt(getProp(ConfigurationHandler.PORT));
+			port = Integer.parseInt(getProp(SettingsServiceImpl.PORT));
 		} catch (Exception e) {
 			port = 9090;
 			log.error("Port was not a number. Using Port: " + port, e);
@@ -347,14 +336,14 @@ public class ConfigurationHandler {
 	 * @return the test server's hostname/IP.
 	 */
 	public String getServerHost() {
-		return getProp(ConfigurationHandler.HOST);
+		return getProp(SettingsServiceImpl.HOST);
 	}
 
 	/**
 	 * @return the server's JMF context path.
 	 */
 	public String getServerJmfContextPath() {
-		return getProp(ConfigurationHandler.CONTEXT_PATH);
+		return getProp(SettingsServiceImpl.CONTEXT_PATH);
 	}
 
 	/**
@@ -672,51 +661,6 @@ public class ConfigurationHandler {
 	}
 
 	/**
-	 * Get the WindowWidth from the properties
-	 * 
-	 * @return
-	 */
-	public int getWindowWidth() {
-		return Integer.parseInt(getProp(WIN_WIDTH));
-	}
-
-	/**
-	 * Get the WindowHeight from the properties
-	 * 
-	 * @return
-	 */
-	public int getWindowHeight() {
-		return Integer.parseInt(getProp(WIN_HEIGHT));
-	}
-
-	/**
-	 * Get the DevicePaneWidth from the properties
-	 * 
-	 * @return
-	 */
-	public int getDevicePaneWidth() {
-		return Integer.parseInt(getProp(DEVICE_WIDTH));
-	}
-
-	/**
-	 * Get the TestPaneWidth from the properties
-	 * 
-	 * @return
-	 */
-	public int getTestPaneWidth() {
-		return Integer.parseInt(getProp(TEST_WIDTH));
-	}
-
-	/**
-	 * Get the MainPaneHeight from the properties
-	 * 
-	 * @return
-	 */
-	public int getMainPaneHeight() {
-		return Integer.parseInt(getProp(MAIN_HEIGHT));
-	}
-
-	/**
 	 * Loads the already used addresses from the properties
 	 * 
 	 * @return
@@ -797,35 +741,6 @@ public class ConfigurationHandler {
 	public Properties getPropFile() {
 		return _props;
 
-	}
-
-	/**
-	 * Loads the bundle
-	 * 
-	 * @param locale
-	 */
-	private final void initResourceBundle() {
-		_messages = ResourceBundle.getBundle("org.cip4.tools.alces.localization.Alces", Locale.getDefault());
-
-	}
-
-	/**
-	 * Return the text for a Gui-Element depending on the content of the ResourceBundle file
-	 * 
-	 * @param key
-	 * @param defaultString
-	 * @return
-	 */
-	public String getLabel(String key, String defaultString) {
-
-		if (_messages == null) {
-			return defaultString;
-		}
-		try {
-			return _messages.getString(key);
-		} catch (MissingResourceException mre) {
-			return defaultString;
-		}
 	}
 
 	/**

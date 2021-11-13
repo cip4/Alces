@@ -23,7 +23,6 @@ import javax.swing.table.DefaultTableModel;
 import org.cip4.jdflib.auto.JDFAutoQueueEntry.EnumQueueEntryStatus;
 import org.cip4.jdflib.jmf.JDFQueue;
 import org.cip4.jdflib.jmf.JDFQueueEntry;
-import org.cip4.tools.alces.util.ConfigurationHandler;
 
 /**
  * A panel that dispalys information about a device's queue.
@@ -39,8 +38,6 @@ import org.cip4.tools.alces.util.ConfigurationHandler;
 public class QueuePanel extends JPanel {
 
 	public static final String REFRESH_QUEUE = "REFRESH_QUEUE";
-
-	private ConfigurationHandler _confHand = null;
 
 	private JScrollPane scrollPane = null;
 
@@ -64,7 +61,6 @@ public class QueuePanel extends JPanel {
 	 * A panel that displays and allows manipulation of a device's queue.
 	 */
 	public QueuePanel(Alces alces) {
-		_confHand = ConfigurationHandler.getInstance();
 		this.setLayout(new BorderLayout());
 		this.setBorder(BorderFactory.createEmptyBorder(5, 11, 11, 11));
 		// Queue Status
@@ -97,8 +93,7 @@ public class QueuePanel extends JPanel {
 		// Queue Buttons
 		JPanel queueButtonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 		this.add(queueButtonPanel, BorderLayout.PAGE_END);
-		JButton refreshButton = new JButton(_confHand.getLabel("Refresh.Queue",
-				"Refresh Queue"));
+		JButton refreshButton = new JButton("Refresh Queue");
 		refreshButton.setActionCommand(REFRESH_QUEUE);
 		refreshButton.addActionListener(alces);
 		refreshButton.setMnemonic(KeyEvent.VK_R);

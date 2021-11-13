@@ -14,8 +14,10 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
+import org.cip4.tools.alces.service.setting.SettingsService;
 import org.cip4.tools.alces.swingui.tree.message.AbstractMessageNode;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,7 +37,7 @@ public class ActionSaveRequestsResponcesToDisk extends AbstractAction {
 	public static int counterFiles = 0;
 	public static String pathPrefix = "c:/temp";
 
-	private ConfigurationHandler _confHand = ConfigurationHandler.getInstance();
+	private SettingsService settingsService = ApplicationContextUtil.getBean(SettingsService.class);
 
 	public ActionSaveRequestsResponcesToDisk(final JTree tree, final TreePath path) {
 		this.tree = tree;
@@ -114,7 +116,7 @@ public class ActionSaveRequestsResponcesToDisk extends AbstractAction {
 	private void save(String folderName, String fileName, String fileContent) {
 		counterFiles++;
 
-		pathPrefix = _confHand.getProp(ConfigurationHandler.PATH_TO_SAVE);
+		pathPrefix = settingsService.getProp(SettingsServiceImpl.PATH_TO_SAVE);
 		String strDirectory = pathPrefix + "/" + folderName;
 
 		// create folder

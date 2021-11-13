@@ -12,7 +12,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.setting.SettingsService;
+import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
 import org.slf4j.Logger;
@@ -40,7 +42,7 @@ public class SendContext extends JPopupMenu implements MouseListener {
 
 	private ArrayList<String> _entries;
 
-	private ConfigurationHandler _confHand = null;
+	private SettingsService settingsService;
 
 	/**
 	 * Simple constructor <code>source</code> is used to call the JOptionPane. <code>type</code> describes if the context is called for send JMF or
@@ -51,10 +53,10 @@ public class SendContext extends JPopupMenu implements MouseListener {
 	 */
 	public SendContext(Alces source, String type) {
 		super();
-		_confHand = ConfigurationHandler.getInstance();
+		settingsService = ApplicationContextUtil.getBean(SettingsService.class);
 		_source = source;
 
-		label = new JMenuItem(_confHand.getLabel("Select file to send:", "Select file to send:"));
+		label = new JMenuItem("Select file to send:");
 		this.add(label);
 		sep = new JSeparator();
 		this.add(sep);
@@ -73,7 +75,7 @@ public class SendContext extends JPopupMenu implements MouseListener {
 	 */
 	private void createJMFItems() {
 
-		_dir = _confHand.getProp(ConfigurationHandler.LAST_DIR);
+		_dir = settingsService.getProp(SettingsServiceImpl.LAST_DIR);
 		_entries = new ArrayList<String>();
 		String[] testFile = new File(_dir).list();
 
@@ -99,9 +101,9 @@ public class SendContext extends JPopupMenu implements MouseListener {
 
 			}
 		} catch (NullPointerException e) {
-			JOptionPane.showMessageDialog(_source, _confHand.getLabel("Error Directory", "No directory found! Please set a default directory in alces.properties."), "Test",
+			JOptionPane.showMessageDialog(_source, "No directory found! Please set a default directory in alces.properties.", "Test",
 					JOptionPane.WARNING_MESSAGE);
-			label.setText(_confHand.getLabel("Error", "Error"));
+			label.setText("Error");
 
 		}
 
@@ -113,8 +115,8 @@ public class SendContext extends JPopupMenu implements MouseListener {
 	 */
 	private void createJDFItems() {
 
-		_dir = _confHand.getProp(ConfigurationHandler.LAST_DIR);
-		_entries = new ArrayList<String>();
+		_dir = settingsService.getProp(SettingsServiceImpl.LAST_DIR);
+		_entries = new ArrayList<>();
 		String[] testFile = new File(_dir).list();
 
 		for (int i = 0; i < testFile.length; i++) {
@@ -140,9 +142,9 @@ public class SendContext extends JPopupMenu implements MouseListener {
 
 			}
 		} catch (NullPointerException e) {
-			JOptionPane.showMessageDialog(_source, _confHand.getLabel("Error Directory", "No directory found! Please set a default directory in alces.properties."), "Test",
+			JOptionPane.showMessageDialog(_source, "No directory found! Please set a default directory in alces.properties.", "Test",
 					JOptionPane.WARNING_MESSAGE);
-			label.setText(_confHand.getLabel("Error", "Error"));
+			label.setText("Error");
 
 		}
 

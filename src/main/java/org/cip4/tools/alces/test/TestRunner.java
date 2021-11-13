@@ -25,6 +25,8 @@ import org.cip4.tools.alces.preprocessor.jdf.UrlResolvingPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.SenderIDPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.URLPreprocessor;
+import org.cip4.tools.alces.service.setting.SettingsService;
+import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
 import org.cip4.tools.alces.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,17 +43,17 @@ public class TestRunner {
 
 	private static Logger log = LoggerFactory.getLogger(TestRunner.class);
 
-	private static TestRunner THE_INSTANCE = new TestRunner();
+	private static TestRunner THE_INSTANCE;
 
 	private TestSuite testSuite;
-	private ConfigurationHandler configurationHandler;
+	private SettingsService settingsService;
 
 	/**
 	 * Default constructor.
 	 */
 	private TestRunner() {
 		this.testSuite = new TestSuite();
-		this.configurationHandler = ConfigurationHandler.getInstance();
+		this.settingsService = ApplicationContextUtil.getBean(SettingsService.class);
 	}
 
 	/**
@@ -59,6 +61,11 @@ public class TestRunner {
 	 * @return The only instance of the Test Suite.
 	 */
 	public static TestRunner getInstance() {
+
+		if(THE_INSTANCE == null) {
+			THE_INSTANCE = new TestRunner();
+		}
+
 		return THE_INSTANCE;
 	}
 
@@ -83,7 +90,7 @@ public class TestRunner {
 		File[] testFiles = loadTestData(testDataDir);
 
 		log.info("Running tests...");
-		int testDelay = Integer.parseInt(configurationHandler.getProp(ConfigurationHandler.SEND_DELAY));
+		int testDelay = Integer.parseInt(settingsService.getProp(SettingsServiceImpl.SEND_DELAY));
 		for (int i = 0; i < testFiles.length; i++) {
 			log.info("Posting '" + testFiles[i].getAbsolutePath() + "' to " + targetUrl + "...");
 			startTestSession(testFiles[i], targetUrl);
@@ -95,7 +102,7 @@ public class TestRunner {
 		}
 		// Wait for asynchronous messages for the entire test duration
 		try {
-			int sleepTime = Integer.parseInt(configurationHandler.getProp(ConfigurationHandler.SESSION_DURATION));
+			int sleepTime = Integer.parseInt(settingsService.getProp(SettingsServiceImpl.SESSION_DURATION));
 			log.info("Waiting " + sleepTime + " millis for incoming messages...");
 			Thread.sleep(sleepTime);
 		} catch (InterruptedException ie) {
@@ -160,8 +167,8 @@ public class TestRunner {
 	 */
 	public TestSession startTestSession(OutgoingJmfMessage outMessage, File jdfFile, PreprocessorContext context, String targetUrl, boolean asMime) {
 		// Preprocess message
-		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, ConfigurationHandler.getSenderId());
-		context.addAttribute(URLPreprocessor.URL_ATTR, configurationHandler.getServerJmfUrl());
+		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, SettingsServiceImpl.getSenderId());
+		context.addAttribute(URLPreprocessor.URL_ATTR, settingsService.getServerJmfUrl());
 		boolean mjmDetected = outMessage.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
 		if (mjmDetected) {
 			outMessage = preprocessMIME(outMessage, context);
@@ -170,7 +177,7 @@ public class TestRunner {
 		}
 		// Preprocess JDF
 		if (jdfFile != null) {
-			context.addAttribute(NodeInfoPreprocessor.SUBSCRIPTION_URL_ATTR, configurationHandler.getServerJmfUrl());
+			context.addAttribute(NodeInfoPreprocessor.SUBSCRIPTION_URL_ATTR, settingsService.getServerJmfUrl());
 			context.addAttribute(NodeInfoPreprocessor.MESSAGEID_PREFIX_ATTR, JmfUtil.getBodyAsJMF(outMessage).getMessageElement(null, null, 0).getID());
 			preprocessJDF(jdfFile, context);
 		}
@@ -184,8 +191,8 @@ public class TestRunner {
 			final TestSession session = testSuite.createTestSession(targetUrl);
 			testSuite.addTestSession(session);
 			// Configure tests
-			configurationHandler.configureIncomingTests(session);
-			configurationHandler.configureOutgoingTests(session);
+			settingsService.configureIncomingTests(session);
+			settingsService.configureOutgoingTests(session);
 			// Send message
 			log.debug("Starting test session and sending message...");
 			session.sendMessage(outMessage);
@@ -255,7 +262,7 @@ public class TestRunner {
 	 */
 	public IncomingJmfMessage sendMessage(OutgoingJmfMessage message, String targetUrl) throws IOException {
 		PreprocessorContext context = new PreprocessorContext();
-		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, ConfigurationHandler.getSenderId());
+		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, SettingsServiceImpl.getSenderId());
 		boolean mjmDetected = message.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
 		if (mjmDetected) {
 			preprocessMIME(message, context);
@@ -376,12 +383,12 @@ public class TestRunner {
 	 */
 	public TestSession startTestSessionWithSubmitQueueEntry(File jdfFile, String targetUrl, boolean preprocessJdf, boolean asMime) {
 		final String baseUrl;
-		final String replaceUrls = configurationHandler.getProp(ConfigurationHandler.REPLACE_URLS_IN_JDF);
-		if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_WITH_HTTP)) {
+		final String replaceUrls = settingsService.getProp(SettingsServiceImpl.REPLACE_URLS_IN_JDF);
+		if (replaceUrls.equals(SettingsServiceImpl.REPLACE_URLS_IN_JDF_WITH_HTTP)) {
 			baseUrl = getPublishedJDFBaseURL();
-		} else if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_WITH_FILE)) {
+		} else if (replaceUrls.equals(SettingsServiceImpl.REPLACE_URLS_IN_JDF_WITH_FILE)) {
 			baseUrl = jdfFile.getParentFile().toURI().toASCIIString();
-		} else if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_DISABLED)) {
+		} else if (replaceUrls.equals(SettingsServiceImpl.REPLACE_URLS_IN_JDF_DISABLED)) {
 			baseUrl = null;
 		} else {
 			log.warn("Unknown configuration option for replacing relative URLs in JDF files. " + "Using property value as base URL: " + replaceUrls);
@@ -463,12 +470,12 @@ public class TestRunner {
 	 */
 	public TestSession startTestSessionWithResubmitQueueEntry(File jdfFile, String queueEntryId, String jobId, String targetUrl, boolean preprocessJdf, boolean asMime) {
 		final String baseUrl;
-		final String replaceUrls = configurationHandler.getProp(ConfigurationHandler.REPLACE_URLS_IN_JDF);
-		if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_WITH_HTTP)) {
+		final String replaceUrls = settingsService.getProp(SettingsServiceImpl.REPLACE_URLS_IN_JDF);
+		if (replaceUrls.equals(SettingsServiceImpl.REPLACE_URLS_IN_JDF_WITH_HTTP)) {
 			baseUrl = getPublishedJDFBaseURL();
-		} else if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_WITH_FILE)) {
+		} else if (replaceUrls.equals(SettingsServiceImpl.REPLACE_URLS_IN_JDF_WITH_FILE)) {
 			baseUrl = jdfFile.getParentFile().toURI().toASCIIString();
-		} else if (replaceUrls.equals(ConfigurationHandler.REPLACE_URLS_IN_JDF_DISABLED)) {
+		} else if (replaceUrls.equals(SettingsServiceImpl.REPLACE_URLS_IN_JDF_DISABLED)) {
 			baseUrl = null;
 		} else {
 			log.warn("Unknown configuration option for replacing relative URLs in JDF files. " + "Using property value as base URL: " + replaceUrls);
@@ -488,7 +495,7 @@ public class TestRunner {
 		if (!jdfFile.exists()) {
 			throw new IllegalArgumentException("The JDF file '" + jdfFile.getAbsolutePath() + "' cannot be published because the file does not exist.");
 		}
-		String publicDirPath = configurationHandler.getProp(ConfigurationHandler.RESOURCE_BASE);
+		String publicDirPath = settingsService.getProp(SettingsServiceImpl.RESOURCE_BASE);
 		// Create JDF dir
 		File publicJdfDir = new File(publicDirPath, "jdf");
 		publicJdfDir.mkdir();
@@ -510,8 +517,8 @@ public class TestRunner {
 	 */
 	private String getPublishedJDFBaseURL() {
 		String publicJdfUrl = null;
-		String host = configurationHandler.getProp(ConfigurationHandler.HOST);
-		int port = Integer.parseInt(configurationHandler.getProp(ConfigurationHandler.PORT));
+		String host = settingsService.getProp(SettingsServiceImpl.HOST);
+		int port = Integer.parseInt(settingsService.getProp(SettingsServiceImpl.PORT));
 		publicJdfUrl = "http://" + host + ":" + port + "/jdf/";
 		return publicJdfUrl;
 	}
@@ -540,7 +547,7 @@ public class TestRunner {
 	 * @since 0.9.9.3
 	 */
 	private OutgoingJmfMessage preprocessMIME(OutgoingJmfMessage message, PreprocessorContext context) {
-		String mjmEnableStr = ConfigurationHandler.getInstance().getProp(ConfigurationHandler.MJM_MIME_FILE_PARSE);
+		String mjmEnableStr = settingsService.getProp(SettingsServiceImpl.MJM_MIME_FILE_PARSE);
 		boolean mjmEnabled = Boolean.parseBoolean(mjmEnableStr);
 		// 3 steps are here: separate MIME message, preprocess JMF part, glue it back.
 		if (mjmEnabled) {
@@ -573,7 +580,7 @@ public class TestRunner {
 	 * @param message
 	 */
 	private OutgoingJmfMessage preprocessJMF(OutgoingJmfMessage message, PreprocessorContext context) {
-		Preprocessor[] preprocessors = configurationHandler.getJMFPreprocessors();
+		Preprocessor[] preprocessors = settingsService.getJMFPreprocessors();
 		log.debug("Preprocessing message with " + preprocessors.length + " preprocessors...");
 		for (int i = 0; i < preprocessors.length; i++) {
 			try {
@@ -619,7 +626,7 @@ public class TestRunner {
 		if (context.getAttribute(JDFPreprocessor.PREPROCESSING_ENABLED).equals("false")) {
 			return jdf;
 		}
-		JDFPreprocessor[] preprocessors = configurationHandler.getJDFPreprocessors();
+		JDFPreprocessor[] preprocessors = settingsService.getJDFPreprocessors();
 		log.debug("Preprocessing JDF with " + preprocessors.length + " preprocessors...");
 		for (int i = 0; i < preprocessors.length; i++) {
 			try {

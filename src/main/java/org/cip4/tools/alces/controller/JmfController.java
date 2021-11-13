@@ -4,13 +4,15 @@ import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.service.setting.SettingsService;
 import org.cip4.tools.alces.test.TestRunner;
 import org.cip4.tools.alces.test.TestSession;
 import org.cip4.tools.alces.util.AlcesPathUtil;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,7 +33,8 @@ public class JmfController {
     private static final String JDF_CONTENT_TYPE = "application/vnd.cip4-jdf+xml";
     private static final String MIME_CONTENT_TYPE = "multipart/related";
 
-    private ConfigurationHandler configurationHandler = ConfigurationHandler.getInstance();
+    @Autowired
+    private SettingsService settingsService;
 
     private final String testDataDir = AlcesPathUtil.ALCES_TEST_DATA_DIR;
 
@@ -83,7 +86,7 @@ public class JmfController {
                 log.debug("Receiving unhandled JMF message...");
                 startTestSession(inMessage, remoteAddr);
                 JDFJMF jmfOut = JMFMessageBuilder.buildNotImplementedResponse(jmfIn);
-                jmfOut.getResponse(0).setReturnCode(Integer.parseInt(configurationHandler.getProp(ConfigurationHandler.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
+                jmfOut.getResponse(0).setReturnCode(Integer.parseInt(settingsService.getProp(SettingsServiceImpl.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
                 responseEntity = ResponseEntity.ok(jmfOut.toXML());
             }
 
@@ -150,8 +153,8 @@ public class JmfController {
                 TestRunner.getInstance().getTestSuite().addTestSession(testSession);
 
                 // Configure tests
-                configurationHandler.configureIncomingTests(testSession);
-                configurationHandler.configureOutgoingTests(testSession);
+                settingsService.configureIncomingTests(testSession);
+                settingsService.configureOutgoingTests(testSession);
 
                 // Add message to TestSession
                 testSession.receiveMessage(newMessage);

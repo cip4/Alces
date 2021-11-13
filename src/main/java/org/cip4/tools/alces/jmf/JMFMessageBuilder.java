@@ -16,7 +16,7 @@ import org.cip4.jdflib.jmf.JDFStatusQuParams;
 import org.cip4.jdflib.jmf.JDFStopPersChParams;
 import org.cip4.jdflib.resource.JDFNotification;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
 
 public class JMFMessageBuilder {
 
@@ -195,7 +195,7 @@ public class JMFMessageBuilder {
 			JDFComment comment = not.appendComment();
 			comment.setText("Alces has received and processed your message.");
 		}
-		jmf.setSenderID(ConfigurationHandler.getSenderId());
+		jmf.setSenderID(SettingsServiceImpl.getSenderId());
 		return jmf;
 	}
 
@@ -221,7 +221,7 @@ public class JMFMessageBuilder {
 			JDFComment comment = not.appendComment();
 			comment.setText("Alces has received and logged your messages but does not know how to process the message.");
 		}
-		jmf.setSenderID(ConfigurationHandler.getSenderId());
+		jmf.setSenderID(SettingsServiceImpl.getSenderId());
 		return jmf;
 	}
 

@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.service;
+package org.cip4.tools.alces.service.about;
 
 import org.cip4.jdflib.core.JDFAudit;
 import org.slf4j.Logger;

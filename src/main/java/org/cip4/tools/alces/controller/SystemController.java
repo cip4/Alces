@@ -1,6 +1,6 @@
 package org.cip4.tools.alces.controller;
 
-import org.cip4.tools.alces.service.AboutService;
+import org.cip4.tools.alces.service.about.AboutService;
 import org.cip4.tools.alces.util.TimeUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

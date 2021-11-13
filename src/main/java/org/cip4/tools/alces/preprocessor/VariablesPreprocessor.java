@@ -14,7 +14,9 @@ import org.cip4.jdflib.node.JDFNode;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.setting.SettingsService;
+import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * /StrSubstitutor.html} for details on the the variables name-value map and the syntax in the JDF/JMF template.
  * 
  * <p>
- * Default variables are first loaded from {@link ConfigurationHandler#getPropFile()} and then from a Java Property file named
+ * Default variables are first loaded from {@link SettingsServiceImpl#getPropFile()} and then from a Java Property file named
  * <code>VariablesPreprocessor.properties</code> if it exists at the root of the classpath. The property names in the properties files can be used as variable
  * names and will be replace by their property values.
  * </p>
@@ -100,7 +102,8 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 	 * <code>VariablesPreprocessor.properties</code> found at the root of the classpath.
 	 */
 	private void loadVariablesMap() {
-		final Properties props = ConfigurationHandler.getInstance().getPropFile();
+		SettingsService settingsService = ApplicationContextUtil.getBean(SettingsService.class);
+		final Properties props = settingsService.getPropFile();
 		setVariablesMap(props);
 		final InputStream input = VariablesPreprocessor.class.getResourceAsStream(RES_VARIABLES_FILE);
 		if (input == null) {

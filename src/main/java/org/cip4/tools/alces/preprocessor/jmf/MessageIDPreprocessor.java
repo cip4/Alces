@@ -1,6 +1,3 @@
-/*
- * Created on Apr 22, 2005
- */
 package org.cip4.tools.alces.preprocessor.jmf;
 
 import java.util.Iterator;
@@ -12,7 +9,9 @@ import org.cip4.tools.alces.jmf.AlcesMessageIDFactory;
 import org.cip4.tools.alces.jmf.MessageIDFactory;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.setting.SettingsService;
+import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
@@ -46,11 +45,11 @@ public class MessageIDPreprocessor implements Preprocessor {
 			log.debug("Preprocessor input: " + message.toString());
 		}
 
-		ConfigurationHandler confHand = ConfigurationHandler.getInstance();
+		SettingsService settingsService = ApplicationContextUtil.getBean(SettingsService.class);
 
 		JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 		// update ID only if required
-		if (confHand.getProp(ConfigurationHandler.UPDATE_MESSAGEID).equalsIgnoreCase("TRUE")) {
+		if (settingsService.getProp(SettingsServiceImpl.UPDATE_MESSAGEID).equalsIgnoreCase("TRUE")) {
 			List messages = jmf.getMessageVector(null, null);
 			for (Iterator i = messages.iterator(); i.hasNext();) {
 				JDFMessage m = (JDFMessage) i.next();

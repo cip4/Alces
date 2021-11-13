@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.service;
+package org.cip4.tools.alces.service.about;
 
 /**
  * Business interface of the about service.
