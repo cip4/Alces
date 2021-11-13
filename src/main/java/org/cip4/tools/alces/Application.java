@@ -1,5 +1,6 @@
 package org.cip4.tools.alces;
 
+import com.formdev.flatlaf.FlatDarculaLaf;
 import org.cip4.tools.alces.swingui.Alces;
 import org.cip4.tools.alces.service.AboutService;
 import org.slf4j.Logger;
@@ -12,6 +13,8 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
+
+import javax.swing.*;
 
 /**
  * Applications main class.
@@ -29,6 +32,13 @@ public class Application {
      * @param args Applications parameter.
      */
     public static void main(String[] args) throws Exception {
+
+        // set theme
+        try {
+            UIManager.setLookAndFeel( new FlatDarculaLaf() );
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
+        }
 
         // start spring app
         new SpringApplicationBuilder(Application.class).headless(false).run(args);

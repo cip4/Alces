@@ -48,6 +48,8 @@ shadowJar {
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.cip4.lib.jdf:JDFLibJ:2.1.7.+'
+    implementation 'com.formdev:flatlaf:1.+'
+
     implementation 'jdom:jdom:1.1'
     implementation 'org.xhtmlrenderer:core-renderer:R8pre2'
     implementation 'concurrent:concurrent:1.3.4'
