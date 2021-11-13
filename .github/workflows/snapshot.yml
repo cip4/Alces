@@ -9,7 +9,7 @@ jobs:
     name: 🏭
     uses: cip4/.github/.github/workflows/tool-snapshot.yml@v1
     with:
-      tool: Alces
+      java-version: 16
       confluence-label: alces
       confluence-content-id: 1457554021
       apple-bundle-id: org.cip4.alces
