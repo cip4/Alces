@@ -16,7 +16,7 @@ import org.cip4.jdflib.jmf.JDFStatusQuParams;
 import org.cip4.jdflib.jmf.JDFStopPersChParams;
 import org.cip4.jdflib.resource.JDFNotification;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 
 public class JMFMessageBuilder {
 

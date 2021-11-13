@@ -38,8 +38,8 @@ import javax.swing.JTextField;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import org.cip4.tools.alces.service.setting.SettingsService;
-import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

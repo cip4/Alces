@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.service.setting;
+package org.cip4.tools.alces.service.settings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -11,13 +11,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.ResourceBundle;
 
-import javax.annotation.PostConstruct;
 import javax.swing.ComboBoxModel;
 
 import org.apache.commons.io.FilenameUtils;

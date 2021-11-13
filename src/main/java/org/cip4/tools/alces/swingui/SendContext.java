@@ -12,8 +12,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
-import org.cip4.tools.alces.service.setting.SettingsService;
-import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;

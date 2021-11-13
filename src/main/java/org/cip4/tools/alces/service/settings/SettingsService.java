@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.service.setting;
+package org.cip4.tools.alces.service.settings;
 
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;

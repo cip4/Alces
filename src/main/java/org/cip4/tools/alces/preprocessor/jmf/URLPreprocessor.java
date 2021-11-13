@@ -9,8 +9,8 @@ import java.util.Properties;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
-import org.cip4.tools.alces.service.setting.SettingsService;
-import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.ApplicationContextUtil;
 
 /**

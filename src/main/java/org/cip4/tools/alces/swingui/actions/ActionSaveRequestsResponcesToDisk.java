@@ -14,9 +14,9 @@ import javax.swing.JTree;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 
-import org.cip4.tools.alces.service.setting.SettingsService;
+import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.swingui.tree.message.AbstractMessageNode;
-import org.cip4.tools.alces.service.setting.SettingsServiceImpl;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.slf4j.Logger;
