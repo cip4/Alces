@@ -57,6 +57,7 @@ import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.swingui.actions.ActionCollapse;
 import org.cip4.tools.alces.swingui.actions.ActionCollapseAll;
 import org.cip4.tools.alces.swingui.actions.ActionSaveRequestsResponcesToDisk;
+import org.cip4.tools.alces.swingui.component.testsuitetree.JTestSuiteTree;
 import org.cip4.tools.alces.swingui.renderer.AlcesTreeCellRenderer;
 import org.cip4.tools.alces.swingui.renderer.RendererFactory;
 import org.cip4.tools.alces.swingui.tree.test.TestSuiteTreeNode;
@@ -143,10 +144,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 */
 	public Alces()  {
 		super();
-
-
-
-
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
@@ -323,7 +320,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		JScrollPane sessionTreeScrollPane = new JScrollPane();
 
-		sessionTree = initTree(); // DEEPT INIT !!
+		sessionTree = JTestSuiteTree.newInstance(); // initTree(); // DEEP INIT !!
 
 		sessionTreeScrollPane.setViewportView(sessionTree);
 		sessionPanel.add(sessionTreeScrollPane, BorderLayout.CENTER);
