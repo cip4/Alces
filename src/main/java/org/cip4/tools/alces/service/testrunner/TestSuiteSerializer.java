@@ -1,7 +1,7 @@
 /*
  * Created on May 15, 2005
  */
-package org.cip4.tools.alces.test;
+package org.cip4.tools.alces.service.testrunner;
 
 import java.io.BufferedWriter;
 import java.io.File;
@@ -22,10 +22,12 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.jdflib.node.JDFNode;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
+import org.cip4.tools.alces.service.testrunner.model.TestSuite;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;

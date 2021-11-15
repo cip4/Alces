@@ -1,15 +1,14 @@
 /*
  * Created on Apr 23, 2005
  */
-package org.cip4.tools.alces.test.tests;
+package org.cip4.tools.alces.service.testrunner.tests;
 
 import java.io.InputStream;
 import java.util.Properties;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.TestResult.Result;
-import org.cip4.tools.alces.test.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
 
 /**
  * Uses CheckJDF to test if a <code>Message</code> contains a valid JDF instance or a JMF message.

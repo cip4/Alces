@@ -10,11 +10,11 @@ import javax.swing.tree.MutableTreeNode;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.swingui.tree.message.InMessageNode;
 import org.cip4.tools.alces.swingui.tree.message.OutMessageNode;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.TestSession;
-import org.cip4.tools.alces.test.TestSessionListener;
-import org.cip4.tools.alces.test.TestSuite;
-import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
+import org.cip4.tools.alces.service.testrunner.model.TestSessionListener;
+import org.cip4.tools.alces.service.testrunner.model.TestSuite;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

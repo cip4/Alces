@@ -4,17 +4,11 @@
 package org.cip4.tools.alces.swingui.tree.message;
 
 import java.util.List;
-import java.util.Vector;
 
-import javax.swing.SwingUtilities;
 import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeNode;
 
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.swingui.tree.test.TestResultNode;
-import org.cip4.tools.alces.test.TestResult;
 
 /**
  * A <code>DefaultMutableTreeNode</code> implementation of a

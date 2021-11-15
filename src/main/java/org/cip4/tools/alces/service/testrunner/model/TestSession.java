@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.test;
+package org.cip4.tools.alces.service.testrunner.model;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -16,7 +16,7 @@ import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;
@@ -219,7 +219,7 @@ public class TestSession {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.cip4.tools.alces.test.TestSession#getOutgoingMessage(org.cip4.tools.alces.message.InMessage)
+	 * @see org.cip4.tools.alces.service.testrunner.model.TestSession#getOutgoingMessage(org.cip4.tools.alces.message.InMessage)
 	 */
 	public synchronized OutgoingJmfMessage getOutgoingMessage(IncomingJmfMessage message) {
 		final JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
@@ -256,7 +256,7 @@ public class TestSession {
 
 	/*
 	 * (non-Javadoc)
-	 * @see org.cip4.tools.alces.test.TestSession#getIncomingMessage(org.cip4.tools.alces.message.OutMessage)
+	 * @see org.cip4.tools.alces.service.testrunner.model.TestSession#getIncomingMessage(org.cip4.tools.alces.message.OutMessage)
 	 */
 	/**
 	 * Finds the incoming message that the specified outgoing message is a response to.

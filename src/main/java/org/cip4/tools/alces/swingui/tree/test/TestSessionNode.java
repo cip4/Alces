@@ -13,10 +13,10 @@ import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.swingui.tree.message.InMessageNode;
 import org.cip4.tools.alces.swingui.tree.message.OutMessageNode;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.TestSession;
-import org.cip4.tools.alces.test.TestSessionListener;
-import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
+import org.cip4.tools.alces.service.testrunner.model.TestSessionListener;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 
 import EDU.oswego.cs.dl.util.concurrent.Executor;
 import EDU.oswego.cs.dl.util.concurrent.ThreadedExecutor;

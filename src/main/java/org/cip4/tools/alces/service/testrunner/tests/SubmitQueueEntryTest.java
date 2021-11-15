@@ -1,7 +1,7 @@
 /*
  * Created on May 21, 2006
  */
-package org.cip4.tools.alces.test.tests;
+package org.cip4.tools.alces.service.testrunner.tests;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,12 +18,10 @@ import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage.EnumFamily;
 import org.cip4.jdflib.jmf.JDFMessage.EnumType;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.TestResult.Result;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * If the message tested contains a JMF SubmitQueueEntry message, the JDF file referenced by the SubmitQueueEntry message

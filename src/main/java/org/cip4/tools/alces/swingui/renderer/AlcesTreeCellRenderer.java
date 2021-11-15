@@ -2,8 +2,8 @@ package org.cip4.tools.alces.swingui.renderer;
 
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.TestSession;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

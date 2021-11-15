@@ -1,7 +1,7 @@
-package org.cip4.tools.alces.test.tests;
+package org.cip4.tools.alces.service.testrunner.tests;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
 
 /**
  * A test for testing <code>Message</code>s.

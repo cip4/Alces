@@ -1,7 +1,7 @@
 /*
  * Created on Jun 21, 2005
  */
-package org.cip4.tools.alces.test.tests;
+package org.cip4.tools.alces.service.testrunner.tests;
 
 import java.io.File;
 import java.io.FileInputStream;

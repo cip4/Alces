@@ -21,8 +21,8 @@ import org.apache.commons.io.IOUtils;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.cip4.tools.alces.service.about.AboutService;
-import org.cip4.tools.alces.test.TestSession;
-import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.slf4j.Logger;
@@ -590,6 +590,10 @@ public class SettingsServiceImpl implements SettingsService {
 		for (String testName : testConfig.keySet()) {
 			final boolean testEnabled = testConfig.get(testName);
 			if (testEnabled) {
+
+				// adapt to new package structure
+				testName = testName.replace("org.cip4.tools.alces.test.tests", "org.cip4.tools.alces.service.testrunner.tests");
+
 				try {
 					Test test = (Test) Class.forName(testName).newInstance();
 					tests.add(test);

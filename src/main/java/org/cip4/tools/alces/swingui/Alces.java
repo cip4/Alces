@@ -53,14 +53,14 @@ import org.cip4.tools.alces.jmf.JMFMessageFactory;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.swingui.actions.ActionCollapse;
 import org.cip4.tools.alces.swingui.actions.ActionCollapseAll;
 import org.cip4.tools.alces.swingui.actions.ActionSaveRequestsResponcesToDisk;
 import org.cip4.tools.alces.swingui.renderer.AlcesTreeCellRenderer;
 import org.cip4.tools.alces.swingui.renderer.RendererFactory;
 import org.cip4.tools.alces.swingui.tree.test.TestSuiteTreeNode;
-import org.cip4.tools.alces.test.TestRunner;
-import org.cip4.tools.alces.test.TestSession;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
@@ -99,6 +99,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	@Autowired
 	private SettingsService settingsService;
+
+	@Autowired
+	private TestRunnerService testRunnerService;
 
 	private JSplitPane mainSplitPane;
 	private JSplitPane sessionSplitPane;
@@ -149,7 +152,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() {
 
-		this.testSuiteTreeNode = new TestSuiteTreeNode(TestRunner.getInstance().getTestSuite());
+		this.testSuiteTreeNode = new TestSuiteTreeNode(testRunnerService.getTestSuite());
 
 		// initialize window (main panel)
 		Container mainPanel = getContentPane();
@@ -401,10 +404,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		IncomingJmfMessage incomingJmfMessage;
 
 		if (settingsService.getProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
-			incomingJmfMessage = TestRunner.getInstance().sendMessage(outgoingJmfMessage, getDeviceUrl());
+			incomingJmfMessage = testRunnerService.sendMessage(outgoingJmfMessage, getDeviceUrl());
 
 		} else {
-			TestSession testSession = TestRunner.getInstance().startTestSession(outgoingJmfMessage, getDeviceUrl());
+			TestSession testSession = testRunnerService.startTestSession(outgoingJmfMessage, getDeviceUrl());
 
 			int i = 0;
 			while (testSession.getIncomingMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
@@ -434,10 +437,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		IncomingJmfMessage incomingJmfMessage;
 
 		if (settingsService.getProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
-			incomingJmfMessage = TestRunner.getInstance().sendMessage(outgoingJmfMessage, getDeviceUrl());
+			incomingJmfMessage = testRunnerService.sendMessage(outgoingJmfMessage, getDeviceUrl());
 
 		} else {
-			TestSession testSession = TestRunner.getInstance().startTestSession(outgoingJmfMessage, getDeviceUrl());
+			TestSession testSession = testRunnerService.startTestSession(outgoingJmfMessage, getDeviceUrl());
 
 			int i = 0;
 			while (testSession.getIncomingMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
@@ -547,9 +550,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		OutgoingJmfMessage outMessage = createMessage("Connect_KnownMessages");
 		IncomingJmfMessage inMessage = null;
 		if (settingsService.getProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
-			inMessage = TestRunner.getInstance().sendMessage(outMessage, getDeviceUrl());
+			inMessage = testRunnerService.sendMessage(outMessage, getDeviceUrl());
 		} else {
-			TestSession testSession = TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+			TestSession testSession = testRunnerService.startTestSession(outMessage, getDeviceUrl());
 			int i = 0;
 			while (testSession.getIncomingMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
 			{
@@ -817,7 +820,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @see #connect()
 	 */
 	private void cancelConnect() {
-		synchronized (TestRunner.getInstance()) {
+		synchronized (testRunnerService.getTestSuite()) {
 			connectButton.setEnabled(false);
 			connectThread.cancel();
 			connectButton.setText("Connect");
@@ -869,7 +872,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					JDFJMF knownMessagesResponse = sendKnownMessages();
 					if (cancel)
 						return;
-					synchronized (TestRunner.getInstance()) {
+					synchronized (testRunnerService.getTestSuite()) {
 						if (cancel)
 							return;
 						setKnownDevices(knownDevicesResponse);
@@ -952,7 +955,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				// fc.getCurrentDirectory().getAbsolutePath());
 				settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					TestRunner.getInstance().startTestSession(TestRunner.getInstance().loadMessage(fileChooser.getSelectedFile()), getDeviceUrl());
+					testRunnerService.startTestSession(testRunnerService.loadMessage(fileChooser.getSelectedFile()), getDeviceUrl());
 				}
 				break;
 
@@ -1010,8 +1013,8 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 							// prepare file to send
 							for (File f : filesToSendInBatch) {
 								log.info("Batch: send file: " + f.getAbsolutePath());
-								TestRunner.getInstance().startTestSession(
-										TestRunner.getInstance().loadMessage(f), getDeviceUrl());
+								testRunnerService.startTestSession(
+										testRunnerService.loadMessage(f), getDeviceUrl());
 
 								try {
 									String delayStr = settingsService.getProp(SettingsServiceImpl.BATCHMODE_DELAYTONEXT_FILE);
@@ -1054,7 +1057,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				returnValue = fileChooser.showOpenDialog(this);
 				settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 				if (returnValue == JFileChooser.APPROVE_OPTION) {
-					TestRunner.getInstance().startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
+					testRunnerService.startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
 				}
 				break;
 
@@ -1076,7 +1079,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					returnValue = fileChooser.showOpenDialog(this);
 					settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
 					if (returnValue == JFileChooser.APPROVE_OPTION) {
-						TestRunner.getInstance().startTestSessionWithResubmitQueueEntry(fileChooser.getSelectedFile(), queueEntryId, jobId, getDeviceUrl(), !disablePreprocessing, packageAsMime);
+						testRunnerService.startTestSessionWithResubmitQueueEntry(fileChooser.getSelectedFile(), queueEntryId, jobId, getDeviceUrl(), !disablePreprocessing, packageAsMime);
 					}
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
@@ -1088,14 +1091,14 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				outMessage = JMFMessageBuilder.buildStopPersistentChannel(settingsService.getServerJmfUrl(), queueEntryId, jobId);
-				TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+				testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				break;
 
 			case "CommandAbortQueueEntry":
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildAbortQueueEntry(queueEntryId);
-					TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+					testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
 							"No Row Selected", JOptionPane.WARNING_MESSAGE);
@@ -1106,7 +1109,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildHoldQueueEntry(queueEntryId);
-					TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+					testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
 							"No Row Selected", JOptionPane.WARNING_MESSAGE);
@@ -1117,7 +1120,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildRemoveQueueEntry(queueEntryId);
-					TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+					testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
 							"No Row Selected", JOptionPane.WARNING_MESSAGE);
@@ -1128,7 +1131,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildResumeQueueEntry(queueEntryId);
-					TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+					testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
 							"No Row Selected", JOptionPane.WARNING_MESSAGE);
@@ -1139,7 +1142,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildSuspendQueueEntry(queueEntryId);
-					TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+					testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
 							"No Row Selected", JOptionPane.WARNING_MESSAGE);
@@ -1150,7 +1153,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildSetQueueEntryPriority(queueEntryId, 100);
-					TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+					testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
 							"No Row Selected", JOptionPane.WARNING_MESSAGE);
@@ -1161,7 +1164,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				if (queueEntryId != null) {
 					outMessage = JMFMessageBuilder.buildSetQueueEntryPostion(queueEntryId, 0, null, null);
-					TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+					testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				} else {
 					JOptionPane.showMessageDialog(this, "Please select a queue entry in the queue table",
 							"No Row Selected", JOptionPane.WARNING_MESSAGE);
@@ -1173,9 +1176,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				jobId = queuePanel.getSelectedJobID();
 				if (queueEntryId != null) {
 					OutgoingJmfMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
-					TestRunner.getInstance().startTestSession(message, getDeviceUrl());
+					testRunnerService.startTestSession(message, getDeviceUrl());
 				} else {
-					TestRunner.getInstance().startTestSession(createMessage(actionCommand), getDeviceUrl());
+					testRunnerService.startTestSession(createMessage(actionCommand), getDeviceUrl());
 				}
 				break;
 
@@ -1183,7 +1186,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				queueEntryId = queuePanel.getSelectedQueueEntryID();
 				jobId = queuePanel.getSelectedJobID();
 				outMessage = JMFMessageBuilder.buildQueryResource(jobId, queueEntryId);
-				TestRunner.getInstance().startTestSession(outMessage, getDeviceUrl());
+				testRunnerService.startTestSession(outMessage, getDeviceUrl());
 				break;
 
 			case QueuePanel.REFRESH_QUEUE:
@@ -1209,7 +1212,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 //				break;
 
 			default:
-				TestRunner.getInstance().startTestSession(createMessage(actionCommand), getDeviceUrl());
+				testRunnerService.startTestSession(createMessage(actionCommand), getDeviceUrl());
 				break;
 		}
 
@@ -1318,7 +1321,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @param file
 	 */
 	public void loadContextMessage(File file) {
-		TestRunner.getInstance().startTestSession(TestRunner.getInstance().loadMessage(file), getDeviceUrl());
+		testRunnerService.startTestSession(testRunnerService.loadMessage(file), getDeviceUrl());
 	}
 
 	/**
@@ -1327,7 +1330,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * @param file
 	 */
 	public void loadContextJDF(File file) {
-		TestRunner.getInstance().startTestSession(createSubmitQueueEntry(file), getDeviceUrl());
+		testRunnerService.startTestSession(createSubmitQueueEntry(file), getDeviceUrl());
 	}
 
 	/**
@@ -1343,7 +1346,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		String outputFile;
 		try {
-			outputFile = TestRunner.getInstance().serializeTestSuite(outputDir);
+			outputFile = testRunnerService.serializeTestSuite(outputDir);
 			log.info("Wrote test report to: " + outputFile);
 		} catch (Exception e) {
 			log.error("Could not write test report.", e);

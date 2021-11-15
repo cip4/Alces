@@ -5,8 +5,8 @@ import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
-import org.cip4.tools.alces.test.TestRunner;
-import org.cip4.tools.alces.test.TestSession;
+import org.cip4.tools.alces.service.testrunner.TestRunnerService;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JmfUtil;
@@ -36,6 +36,9 @@ public class JmfController {
     @Autowired
     private SettingsService settingsService;
 
+    @Autowired
+    private TestRunnerService testRunnerService;
+
     private final String testDataDir = AlcesPathUtil.ALCES_TEST_DATA_DIR;
 
     @RequestMapping(value = "/jdf/{filename}", method = RequestMethod.GET, produces = MediaType.TEXT_XML_VALUE)
@@ -59,7 +62,7 @@ public class JmfController {
 
         String remoteAddr = request.getRemoteAddr();
         String header = convertHttpHeadersToString(request);
-        final IncomingJmfMessage inMessage = TestRunner.getInstance().getTestSuite().createInMessage(contentType, header, messageBody, false);
+        final IncomingJmfMessage inMessage = testRunnerService.getTestSuite().createInMessage(contentType, header, messageBody, false);
 
         // create and send response
         final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(inMessage);
@@ -135,7 +138,7 @@ public class JmfController {
     private void startTestSession(IncomingJmfMessage inMessage, String remoteAddr) {
 
             // get test sesstion for in-message
-            TestSession testSession = TestRunner.getInstance().getTestSuite().findTestSession(inMessage);
+            TestSession testSession = testRunnerService.getTestSuite().findTestSession(inMessage);
 
             // Add the message to the TestSession
             if (testSession != null) {
@@ -146,11 +149,11 @@ public class JmfController {
                 log.info("Creating new TestSession for InMessage...");
 
                 // Create a objects using factory
-                IncomingJmfMessage newMessage = TestRunner.getInstance().getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
-                testSession = TestRunner.getInstance().getTestSuite().createTestSession(remoteAddr);
+                IncomingJmfMessage newMessage = testRunnerService.getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
+                testSession = testRunnerService.getTestSuite().createTestSession(remoteAddr);
 
                 // Add TestSession to suite
-                TestRunner.getInstance().getTestSuite().addTestSession(testSession);
+                testRunnerService.getTestSuite().addTestSession(testSession);
 
                 // Configure tests
                 settingsService.configureIncomingTests(testSession);

@@ -6,7 +6,9 @@ package org.cip4.tools.alces.test.tests;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.tests.JDFContentTest;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.junit.jupiter.api.Assertions;
 

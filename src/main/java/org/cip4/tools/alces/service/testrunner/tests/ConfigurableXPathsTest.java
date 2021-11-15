@@ -1,7 +1,7 @@
 /*
  * Created on May 30, 2005
  */
-package org.cip4.tools.alces.test.tests;
+package org.cip4.tools.alces.service.testrunner.tests;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.Properties;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.TestResult.Result;
-import org.cip4.tools.alces.test.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.jdom.Document;
 import org.jdom.Namespace;

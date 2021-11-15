@@ -2,7 +2,7 @@ package org.cip4.tools.alces.service.settings;
 
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.test.TestSession;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
 
 import javax.swing.*;
 import java.util.Map;

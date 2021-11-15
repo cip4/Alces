@@ -8,8 +8,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeNode;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 
 /**
  * A <code>DefaultMutableTreeNode</code> implementation of a
@@ -55,7 +55,7 @@ public class TestResultNode extends DefaultMutableTreeNode {
     /*
      * (non-Javadoc)
      * 
-     * @see org.cip4.tools.alces.test.TestResult#getLogMessage()
+     * @see org.cip4.tools.alces.service.testrunner.model.TestResult#getLogMessage()
      */
     public String getResultString() {
         return testResult.getResultString();
@@ -64,7 +64,7 @@ public class TestResultNode extends DefaultMutableTreeNode {
     /*
      * (non-Javadoc)
      * 
-     * @see org.cip4.tools.alces.test.TestResult#getMessage()
+     * @see org.cip4.tools.alces.service.testrunner.model.TestResult#getMessage()
      */
     public AbstractJmfMessage getMessage() {
         return testResult.getMessage();
@@ -73,7 +73,7 @@ public class TestResultNode extends DefaultMutableTreeNode {
     /*
      * (non-Javadoc)
      * 
-     * @see org.cip4.tools.alces.test.TestResult#isPassed()
+     * @see org.cip4.tools.alces.service.testrunner.model.TestResult#isPassed()
      */
     public boolean isPassed() {
         return testResult.isPassed();
@@ -82,7 +82,7 @@ public class TestResultNode extends DefaultMutableTreeNode {
     /*
      * (non-Javadoc)
      * 
-     * @see org.cip4.tools.alces.test.TestResult#getTest()
+     * @see org.cip4.tools.alces.service.testrunner.model.TestResult#getTest()
      */
     public Test getTest() {
         return testResult.getTest();

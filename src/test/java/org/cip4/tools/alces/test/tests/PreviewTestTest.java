@@ -4,7 +4,9 @@ import org.apache.commons.lang.StringUtils;
 import org.cip4.tools.alces.junit.AlcesTestCase;
 import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
-import org.cip4.tools.alces.test.TestResult;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.tests.PreviewTest;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.junit.jupiter.api.Assertions;
 

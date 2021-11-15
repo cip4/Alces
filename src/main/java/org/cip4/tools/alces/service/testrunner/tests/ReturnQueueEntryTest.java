@@ -1,7 +1,7 @@
 /*
  * Created on May 21, 2006
  */
-package org.cip4.tools.alces.test.tests;
+package org.cip4.tools.alces.service.testrunner.tests;
 
 import java.io.IOException;
 import java.util.List;

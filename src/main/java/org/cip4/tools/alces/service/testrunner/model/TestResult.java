@@ -1,7 +1,7 @@
-package org.cip4.tools.alces.test;
+package org.cip4.tools.alces.service.testrunner.model;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.test.tests.Test;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 
 /**
  * A class that represents the result of running a <code>Test</code> on a

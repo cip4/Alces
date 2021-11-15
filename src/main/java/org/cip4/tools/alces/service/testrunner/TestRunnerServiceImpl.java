@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.test;
+package org.cip4.tools.alces.service.testrunner;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,46 +27,41 @@ import org.cip4.tools.alces.preprocessor.jmf.SenderIDPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.URLPreprocessor;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
+import org.cip4.tools.alces.service.testrunner.model.TestSuite;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 /**
  * This is the class in the Alces framework that is responsible for creating test sessions during
  * which JMF messages are sent, received, and tested.
  */
-public class TestRunner {
+@Service
+public class TestRunnerServiceImpl implements TestRunnerService {
 
-	private static Logger log = LoggerFactory.getLogger(TestRunner.class);
-
-	private static TestRunner THE_INSTANCE;
+	private static Logger log = LoggerFactory.getLogger(TestRunnerServiceImpl.class);
 
 	private TestSuite testSuite;
+
+	@Autowired
 	private SettingsService settingsService;
+
+	@Autowired
+	private RestTemplate restTemplate;
 
 	/**
 	 * Default constructor.
 	 */
-	private TestRunner() {
+	private TestRunnerServiceImpl() {
 		this.testSuite = new TestSuite();
-		this.settingsService = ApplicationContextUtil.getBean(SettingsService.class);
-	}
-
-	/**
-	 * Returns the only instance.
-	 * @return The only instance of the Test Suite.
-	 */
-	public static TestRunner getInstance() {
-
-		if(THE_INSTANCE == null) {
-			THE_INSTANCE = new TestRunner();
-		}
-
-		return THE_INSTANCE;
 	}
 
 	/**
@@ -86,6 +81,7 @@ public class TestRunner {
 	 * @throws Exception
 	 */
 	public void runTests(String targetUrl, String testDataDir) throws Exception {
+
 		// Loads test files
 		File[] testFiles = loadTestData(testDataDir);
 
@@ -129,7 +125,7 @@ public class TestRunner {
 	/**
 	 * Starts a new test session using the specified file as the test session's initiating outgoing message.
 	 * 
-	 * All outgoing messages sent and incoming messages received during a test session are tested by the {@link org.cip4.tools.alces.test.tests.Test}s
+	 * All outgoing messages sent and incoming messages received during a test session are tested by the {@link Test}s
 	 * configured for this <code>TestRunner</code>.
 	 * 
 	 * All outgoing messages are preprocessed by the {@link org.cip4.tools.alces.preprocessor.jmf.Preprocessor}s configured for this <code>TestRunner</code>.
@@ -274,7 +270,6 @@ public class TestRunner {
 		httpHeaders.set("Content-Type", message.getContentType());
 		HttpEntity<String> request = new HttpEntity<>(message.getBody(), httpHeaders);
 
-		RestTemplate restTemplate = ApplicationContextUtil.getBean(RestTemplate.class);
 		ResponseEntity<String> responseEntity = restTemplate.postForEntity(targetUrl, request, String.class);
 
 		List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");

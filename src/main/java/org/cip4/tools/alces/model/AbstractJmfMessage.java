@@ -1,10 +1,8 @@
 package org.cip4.tools.alces.model;
 
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
