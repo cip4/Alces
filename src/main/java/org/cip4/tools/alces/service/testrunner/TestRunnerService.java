@@ -4,6 +4,7 @@ import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.testrunner.model.TestSuite;
+import org.cip4.tools.alces.service.testrunner.model.TestSuiteListener;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +13,12 @@ import java.io.IOException;
  * Business interface for a test-runner.
  */
 public interface TestRunnerService {
+
+    /**
+     * Register a new TestSuite listener.
+     * @param testSuiteListener The TestSuite lister.
+     */
+    void registerTestSuiteListener(TestSuiteListener testSuiteListener);
 
     /**
      * Returns the runners test suite.

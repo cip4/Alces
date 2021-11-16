@@ -15,5 +15,5 @@ public interface TestSessionListener {
 	 * @param testSession
 	 *            the test session the message belongs to
 	 */
-	public void messageReceived(IncomingJmfMessage inMessage, TestSession testSession);
+	void messageReceived(IncomingJmfMessage inMessage, TestSession testSession);
 }

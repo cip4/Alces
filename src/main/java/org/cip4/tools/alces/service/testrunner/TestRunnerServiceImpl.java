@@ -3,6 +3,7 @@ package org.cip4.tools.alces.service.testrunner;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.mail.Multipart;
@@ -29,6 +30,7 @@ import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.testrunner.model.TestSuite;
+import org.cip4.tools.alces.service.testrunner.model.TestSuiteListener;
 import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.*;
 import org.slf4j.Logger;
@@ -49,19 +51,22 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
 	private static Logger log = LoggerFactory.getLogger(TestRunnerServiceImpl.class);
 
-	private TestSuite testSuite;
-
 	@Autowired
 	private SettingsService settingsService;
 
 	@Autowired
 	private RestTemplate restTemplate;
 
+	private List<TestSuiteListener> testSuiteListeners;
+
+	private TestSuite testSuite;
+
 	/**
 	 * Default constructor.
 	 */
 	private TestRunnerServiceImpl() {
 		this.testSuite = new TestSuite();
+		testSuiteListeners = new ArrayList<>();
 	}
 
 	/**
@@ -70,6 +75,21 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 	 */
 	public TestSuite getTestSuite() {
 		return this.testSuite;
+	}
+
+	@Override
+	public void registerTestSuiteListener(TestSuiteListener testSuiteListener) {
+		testSuiteListeners.add(testSuiteListener);
+	}
+
+	/**
+	 * Notify all listener about the updated test suite.
+	 * @param testSuite The updated test suite.
+	 */
+	private void notifyTestSuiteListeners(TestSuite testSuite) {
+		this.testSuiteListeners.forEach(testSuiteListener -> {
+			testSuiteListener.handleTestSuiteUpdate(testSuite);
+		});
 	}
 
 	/**
@@ -104,18 +124,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 		} catch (InterruptedException ie) {
 		}
 		log.info("Finished running tests.");
-	}
-
-	/**
-	 * Convenience message for starting a test session.
-	 * 
-	 * @param testFile the path to a file containing a message that will start the test session
-	 * @param targetUrl the URL to send the message to
-	 * @return the started test session
-	 * @see #startTestSession(File, String)
-	 */
-	public TestSession startTestSession(String testFile, String targetUrl) {
-		return startTestSession(new File(testFile), targetUrl);
 	}
 
 	public TestSession startTestSession(OutgoingJmfMessage message, String targetUrl) {
@@ -192,6 +200,10 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 			// Send message
 			log.debug("Starting test session and sending message...");
 			session.sendMessage(outMessage);
+
+			// notify listeners
+			notifyTestSuiteListeners(testSuite);
+
 			return session;
 		}
 	}
@@ -390,33 +402,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 			baseUrl = replaceUrls;
 		}
 		return startTestSessionWithSubmitQueueEntry(jdfFile, targetUrl, preprocessJdf, asMime, baseUrl);
-	}
-
-	/**
-	 * Starts a new test session by resubmitting a JDF file. Any relative in the JDF file will be resolved against the JDF file and replaced with http URLs.
-	 * 
-	 * @param jdfFile the JDF file to submit
-	 * @param queueEntryId the queue entry ID of the job to resubmit
-	 * @param jobId the /JDF/@JobID of the job to resubmit
-	 * @param targetUrl the URL to submit it to
-	 * @return the test session
-
-	public TestSession startTestSessionWithResubmitQueueEntryWithHttpUrls(File jdfFile, String queueEntryId, String jobId, String targetUrl) {
-		return startTestSessionWithResubmitQueueEntry(jdfFile, queueEntryId, jobId, targetUrl, getPublishedJDFBaseURL(), true, false);
-	}
-
-	/**
-	 * Starts a new test session by resubmitting a JDF file. Any relative in the JDF file will be resolved against the JDF file and replaced with absolute file
-	 * URLs.
-	 * 
-	 * @param jdfFile the JDF file to submit
-	 * @param queueEntryId the queue entry ID of the job to resubmit
-	 * @param jobId the /JDF/@JobID of the job to resubmit
-	 * @param targetUrl the URL to submit it to
-	 * @return the test session
-	 */
-	public TestSession startTestSessionWithResubmitQueueEntryWithFileUrls(File jdfFile, String queueEntryId, String jobId, String targetUrl) {
-		return startTestSessionWithResubmitQueueEntry(jdfFile, queueEntryId, jobId, targetUrl, jdfFile.getAbsolutePath(), true, false);
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.swingui;
+package org.cip4.tools.alces.ui;
 
 import java.awt.Component;
 import java.awt.event.MouseEvent;

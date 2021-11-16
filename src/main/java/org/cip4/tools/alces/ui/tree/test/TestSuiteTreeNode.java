@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.swingui.tree.test;
+package org.cip4.tools.alces.ui.tree.test;
 
 import java.util.List;
 
@@ -8,8 +8,8 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 
 import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.swingui.tree.message.InMessageNode;
-import org.cip4.tools.alces.swingui.tree.message.OutMessageNode;
+import org.cip4.tools.alces.ui.tree.message.InMessageNode;
+import org.cip4.tools.alces.ui.tree.message.OutMessageNode;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.testrunner.model.TestSessionListener;

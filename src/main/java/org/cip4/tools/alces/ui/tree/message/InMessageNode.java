@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.swingui.tree.message;
+package org.cip4.tools.alces.ui.tree.message;
 
 import java.util.List;
 
@@ -9,7 +9,7 @@ import javax.swing.tree.TreeNode;
 
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.swingui.tree.test.TestResultNode;
+import org.cip4.tools.alces.ui.tree.test.TestResultNode;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

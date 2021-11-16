@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.PostConstruct;
 import javax.swing.ComboBoxModel;
 
 import org.apache.commons.io.FilenameUtils;
@@ -719,6 +720,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 */
 	public String getProp(String key) {
 		log.debug("Looking up property with key: " + key);
+
 		return _props.getProperty(key);
 	}
 

@@ -1,7 +1,7 @@
 /*
  * Created on May 4, 2005
  */
-package org.cip4.tools.alces.swingui.tree.test;
+package org.cip4.tools.alces.ui.tree.test;
 
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeModel;

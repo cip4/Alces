@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.swingui;
+package org.cip4.tools.alces.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -54,13 +54,12 @@ import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.swingui.actions.ActionCollapse;
-import org.cip4.tools.alces.swingui.actions.ActionCollapseAll;
-import org.cip4.tools.alces.swingui.actions.ActionSaveRequestsResponcesToDisk;
-import org.cip4.tools.alces.swingui.component.testsuitetree.JTestSuiteTree;
-import org.cip4.tools.alces.swingui.renderer.AlcesTreeCellRenderer;
-import org.cip4.tools.alces.swingui.renderer.RendererFactory;
-import org.cip4.tools.alces.swingui.tree.test.TestSuiteTreeNode;
+import org.cip4.tools.alces.ui.actions.ActionCollapse;
+import org.cip4.tools.alces.ui.actions.ActionCollapseAll;
+import org.cip4.tools.alces.ui.actions.ActionSaveRequestsResponcesToDisk;
+import org.cip4.tools.alces.ui.component.JTestSuiteTree;
+import org.cip4.tools.alces.ui.renderer.RendererFactory;
+import org.cip4.tools.alces.ui.tree.test.TestSuiteTreeNode;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JDFFileFilter;
@@ -147,7 +146,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	}
 
 	@EventListener(ApplicationReadyEvent.class)
-	public void init() {
+	public void init() throws IOException {
 
 		this.testSuiteTreeNode = new TestSuiteTreeNode(testRunnerService.getTestSuite());
 
@@ -310,7 +309,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * Initializes the Session panel.
 	 * @return The initialized session panel.
 	 */
-	private JSplitPane initSessionPanel() {
+	private JSplitPane initSessionPanel() throws IOException {
 
 		sessionSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 
@@ -320,7 +319,13 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		JScrollPane sessionTreeScrollPane = new JScrollPane();
 
-		sessionTree = JTestSuiteTree.newInstance(); // initTree(); // DEEP INIT !!
+//		JTestSuiteTree testSuiteTree = new JTestSuiteTree();
+//		testSuiteTree.render(testRunnerService.getTestSuite());
+//		sessionTree = testSuiteTree; // initTree(); // DEEP INIT !!
+
+		JTestSuiteTree jTestSuiteTree = JTestSuiteTree.newInstance(testRunnerService.getTestSuite());
+		testRunnerService.registerTestSuiteListener(jTestSuiteTree);
+		sessionTree = jTestSuiteTree;
 
 		sessionTreeScrollPane.setViewportView(sessionTree);
 		sessionPanel.add(sessionTreeScrollPane, BorderLayout.CENTER);
@@ -748,7 +753,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		tree.setShowsRootHandles(true);
 		tree.addTreeSelectionListener(this);
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		tree.setCellRenderer(new AlcesTreeCellRenderer());
+		// tree.setCellRenderer(new AlcesTreeCellRenderer());
 
 		// return tree
 		return tree;
