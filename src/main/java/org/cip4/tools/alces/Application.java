@@ -1,6 +1,6 @@
 package org.cip4.tools.alces;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.FlatIntelliJLaf;
 import org.cip4.tools.alces.service.about.AboutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class Application {
 
         // set theme
         try {
-            UIManager.setLookAndFeel( new FlatDarculaLaf() );
+            UIManager.setLookAndFeel( new FlatIntelliJLaf() );
         } catch( Exception ex ) {
             System.err.println( "Failed to initialize LaF" );
         }
