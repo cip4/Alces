@@ -75,7 +75,7 @@ import org.springframework.context.event.EventListener;
  * The Alces Swing GUI application for interactive testing.
  */
 @org.springframework.stereotype.Component
-public class Alces extends JFrame implements ActionListener, TreeModelListener, TreeSelectionListener, MouseListener {
+public class Alces extends JFrame implements ActionListener, TreeModelListener, MouseListener {
 
 	// -----------------------------------------------------
 	// | Address Bar                                       |
@@ -319,12 +319,14 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		JScrollPane sessionTreeScrollPane = new JScrollPane();
 
-//		JTestSuiteTree testSuiteTree = new JTestSuiteTree();
-//		testSuiteTree.render(testRunnerService.getTestSuite());
-//		sessionTree = testSuiteTree; // initTree(); // DEEP INIT !!
-
+		// init test suite tree
 		JTestSuiteTree jTestSuiteTree = JTestSuiteTree.newInstance(testRunnerService.getTestSuite());
 		testRunnerService.registerTestSuiteListener(jTestSuiteTree);
+		jTestSuiteTree.addTreeSelectionListener(e -> {
+			DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
+			Component renderer = RendererFactory.getRenderedComponent(treeNode.getUserObject());
+			sessionInfoScrollPane.setViewportView(renderer);
+		});
 		sessionTree = jTestSuiteTree;
 
 		sessionTreeScrollPane.setViewportView(sessionTree);
@@ -733,30 +735,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		sqeJmf.getCommand(0).getQueueSubmissionParams(0).setURL(publicJdfUrl);
 		sqeMsg.setBody(sqeJmf.getOwnerDocument_KElement().write2String(2));
 		return sqeMsg;
-	}
-
-	/**
-	 * Doing the init stuff for the Tree, it's Renderer and Model Sets the TreeModel in the SettingsServiceImpl
-	 *
-	 * @return
-	 */
-	private JTree initTree() {
-
-		// init tree model (data)
-		DefaultTreeModel defaultTreeModel = new DefaultTreeModel(this.testSuiteTreeNode);
-		testSuiteTreeNode.setTreeModel(defaultTreeModel);
-		defaultTreeModel.addTreeModelListener(this);
-
-		// create JTree object
-		JTree tree = new JTree(defaultTreeModel);
-		tree.setRootVisible(true);
-		tree.setShowsRootHandles(true);
-		tree.addTreeSelectionListener(this);
-		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-		// tree.setCellRenderer(new AlcesTreeCellRenderer());
-
-		// return tree
-		return tree;
 	}
 
 	/**
@@ -1272,11 +1250,11 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	// TreeSelectionListener
 	// ----------------------------------------------------------------
 
-	public void valueChanged(TreeSelectionEvent tse) {
-		Object node = tse.getPath().getLastPathComponent();
-		Component renderer = RendererFactory.getRenderer(node);
-		sessionInfoScrollPane.setViewportView(renderer);
-	}
+//	public void valueChanged(TreeSelectionEvent tse) {
+//		Object node = tse.getPath().getLastPathComponent();
+//		Component renderer = RendererFactory.getRenderer(node);
+//		sessionInfoScrollPane.setViewportView(renderer);
+//	}
 
 	// ----------------------------------------------------------------
 	// MouseListener

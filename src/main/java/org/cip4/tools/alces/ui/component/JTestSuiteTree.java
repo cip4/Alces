@@ -17,6 +17,8 @@ import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The TestSession tree object.
@@ -39,9 +41,7 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
 
         setRootVisible(false);
         setShowsRootHandles(true);
-        // tree.addTreeSelectionListener(this);
         getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
-        // tree.setCellRenderer(new AlcesTreeCellRenderer());
         setCellRenderer(getTreeCellRenderer());
     }
 
@@ -64,13 +64,24 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
     @Override
     public void handleTestSuiteUpdate(TestSuite testSuite) {
 
-        // reset node structure
+        // save node expansion state
+        List<Object> expandedUserObjects = new ArrayList<>();
+
+        for(int i = 0; i < getRowCount(); i ++) {
+            if(isExpanded(i)) {
+                TreePath treePath = getPathForRow(i);
+                DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) treePath.getPathComponent(treePath.getPathCount() - 1);
+                expandedUserObjects.add(treeNode.getUserObject());
+            }
+        }
+
+        // remove items
         rootNode.removeAllChildren();
 
         // build new node structure
         testSuite.getTestSessions().forEach(testSession -> {
 
-            // add test session node
+            // add test session node (if not present)
             DefaultMutableTreeNode testSessionTreeNode = new DefaultMutableTreeNode(testSession);
             rootNode.add(testSessionTreeNode);
 
@@ -97,8 +108,18 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
             });
         });
 
-        // reload model
-        ((DefaultTreeModel) getModel()).reload();
+        // reload tree
+        ((DefaultTreeModel) getModel()).reload(rootNode);
+
+        // restore node expansion state
+        for(int i = 0; i < getRowCount(); i ++) {
+            TreePath treePath = getPathForRow(i);
+            DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) treePath.getPathComponent(treePath.getPathCount() - 1);
+
+            if(expandedUserObjects.contains(treeNode.getUserObject())) {
+                expandPath(treePath);
+            }
+        }
     }
 
     /**
@@ -116,7 +137,6 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
         Icon iconTestIgnored = new ImageIcon(getClass().getResourceAsStream(RES_ROOT + "test_ignored.gif").readAllBytes());
         Icon iconSessionFail = new ImageIcon(getClass().getResourceAsStream(RES_ROOT + "session_fail.gif").readAllBytes());
         Icon iconSessionPass = new ImageIcon(getClass().getResourceAsStream(RES_ROOT + "session_pass.gif").readAllBytes());
-
 
         return new DefaultTreeCellRenderer() {
 
