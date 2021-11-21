@@ -27,6 +27,16 @@ public interface TestRunnerService {
     TestSuite getTestSuite();
 
     /**
+     * Clear all test sessions.
+     */
+    void clearTestSessions();
+
+    /**
+     * Clear the given test sessions.
+     */
+    void clearTestSession(TestSession testSession);
+
+    /**
      * Sends a <code>OutMessage</code> to the preconfigured target URL. The message is preprocessed before it is sent.
      *
      * If <code>SenderIDPreprocessor</code> is enabled then <em>JMF/@SenderID</em> will be replaced with the value configured SenderID.

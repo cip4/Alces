@@ -78,6 +78,26 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 	}
 
 	@Override
+	public void clearTestSessions() {
+
+		// remove all test sessions
+		getTestSuite().getTestSessions().clear();
+
+		// notify listeners
+		notifyTestSuiteListeners(this.testSuite);
+	}
+
+	@Override
+	public void clearTestSession(TestSession testSession) {
+
+		// remove given test session
+		getTestSuite().getTestSessions().remove(testSession);
+
+		// notify listeners
+		notifyTestSuiteListeners(this.testSuite);
+	}
+
+	@Override
 	public void registerTestSuiteListener(TestSuiteListener testSuiteListener) {
 		testSuiteListeners.add(testSuiteListener);
 	}

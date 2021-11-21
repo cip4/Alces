@@ -30,12 +30,8 @@ import java.util.List;
 import javax.swing.*;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
-import javax.swing.event.TreeSelectionEvent;
-import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
@@ -363,23 +359,21 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		JPanel sessionButtonPanel = new JPanel();
 		sessionPanel.add(sessionButtonPanel, BorderLayout.SOUTH);
 
+		// clear all test sessions
 		JButton clearButton = new JButton("Clear All");
 		sessionButtonPanel.add(clearButton);
 		clearButton.addActionListener(e -> {
-			DefaultTreeModel model = (DefaultTreeModel) sessionTree.getModel();
-			testSuiteTreeNode.removeAllChildren();
-			model.reload();
-			sessionTree.setSelectionPath(new TreePath(""));
+			testRunnerService.clearTestSessions();
 			queuePanel.clearQueue();
 		});
 
 		JButton removeSelectedButton = new JButton("Clear Selected");
 		sessionButtonPanel.add(removeSelectedButton);
 		removeSelectedButton.addActionListener(e -> {
-			DefaultTreeModel model = (DefaultTreeModel) sessionTree.getModel();
-			if (!(sessionTree.getLastSelectedPathComponent() instanceof DefaultMutableTreeNode selectedNode))
-				return;
-			model.removeNodeFromParent(selectedNode);
+			if(sessionTree.getSelectionPath() != null) {
+				DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) sessionTree.getSelectionPath().getPathComponent(1);
+				testRunnerService.clearTestSession((TestSession) treeNode.getUserObject());
+			}
 		});
 
 		// session/message/queue info
