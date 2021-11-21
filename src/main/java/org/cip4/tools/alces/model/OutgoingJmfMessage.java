@@ -1,6 +1,7 @@
 package org.cip4.tools.alces.model;
 
-import org.cip4.tools.alces.util.JDFConstants;
+
+import org.cip4.jdflib.core.JDFConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,15 @@ public class OutgoingJmfMessage extends AbstractJmfMessage {
      * @param isSessionInitiator flag if message is a session initiator.
      */
     public OutgoingJmfMessage(String header, String body, boolean isSessionInitiator) {
-        this(JDFConstants.JMF_CONTENT_TYPE, header, body, isSessionInitiator);
+        this(JDFConstants.MIME_JMF, header, body, isSessionInitiator);
+    }
+
+    /**
+     * Custom constructor. Creating a Outgoing JmfMessage form a jmf message body only.
+     * @param jmfBody The JMF message body.
+     */
+    public OutgoingJmfMessage(String jmfBody) {
+        this(JDFConstants.MIME_JMF, "Content-Type: " + JDFConstants.MIME_JMF, jmfBody, true);
     }
 
     public List<IncomingJmfMessage> getIncomingJmfMessages() {

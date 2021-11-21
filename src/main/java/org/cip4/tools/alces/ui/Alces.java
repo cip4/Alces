@@ -23,7 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.*;
-import javax.swing.border.BevelBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
@@ -44,6 +43,7 @@ import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.jmf.JMFMessageFactory;
 import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
+import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.ui.component.JTestSuiteTree;
@@ -84,6 +84,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	private static final Logger log = LoggerFactory.getLogger(Alces.class);
 
 	private String deviceUrl;
+
+	@Autowired
+	private JmfMessageService jmfMessageService;
 
 	@Autowired
 	private SettingsService settingsService;
@@ -526,11 +529,14 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	 * Sends a KnownMessages query to the configured device and populates the UI with the buttons representing all messages the device supports.
 	 */
 	private JDFJMF sendKnownMessages() throws IOException {
+
 		log.info("Sending KnownMessages...");
 		OutgoingJmfMessage outMessage = createMessage("Connect_KnownMessages");
+
 		IncomingJmfMessage inMessage = null;
 		if (settingsService.getProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
 			inMessage = testRunnerService.sendMessage(outMessage, getDeviceUrl());
+
 		} else {
 			TestSession testSession = testRunnerService.startTestSession(outMessage, getDeviceUrl());
 			int i = 0;
@@ -591,6 +597,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		// Sort services alphabetically
 		JDFMessageService[] jmfServices = services.toArray(new JDFMessageService[0]);
 		Arrays.sort(jmfServices, Comparator.comparing(o -> o.getType()));
+
 		// Create buttons
 		for (int i = 0; i < jmfServices.length; i++) {
 			if (jmfServices[i].getJMFRole() != null && jmfServices[i].getJMFRole().equals(EnumJMFRole.Sender)) {
@@ -1134,7 +1141,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 					OutgoingJmfMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
 					testRunnerService.startTestSession(message, getDeviceUrl());
 				} else {
-					testRunnerService.startTestSession(createMessage(actionCommand), getDeviceUrl());
+					testRunnerService.startTestSession(jmfMessageService.createQueryStatus(), getDeviceUrl());
 				}
 				break;
 

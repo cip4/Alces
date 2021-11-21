@@ -97,6 +97,8 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 		notifyTestSuiteListeners(this.testSuite);
 	}
 
+
+
 	@Override
 	public void registerTestSuiteListener(TestSuiteListener testSuiteListener) {
 		testSuiteListeners.add(testSuiteListener);
@@ -146,6 +148,11 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 		log.info("Finished running tests.");
 	}
 
+	@Override
+	public TestSession startTestSession(String jmfMessage, String targetUrl) {
+		return startTestSession(new OutgoingJmfMessage(jmfMessage), null, null, targetUrl);
+	}
+
 	public TestSession startTestSession(OutgoingJmfMessage message, String targetUrl) {
 		return startTestSession(message, null, new PreprocessorContext(), targetUrl);
 	}
@@ -190,21 +197,25 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 	 * @return
 	 */
 	public TestSession startTestSession(OutgoingJmfMessage outMessage, File jdfFile, PreprocessorContext context, String targetUrl, boolean asMime) {
-		// Preprocess message
-		context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, SettingsServiceImpl.getSenderId());
-		context.addAttribute(URLPreprocessor.URL_ATTR, settingsService.getServerJmfUrl());
-		boolean mjmDetected = outMessage.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
-		if (mjmDetected) {
-			outMessage = preprocessMIME(outMessage, context);
-		} else {
-			outMessage = preprocessJMF(outMessage, context);
+
+		if(context != null) {
+			// Preprocess message
+			context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, SettingsServiceImpl.getSenderId());
+			context.addAttribute(URLPreprocessor.URL_ATTR, settingsService.getServerJmfUrl());
+			boolean mjmDetected = outMessage.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
+			if (mjmDetected) {
+				outMessage = preprocessMIME(outMessage, context);
+			} else {
+				outMessage = preprocessJMF(outMessage, context);
+			}
+			// Preprocess JDF
+			if (jdfFile != null) {
+				context.addAttribute(NodeInfoPreprocessor.SUBSCRIPTION_URL_ATTR, settingsService.getServerJmfUrl());
+				context.addAttribute(NodeInfoPreprocessor.MESSAGEID_PREFIX_ATTR, JmfUtil.getBodyAsJMF(outMessage).getMessageElement(null, null, 0).getID());
+				preprocessJDF(jdfFile, context);
+			}
 		}
-		// Preprocess JDF
-		if (jdfFile != null) {
-			context.addAttribute(NodeInfoPreprocessor.SUBSCRIPTION_URL_ATTR, settingsService.getServerJmfUrl());
-			context.addAttribute(NodeInfoPreprocessor.MESSAGEID_PREFIX_ATTR, JmfUtil.getBodyAsJMF(outMessage).getMessageElement(null, null, 0).getID());
-			preprocessJDF(jdfFile, context);
-		}
+
 		if (asMime) {
 			outMessage = packageAsMime(outMessage, jdfFile);
 		}

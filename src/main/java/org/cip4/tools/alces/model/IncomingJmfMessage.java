@@ -1,6 +1,6 @@
 package org.cip4.tools.alces.model;
 
-import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.jdflib.core.JDFConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +34,7 @@ public class IncomingJmfMessage extends AbstractJmfMessage {
      * @param isSessionInitiator flag if message is a session initiator.
      */
     public IncomingJmfMessage(String header, String body, boolean isSessionInitiator) {
-        this(JDFConstants.JMF_CONTENT_TYPE, header, body, isSessionInitiator);
+        this(JDFConstants.MIME_JMF, header, body, isSessionInitiator);
     }
 
     public List<OutgoingJmfMessage> getOutgoingJmfMessages() {

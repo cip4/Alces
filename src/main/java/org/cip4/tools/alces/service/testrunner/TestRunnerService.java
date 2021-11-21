@@ -37,6 +37,17 @@ public interface TestRunnerService {
     void clearTestSession(TestSession testSession);
 
     /**
+     * Starts a new test session based on a JMF Message and a traget url.
+     * @param jmfMessage The JMF Message as String.
+     * @param targetUrl The target URL the JMF needs to be sent to.
+     * @return The created test session.
+     */
+    TestSession startTestSession(String jmfMessage, String targetUrl);
+
+    @Deprecated
+    TestSession startTestSession(OutgoingJmfMessage message, String targetUrl);
+
+    /**
      * Sends a <code>OutMessage</code> to the preconfigured target URL. The message is preprocessed before it is sent.
      *
      * If <code>SenderIDPreprocessor</code> is enabled then <em>JMF/@SenderID</em> will be replaced with the value configured SenderID.
@@ -47,7 +58,7 @@ public interface TestRunnerService {
      */
     IncomingJmfMessage sendMessage(OutgoingJmfMessage message, String targetUrl) throws IOException;
 
-    TestSession startTestSession(OutgoingJmfMessage message, String targetUrl);
+
 
     /**
      * Loads a message from a file.

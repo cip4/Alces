@@ -19,11 +19,13 @@ public class JDFConstants {
     /**
      * Content-type for JDF job ticket
      */
+    @Deprecated
     public static final String JDF_CONTENT_TYPE = "application/vnd.cip4-jdf+xml";
 
     /**
      * Content-type for JMF message
      */
+    @Deprecated
     public static final String JMF_CONTENT_TYPE = "application/vnd.cip4-jmf+xml";
 
     /**
