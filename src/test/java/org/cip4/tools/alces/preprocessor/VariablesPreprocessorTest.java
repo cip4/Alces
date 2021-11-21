@@ -2,8 +2,8 @@ package org.cip4.tools.alces.preprocessor;
 
 import org.cip4.jdflib.node.JDFNode;
 import org.cip4.tools.alces.junit.AlcesTestCase;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.model.OutgoingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
 import org.junit.jupiter.api.Assertions;

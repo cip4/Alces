@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import org.apache.commons.lang.text.StrSubstitutor;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.service.settings.SettingsService;

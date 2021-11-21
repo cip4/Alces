@@ -4,8 +4,8 @@
 package org.cip4.tools.alces.message;
 
 
-import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.model.OutgoingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 

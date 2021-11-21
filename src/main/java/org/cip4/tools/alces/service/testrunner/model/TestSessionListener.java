@@ -3,8 +3,6 @@
  */
 package org.cip4.tools.alces.service.testrunner.model;
 
-import org.cip4.tools.alces.model.IncomingJmfMessage;
-
 public interface TestSessionListener {
 
 	/**

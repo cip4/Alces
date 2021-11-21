@@ -4,7 +4,7 @@ import org.cip4.jdflib.core.JDFDoc;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.util.MimeUtil;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.jdom.Document;
 import org.jdom.input.SAXBuilder;
 import org.slf4j.Logger;

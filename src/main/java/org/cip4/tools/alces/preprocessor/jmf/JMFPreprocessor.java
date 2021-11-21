@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.cip4.jdflib.util.JDFDate;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 import org.cip4.tools.alces.util.JDFConstants;

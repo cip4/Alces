@@ -9,7 +9,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
 import org.cip4.tools.alces.util.JmfUtil;

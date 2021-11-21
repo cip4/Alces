@@ -1,7 +1,7 @@
 package org.cip4.tools.alces.service.testrunner;
 
-import org.cip4.tools.alces.model.IncomingJmfMessage;
-import org.cip4.tools.alces.model.OutgoingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.testrunner.model.TestSuite;
 import org.cip4.tools.alces.service.testrunner.model.TestSuiteListener;

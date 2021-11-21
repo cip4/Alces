@@ -17,7 +17,7 @@ import org.cip4.jdflib.jmf.JDFCommand;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage.EnumFamily;
 import org.cip4.jdflib.jmf.JDFMessage.EnumType;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
 import org.cip4.tools.alces.util.JDFConstants;

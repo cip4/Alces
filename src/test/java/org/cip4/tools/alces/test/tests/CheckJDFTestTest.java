@@ -4,7 +4,7 @@
 package org.cip4.tools.alces.test.tests;
 
 import org.cip4.tools.alces.junit.AlcesTestCase;
-import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.tests.CheckJDFTest;
 import org.junit.jupiter.api.Assertions;

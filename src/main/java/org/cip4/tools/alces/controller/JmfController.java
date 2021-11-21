@@ -3,7 +3,7 @@ package org.cip4.tools.alces.controller;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
-import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;

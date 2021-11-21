@@ -18,7 +18,7 @@ import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.ElementName;
 import org.cip4.jdflib.core.JDFComment;
 import org.cip4.jdflib.datatypes.JDFAttributeMap;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.ui.actions.ActionWordWrap;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.tests.XsltTestResult;

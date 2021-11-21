@@ -2,9 +2,9 @@ package org.cip4.tools.alces.ui.component;
 
 import org.cip4.jdflib.core.JDFElement;
 import org.cip4.jdflib.jmf.JDFJMF;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
-import org.cip4.tools.alces.model.IncomingJmfMessage;
-import org.cip4.tools.alces.model.OutgoingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.testrunner.model.TestSuite;

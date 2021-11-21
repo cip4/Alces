@@ -1,6 +1,5 @@
 package org.cip4.tools.alces.service.testrunner.model;
 
-import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.tests.Test;
 
 /**

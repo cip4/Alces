@@ -7,7 +7,7 @@ import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.AlcesMessageIDFactory;
 import org.cip4.tools.alces.jmf.MessageIDFactory;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;

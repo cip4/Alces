@@ -4,7 +4,7 @@
 package org.cip4.tools.alces.preprocessor.jmf;
 
 import org.cip4.jdflib.jmf.JDFJMF;
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;

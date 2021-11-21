@@ -6,7 +6,7 @@ package org.cip4.tools.alces.service.testrunner.tests;
 import java.io.InputStream;
 import java.util.Properties;
 
-import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
 
