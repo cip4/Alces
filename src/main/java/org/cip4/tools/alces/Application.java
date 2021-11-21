@@ -36,7 +36,7 @@ public class Application {
         try {
             UIManager.setLookAndFeel( new FlatIntelliJLaf() );
         } catch( Exception ex ) {
-            System.err.println( "Failed to initialize LaF" );
+            log.error("Failed to initialize LaF", ex);
         }
 
         // start spring app

@@ -16,6 +16,9 @@ import org.w3c.dom.NodeList;
 import javax.swing.*;
 import javax.swing.tree.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +30,8 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
 
     private final static String RES_ROOT = "/org/cip4/tools/alces/icons/";
 
+    private final JTestSuiteTree testSuiteTree;
+
     /**
      * The root node.
      */
@@ -37,12 +42,49 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
      */
     private JTestSuiteTree(DefaultMutableTreeNode treeNode) throws IOException {
         super(treeNode);
+
         this.rootNode = treeNode;
+        this.testSuiteTree = this;
 
         setRootVisible(false);
         setShowsRootHandles(true);
         getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         setCellRenderer(getTreeCellRenderer());
+
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    TreePath treePath = getClosestPathForLocation(e.getX(), e.getY());
+                    setSelectionPath(treePath);
+
+                    JPopupMenu popupMenu = new JPopupMenu();
+
+                    // collapse all
+                    popupMenu.add(new AbstractAction("Collapse All") {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            for(int i = 0; i < testSuiteTree.getRowCount(); i ++) {
+                                testSuiteTree.collapseRow(i);
+                            }
+                        }
+                    });
+
+                    // expand all
+                    popupMenu.add(new AbstractAction("Expand All") {
+                        @Override
+                        public void actionPerformed(ActionEvent e) {
+                            for(int i = 0; i < testSuiteTree.getRowCount(); i ++) {
+                                testSuiteTree.expandRow(i);
+                            }
+                        }
+                    });
+
+                    // show Popup Menu
+                    popupMenu.show(testSuiteTree, e.getX(), e.getY());
+                }
+            }
+        });
     }
 
     /**

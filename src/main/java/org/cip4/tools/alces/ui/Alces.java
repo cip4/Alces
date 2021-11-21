@@ -1,15 +1,10 @@
 package org.cip4.tools.alces.ui;
 
-import java.awt.BorderLayout;
-import java.awt.Component;
-import java.awt.Container;
-import java.awt.Dimension;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
@@ -28,17 +23,18 @@ import java.util.Date;
 import java.util.List;
 
 import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.TreeModelEvent;
 import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.TreePath;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang.StringUtils;
 import org.cip4.jdflib.auto.JDFAutoMessageService.EnumJMFRole;
 import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.ElementName;
+import org.cip4.jdflib.core.JDFAudit;
 import org.cip4.jdflib.datatypes.JDFAttributeMap;
 import org.cip4.jdflib.jmf.*;
 import org.cip4.jdflib.jmf.JDFMessage.EnumType;
@@ -50,12 +46,8 @@ import org.cip4.tools.alces.model.IncomingJmfMessage;
 import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.ui.actions.ActionCollapse;
-import org.cip4.tools.alces.ui.actions.ActionCollapseAll;
-import org.cip4.tools.alces.ui.actions.ActionSaveRequestsResponcesToDisk;
 import org.cip4.tools.alces.ui.component.JTestSuiteTree;
 import org.cip4.tools.alces.ui.renderer.RendererFactory;
-import org.cip4.tools.alces.ui.tree.test.TestSuiteTreeNode;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JDFFileFilter;
@@ -114,7 +106,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	private JTree sessionTree;
 
 	private QueuePanel queuePanel;
-	private TestSuiteTreeNode testSuiteTreeNode;
 
 	private JDFDeviceList knownDevices;
 	private ConnectThread connectThread;
@@ -144,12 +135,11 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 	@EventListener(ApplicationReadyEvent.class)
 	public void init() throws IOException {
 
-		this.testSuiteTreeNode = new TestSuiteTreeNode(testRunnerService.getTestSuite());
-
 		// initialize window (main panel)
 		Container mainPanel = getContentPane();
 		mainPanel.setLayout(new BorderLayout());
 		mainPanel.add(initAddressBarPanel(), BorderLayout.NORTH);
+		mainPanel.add(initStatusPanel(), BorderLayout.SOUTH);
 
 		mainSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
 		mainSplitPane.setDividerLocation(Integer.parseInt(settingsService.getProp(SettingsServiceImpl.MAIN_HEIGHT)));
@@ -181,6 +171,26 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 		// show form
 		setVisible(true);
 	}
+
+	/**
+	 * Initializes the status bar panel.
+	 * @return The initialized status bar panel
+	 */
+	private JPanel initStatusPanel() {
+		JPanel statusPanel = new JPanel();
+		statusPanel.setBorder(new EmptyBorder(3, 5, 3, 5));
+
+		// statusPanel.setPreferredSize(new Dimension(0, 20));
+		statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
+
+		JLabel statusLabel = new JLabel("JDF Library: CIP4 JDFLibJ " + JDFAudit.getStaticAgentVersion() + "  ");
+		statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		statusPanel.add(statusLabel);
+
+		return statusPanel;
+	}
+
+
 
 	/**
 	 * Initializes the address bar panel.
@@ -327,34 +337,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 		sessionTreeScrollPane.setViewportView(sessionTree);
 		sessionPanel.add(sessionTreeScrollPane, BorderLayout.CENTER);
-		sessionTree.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseReleased(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON3) {
-					TreePath path = sessionTree.getClosestPathForLocation(e.getX(), e.getY());
-					sessionTree.setSelectionPath(path);
-
-					JPopupMenu popUp = new JPopupMenu("test");
-
-					Action actionCollapse = new ActionCollapse(sessionTree, path);
-					actionCollapse.putValue(Action.NAME, "Collapse");
-					popUp.add(actionCollapse);
-					Action actionCollapseAll = new ActionCollapseAll(sessionTree);
-					actionCollapseAll.putValue(Action.NAME, "Collapse All");
-					popUp.add(actionCollapseAll);
-
-					if (path != null && path.getPathCount() == 2) {
-						popUp.addSeparator();
-
-						ActionSaveRequestsResponcesToDisk actionSaveReqResToDisk = new ActionSaveRequestsResponcesToDisk(sessionTree, path);
-						actionSaveReqResToDisk.putValue(Action.NAME, "Save Selection To: " + StringUtils.substring(settingsService.getProp(SettingsServiceImpl.PATH_TO_SAVE), 0, 25));
-						popUp.add(actionSaveReqResToDisk);
-					}
-
-					popUp.show(sessionTree, e.getX(), e.getY());
-				}
-			}
-		});
 
 		JPanel sessionButtonPanel = new JPanel();
 		sessionPanel.add(sessionButtonPanel, BorderLayout.SOUTH);
@@ -1180,18 +1162,9 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 				}
 				break;
 
-//			case ACTION_SHOW_PREFERENCES:
-//				new PreferencesDialog(this, "Preferences");
-//				setTitle(SettingsServiceImpl.getSenderId() + "  -  " + settingsServiceImpl.getServerJmfUrl());
-//				break;
-
 			default:
 				testRunnerService.startTestSession(createMessage(actionCommand), getDeviceUrl());
 				break;
-		}
-
-		if(testSuiteTreeNode.getTreeModel() != null ) {
-			testSuiteTreeNode.getTreeModel().reload();
 		}
 	}
 
@@ -1239,16 +1212,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
 	public void treeStructureChanged(TreeModelEvent e) {
 	}
-
-	// ----------------------------------------------------------------
-	// TreeSelectionListener
-	// ----------------------------------------------------------------
-
-//	public void valueChanged(TreeSelectionEvent tse) {
-//		Object node = tse.getPath().getLastPathComponent();
-//		Component renderer = RendererFactory.getRenderer(node);
-//		sessionInfoScrollPane.setViewportView(renderer);
-//	}
 
 	// ----------------------------------------------------------------
 	// MouseListener
