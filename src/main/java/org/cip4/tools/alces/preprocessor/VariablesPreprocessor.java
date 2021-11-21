@@ -11,10 +11,12 @@ import org.apache.commons.lang.text.StrSubstitutor;
 import org.cip4.jdflib.core.JDFDoc;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.node.JDFNode;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * /StrSubstitutor.html} for details on the the variables name-value map and the syntax in the JDF/JMF template.
  * 
  * <p>
- * Default variables are first loaded from {@link ConfigurationHandler#getPropFile()} and then from a Java Property file named
+ * Default variables are first loaded from {@link SettingsServiceImpl#getPropFile()} and then from a Java Property file named
  * <code>VariablesPreprocessor.properties</code> if it exists at the root of the classpath. The property names in the properties files can be used as variable
  * names and will be replace by their property values.
  * </p>
@@ -42,8 +44,6 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 
 	/**
 	 * @param map A map containing variable name-value pairs. If any variables have the same names as the defaults, then the default values are overwritten.
-	 * 
-	 * @see http://commons.apache.org/lang/api-2.3/org/apache/commons/lang/text/ StrSubstitutor.html
 	 */
 	public VariablesPreprocessor(Map<String, String> map) {
 		// Loads defaults
@@ -60,8 +60,6 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 
 	/**
 	 * @param map A map to merge with the existing variables map. If any variables already exist there values are overwritten by the new ones.
-	 * 
-	 * @see http://commons.apache.org/lang/api-2.3/org/apache/commons/lang/text/ StrSubstitutor.html
 	 */
 	public void setVariablesMap(Map<String, String> map) {
 		variablesMap.putAll(map);
@@ -69,8 +67,6 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 
 	/**
 	 * Copies the variable mappings from a <code>Properties</code> object.
-	 * 
-	 * @see http://commons.apache.org/lang/api-2.3/org/apache/commons/lang/text/ StrSubstitutor.html
 	 */
 	private void setVariablesMap(Properties props) {
 		final Map<String, String> map = new HashMap<String, String>();
@@ -81,15 +77,12 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 		setVariablesMap(map);
 	}
 
-	/**
-	 * @see http://commons.apache.org/lang/api-2.3/org/apache/commons/lang/text/ StrSubstitutor.html
-	 */
 	public Map<String, String> getVariablesMap() {
 		return variablesMap;
 	}
 
 	@SuppressWarnings("unchecked")
-	public Message preprocess(final Message message, final PreprocessorContext context) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message, final PreprocessorContext context) throws PreprocessorException {
 		if (context != null && context.getAttribute(VARIABLES_MAP) != null) {
 			setVariablesMap((Map<String, String>) context.getAttribute(VARIABLES_MAP));
 		}
@@ -100,7 +93,7 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 		return message;
 	}
 
-	public Message preprocess(final Message message) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message) throws PreprocessorException {
 		return preprocess(message, null);
 	}
 
@@ -109,7 +102,8 @@ public class VariablesPreprocessor implements Preprocessor, JDFPreprocessor {
 	 * <code>VariablesPreprocessor.properties</code> found at the root of the classpath.
 	 */
 	private void loadVariablesMap() {
-		final Properties props = ConfigurationHandler.getInstance().getPropFile();
+		SettingsService settingsService = ApplicationContextUtil.getBean(SettingsService.class);
+		final Properties props = settingsService.getPropFile();
 		setVariablesMap(props);
 		final InputStream input = VariablesPreprocessor.class.getResourceAsStream(RES_VARIABLES_FILE);
 		if (input == null) {

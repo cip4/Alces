@@ -2,13 +2,11 @@ package org.cip4.tools.alces.preprocessor;
 
 import org.cip4.jdflib.node.JDFNode;
 import org.cip4.tools.alces.junit.AlcesTestCase;
-import org.cip4.tools.alces.message.Message;
-import org.cip4.tools.alces.message.OutMessageImpl;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
+import org.cip4.tools.alces.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.util.ConfigurationHandler;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
@@ -21,18 +19,12 @@ public class VariablesPreprocessorTest extends AlcesTestCase {
     private static final String JOBID = "VariablesPreprocessorTest.JobID";
     private static final String JOBPARTID = "VariablesPreprocessorTest.JobPartID";
 
-    @BeforeEach
-    public void setUp() {
-        ConfigurationHandler.getInstance().loadConfiguration(
-                getTestFileAsFile("alces.properties"));
-    }
-
     @Test
     public void testPreprocessJMF() throws PreprocessorException, IOException {
         Preprocessor p = new VariablesPreprocessor();
-        Message mOriginal = new OutMessageImpl(null,
+        AbstractJmfMessage mOriginal = new OutgoingJmfMessage(null,
                 getTestFileAsString("Status-Subscription.jmf"), true);
-        Message mPreprocessed = p.preprocess(mOriginal);
+        AbstractJmfMessage mPreprocessed = p.preprocess(mOriginal);
         Assertions.assertSame(mOriginal, mPreprocessed);
         Assertions.assertFalse(mPreprocessed.getBody().contains("${alces.host}"), mPreprocessed.getBody());
         Assertions.assertFalse(mPreprocessed.getBody().contains("${alces.port}"), mPreprocessed.getBody());

@@ -1,6 +1,3 @@
-/*
- * Created on Apr 22, 2005
- */
 package org.cip4.tools.alces.preprocessor.jmf;
 
 import java.util.Iterator;
@@ -10,10 +7,13 @@ import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.AlcesMessageIDFactory;
 import org.cip4.tools.alces.jmf.MessageIDFactory;
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.cip4.tools.alces.util.JDFConstants;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,7 +36,7 @@ public class MessageIDPreprocessor implements Preprocessor {
 	/**
 	 * Preprocesses a JMF message by replacing message IDs
 	 */
-	public Message preprocess(Message message, PreprocessorContext context) {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message, PreprocessorContext context) {
 		if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
 			log.warn("Message not preprocessed because it did not contain JMF. Content-type was: " + message.getContentType());
 			return message;
@@ -45,11 +45,11 @@ public class MessageIDPreprocessor implements Preprocessor {
 			log.debug("Preprocessor input: " + message.toString());
 		}
 
-		ConfigurationHandler confHand = ConfigurationHandler.getInstance();
+		SettingsService settingsService = ApplicationContextUtil.getBean(SettingsService.class);
 
-		JDFJMF jmf = message.getBodyAsJMF();
+		JDFJMF jmf = JmfUtil.getBodyAsJMF(message);
 		// update ID only if required
-		if (confHand.getProp(ConfigurationHandler.UPDATE_MESSAGEID).equalsIgnoreCase("TRUE")) {
+		if (settingsService.getProp(SettingsServiceImpl.UPDATE_MESSAGEID).equalsIgnoreCase("TRUE")) {
 			List messages = jmf.getMessageVector(null, null);
 			for (Iterator i = messages.iterator(); i.hasNext();) {
 				JDFMessage m = (JDFMessage) i.next();
@@ -64,7 +64,7 @@ public class MessageIDPreprocessor implements Preprocessor {
 		return message;
 	}
 
-	public Message preprocess(final Message message) {
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message) {
 		return preprocess(message, null);
 	}
 

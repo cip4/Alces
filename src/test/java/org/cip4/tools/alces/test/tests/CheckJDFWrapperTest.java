@@ -4,6 +4,7 @@
 package org.cip4.tools.alces.test.tests;
 
 import org.apache.commons.io.IOUtils;
+import org.cip4.tools.alces.service.testrunner.tests.CheckJDFWrapper;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JMFFileFilter;
 import org.junit.jupiter.api.Assertions;

@@ -77,7 +77,7 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.cip4.tools.alces.test.TestSuiteSerializer;
+import org.cip4.tools.alces.service.testrunner.TestSuiteSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

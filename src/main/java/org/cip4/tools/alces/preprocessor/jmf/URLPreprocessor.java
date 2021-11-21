@@ -6,10 +6,12 @@ package org.cip4.tools.alces.preprocessor.jmf;
 import java.util.Map;
 import java.util.Properties;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
+import org.cip4.tools.alces.util.ApplicationContextUtil;
 
 /**
  * A preprocessor that replaces the following attributes with URL values with a
@@ -40,17 +42,17 @@ public class URLPreprocessor extends XPathPreprocessor {
 
     public void setURL(String url) {
         final Map<Object, Object> xpathValuePairs = new Properties();
-        ConfigurationHandler confHand = ConfigurationHandler.getInstance();        
-        if (confHand.getProp(ConfigurationHandler.UPDATE_RETURNJMF).equalsIgnoreCase("TRUE")) {
+        SettingsService settingsService = ApplicationContextUtil.getBean(SettingsService.class);
+        if (settingsService.getProp(SettingsServiceImpl.UPDATE_RETURNJMF).equalsIgnoreCase("TRUE")) {
             xpathValuePairs.put("//@ReturnJMF", url);
         }        
-        if (confHand.getProp(ConfigurationHandler.UPDATE_RETURNURL).equalsIgnoreCase("TRUE")) {
+        if (settingsService.getProp(SettingsServiceImpl.UPDATE_RETURNURL).equalsIgnoreCase("TRUE")) {
             xpathValuePairs.put("//@ReturnURL", url);
         }        
-        if (confHand.getProp(ConfigurationHandler.UPDATE_WATCHURL).equalsIgnoreCase("TRUE")) {
+        if (settingsService.getProp(SettingsServiceImpl.UPDATE_WATCHURL).equalsIgnoreCase("TRUE")) {
             xpathValuePairs.put("//@WatchURL", url);
         }        
-        if (confHand.getProp(ConfigurationHandler.UPDATE_ACKNOWLEDGEURL).equalsIgnoreCase("TRUE")) {
+        if (settingsService.getProp(SettingsServiceImpl.UPDATE_ACKNOWLEDGEURL).equalsIgnoreCase("TRUE")) {
             xpathValuePairs.put("//@AcknowledgeURL", url);
         }
         xpathValuePairs.put("//jdf:Subscription/@URL", url);
@@ -64,7 +66,7 @@ public class URLPreprocessor extends XPathPreprocessor {
     }
 
     @Override
-	public Message preprocess(Message message, PreprocessorContext context) throws PreprocessorException {
+	public AbstractJmfMessage preprocess(AbstractJmfMessage message, PreprocessorContext context) throws PreprocessorException {
     	if (context != null && context.getAttribute(URL_ATTR) != null) {
     		setURL((String) context.getAttribute(URL_ATTR));
     	}

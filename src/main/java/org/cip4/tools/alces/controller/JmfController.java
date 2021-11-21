@@ -3,14 +3,16 @@ package org.cip4.tools.alces.controller;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.swingui.Alces;
-import org.cip4.tools.alces.test.TestSession;
-import org.cip4.tools.alces.test.TestSuite;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.service.settings.SettingsService;
+import org.cip4.tools.alces.service.testrunner.TestRunnerService;
+import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.util.AlcesPathUtil;
-import org.cip4.tools.alces.util.ConfigurationHandler;
+import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
+import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -31,17 +33,13 @@ public class JmfController {
     private static final String JDF_CONTENT_TYPE = "application/vnd.cip4-jdf+xml";
     private static final String MIME_CONTENT_TYPE = "multipart/related";
 
-    private ConfigurationHandler configurationHandler = ConfigurationHandler.getInstance();
+    @Autowired
+    private SettingsService settingsService;
+
+    @Autowired
+    private TestRunnerService testRunnerService;
 
     private final String testDataDir = AlcesPathUtil.ALCES_TEST_DATA_DIR;
-
-    /**
-     * Private helper method to get the current test suite instance.
-     * @return The curren test suite.
-     */
-    private TestSuite getTestSuite() {
-        return Alces.getInstance().getTestSuite();
-    }
 
     @RequestMapping(value = "/jdf/{filename}", method = RequestMethod.GET, produces = MediaType.TEXT_XML_VALUE)
     public byte[] loadJdfAsset(@PathVariable String filename) throws IOException {
@@ -64,10 +62,10 @@ public class JmfController {
 
         String remoteAddr = request.getRemoteAddr();
         String header = convertHttpHeadersToString(request);
-        final InMessage inMessage = getTestSuite().createInMessage(contentType, header, messageBody, false);
+        final IncomingJmfMessage inMessage = testRunnerService.getTestSuite().createInMessage(contentType, header, messageBody, false);
 
         // create and send response
-        final JDFJMF jmfIn = inMessage.getBodyAsJMF();
+        final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(inMessage);
         ResponseEntity<String> responseEntity;
 
         if (jmfIn != null) {
@@ -91,7 +89,7 @@ public class JmfController {
                 log.debug("Receiving unhandled JMF message...");
                 startTestSession(inMessage, remoteAddr);
                 JDFJMF jmfOut = JMFMessageBuilder.buildNotImplementedResponse(jmfIn);
-                jmfOut.getResponse(0).setReturnCode(Integer.parseInt(configurationHandler.getProp(ConfigurationHandler.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
+                jmfOut.getResponse(0).setReturnCode(Integer.parseInt(settingsService.getProp(SettingsServiceImpl.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
                 responseEntity = ResponseEntity.ok(jmfOut.toXML());
             }
 
@@ -137,10 +135,10 @@ public class JmfController {
     /**
      * Helper method to start a test session
      */
-    private void startTestSession(InMessage inMessage, String remoteAddr) {
+    private void startTestSession(IncomingJmfMessage inMessage, String remoteAddr) {
 
             // get test sesstion for in-message
-            TestSession testSession = getTestSuite().findTestSession(inMessage);
+            TestSession testSession = testRunnerService.getTestSuite().findTestSession(inMessage);
 
             // Add the message to the TestSession
             if (testSession != null) {
@@ -151,15 +149,15 @@ public class JmfController {
                 log.info("Creating new TestSession for InMessage...");
 
                 // Create a objects using factory
-                InMessage newMessage = getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
-                testSession = getTestSuite().createTestSession(remoteAddr);
+                IncomingJmfMessage newMessage = testRunnerService.getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
+                testSession = testRunnerService.getTestSuite().createTestSession(remoteAddr);
 
                 // Add TestSession to suite
-                getTestSuite().addTestSession(testSession);
+                testRunnerService.getTestSuite().addTestSession(testSession);
 
                 // Configure tests
-                configurationHandler.configureIncomingTests(testSession);
-                configurationHandler.configureOutgoingTests(testSession);
+                settingsService.configureIncomingTests(testSession);
+                settingsService.configureOutgoingTests(testSession);
 
                 // Add message to TestSession
                 testSession.receiveMessage(newMessage);

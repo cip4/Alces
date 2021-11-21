@@ -3,7 +3,7 @@
  */
 package org.cip4.tools.alces.preprocessor.jmf;
 
-import org.cip4.tools.alces.message.Message;
+import org.cip4.tools.alces.model.AbstractJmfMessage;
 import org.cip4.tools.alces.preprocessor.PreprocessorContext;
 import org.cip4.tools.alces.preprocessor.PreprocessorException;
 
@@ -27,7 +27,7 @@ public interface Preprocessor {
 	 *            the message to preprocess
 	 * @return the preprocessed message
 	 */
-	public Message preprocess(final Message message) throws PreprocessorException;
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message) throws PreprocessorException;
 
 	/**
 	 * Preprocesses a message, modifying it in some way. The
@@ -41,5 +41,5 @@ public interface Preprocessor {
 	 *            be used by this preprocesser
 	 * @return the preprocessed message
 	 */
-	public Message preprocess(final Message message, PreprocessorContext context) throws PreprocessorException;
+	public AbstractJmfMessage preprocess(final AbstractJmfMessage message, PreprocessorContext context) throws PreprocessorException;
 }

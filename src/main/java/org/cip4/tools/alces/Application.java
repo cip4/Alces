@@ -1,7 +1,7 @@
 package org.cip4.tools.alces;
 
-import org.cip4.tools.alces.swingui.Alces;
-import org.cip4.tools.alces.service.AboutService;
+import com.formdev.flatlaf.FlatIntelliJLaf;
+import org.cip4.tools.alces.service.about.AboutService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,6 +12,8 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
 import org.springframework.web.client.RestTemplate;
+
+import javax.swing.*;
 
 /**
  * Applications main class.
@@ -30,12 +32,16 @@ public class Application {
      */
     public static void main(String[] args) throws Exception {
 
+        // set theme
+        try {
+            UIManager.setLookAndFeel( new FlatIntelliJLaf() );
+        } catch( Exception ex ) {
+            System.err.println( "Failed to initialize LaF" );
+        }
+
         // start spring app
         new SpringApplicationBuilder(Application.class).headless(false).run(args);
 
-        // start swing ui
-        Alces alces = new Alces();
-        alces.setVisible(true);
     }
 
     /**

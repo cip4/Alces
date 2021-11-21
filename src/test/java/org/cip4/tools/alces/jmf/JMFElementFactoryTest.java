@@ -4,10 +4,9 @@
 package org.cip4.tools.alces.jmf;
 
 import org.cip4.jdflib.jmf.JDFJMF;
-import org.cip4.tools.alces.message.InMessage;
-import org.cip4.tools.alces.message.InMessageImpl;
-import org.cip4.tools.alces.test.TestResult;
-import org.cip4.tools.alces.test.tests.CheckJDFTest;
+import org.cip4.tools.alces.model.IncomingJmfMessage;
+import org.cip4.tools.alces.service.testrunner.model.TestResult;
+import org.cip4.tools.alces.service.testrunner.tests.CheckJDFTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -27,7 +26,7 @@ public class JMFElementFactoryTest {
         String jmfString = jmf.getOwnerDocument_KElement().write2String(2);
         System.out.println(jmfString);
 
-        InMessage msg = new InMessageImpl(null, jmfString, true);
+        IncomingJmfMessage msg = new IncomingJmfMessage(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
         Assertions.assertTrue(result.isPassed(), "Message was not valid: " + jmfString);
@@ -43,7 +42,7 @@ public class JMFElementFactoryTest {
         String jmfString = jmf.getOwnerDocument_KElement().write2String(2);
         System.out.println(jmfString);
 
-        InMessage msg = new InMessageImpl(null, jmfString, true);
+        IncomingJmfMessage msg = new IncomingJmfMessage(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
         Assertions.assertTrue(result.isPassed(), "Message not valid: " + jmfString);
