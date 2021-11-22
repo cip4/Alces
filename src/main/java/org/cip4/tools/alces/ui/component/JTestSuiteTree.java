@@ -128,7 +128,7 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
             rootNode.add(testSessionTreeNode);
 
             // add outgoing message
-            testSession.getOutgoingMessages().forEach(outgoingJmfMessage -> {
+            testSession.getOutgoingJmfMessages().forEach(outgoingJmfMessage -> {
                 DefaultMutableTreeNode outgoingJmfMessageNode = new DefaultMutableTreeNode(outgoingJmfMessage);
                 testSessionTreeNode.add(outgoingJmfMessageNode);
 
@@ -193,8 +193,8 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
                     // set text/tooltip
                     setToolTipText(testSession.getTargetUrl());
 
-                    if(testSession.getOutgoingMessages().size() > 0) {
-                        setText(createMessageLabel(testSession.getOutgoingMessages().get(0)) + " - " +  testSession.getTargetUrl());
+                    if(testSession.getOutgoingJmfMessages().size() > 0) {
+                        setText(createMessageLabel(testSession.getOutgoingJmfMessages().get(0)) + " - " +  testSession.getTargetUrl());
                     } else {
                         setText(testSession.getTargetUrl());
                     }

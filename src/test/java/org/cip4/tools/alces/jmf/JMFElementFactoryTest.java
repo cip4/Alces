@@ -29,7 +29,7 @@ public class JMFElementFactoryTest {
         IncomingJmfMessage msg = new IncomingJmfMessage(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertTrue(result.isPassed(), "Message was not valid: " + jmfString);
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED, "Message was not valid: " + jmfString);
 
         System.out.println(result.getResultString());
     }
@@ -45,7 +45,7 @@ public class JMFElementFactoryTest {
         IncomingJmfMessage msg = new IncomingJmfMessage(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertTrue(result.isPassed(), "Message not valid: " + jmfString);
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED, "Message not valid: " + jmfString);
 
         System.out.println(result.getResultString());
     }

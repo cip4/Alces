@@ -105,7 +105,8 @@ public class ConfigurableXPathsTest extends Test {
 		} catch (Exception e) {
 			logMsg = "An error occurred while validating the message body. Maybe the" + " message body does not contain a JDF instance or a JMF message?";
 		}
-		TestResult result = new TestResult(this, message, Result.getPassed(passedTest), logMsg);
+		// TestResult result = new TestResult(this, message, Result.getPassed(passedTest), logMsg);
+		TestResult result = new TestResult(this, message, passedTest ? Result.PASSED : Result.FAILED, logMsg);
 		return result;
 	}
 

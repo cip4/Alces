@@ -1,10 +1,6 @@
 package org.cip4.tools.alces.service.testrunner;
 
-import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
-import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.service.testrunner.model.TestSession;
-import org.cip4.tools.alces.service.testrunner.model.TestSuite;
-import org.cip4.tools.alces.service.testrunner.model.TestSuiteListener;
+import org.cip4.tools.alces.service.testrunner.model.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,6 +39,10 @@ public interface TestRunnerService {
      * @return The created test session.
      */
     TestSession startTestSession(String jmfMessage, String targetUrl);
+
+    void receiveMessage(TestSession testSession, IncomingJmfMessage incomingJmfMessage);
+
+    TestSession findTestSession(AbstractJmfMessage message);
 
     @Deprecated
     TestSession startTestSession(OutgoingJmfMessage message, String targetUrl);

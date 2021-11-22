@@ -23,7 +23,7 @@ public class JDFContentTestTest {
         Assertions.assertNotEquals(JDFConstants.JMF_CONTENT_TYPE, msg.getContentType());
         Test test = new JDFContentTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -32,7 +32,7 @@ public class JDFContentTestTest {
         Assertions.assertEquals(JDFConstants.JMF_CONTENT_TYPE, msg.getContentType());
         Test test = new JDFContentTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -40,7 +40,7 @@ public class JDFContentTestTest {
         AbstractJmfMessage msg = new OutgoingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, "Content-Type: application/vnd.cip4-jmf+xml;charset=UTF-8 Transfer-Encoding: chunked Date: Wed, 20 Jul 2005 20:26:05 GMT Server: Apache-Coyote/1.1", "<?xml version='1.0' encoding='UTF-8'?><JMF TimeStamp='2005-05-05T10:49:30+02:00' Version='1.1' xmlns='http://www.CIP4.org/JDFSchema_1_1' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'><Signal ID='Link82970634_000011' Type='QueueStatus' refID='ALCESac0b51bd20dbf85a'><Notification AgentName='CIP4 JDF Writer Java' AgentVersion='1.2.42 alpha' Class='Event' TimeStamp='2005-05-05T10:49:30+02:00'><Comment>Status Change: Waiting -&gt; Closed</Comment><Comment>QueueStatusEvent[Status: Closed;  Class: JDFAutoNotification.EnumClass[Event=1];  Source: org.cip4.tools.impl.queue.MemoryQueue@e4d5ba;  Time stamp: 1115282970510]</Comment></Notification><Queue DeviceID='Elk' QueueSize='0' Status='Closed'/></Signal></JMF>", true);
         Test test = new JDFContentTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
     }
 
 
@@ -49,7 +49,7 @@ public class JDFContentTestTest {
         AbstractJmfMessage msg = new IncomingJmfMessage(null, "", true);
         Test test = new JDFContentTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -57,7 +57,7 @@ public class JDFContentTestTest {
         AbstractJmfMessage msg = new IncomingJmfMessage(null, null, true);
         Test test = new JDFContentTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
 }

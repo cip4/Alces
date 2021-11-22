@@ -86,6 +86,6 @@ public class JDFContentTest extends Test {
             }            
         }
         log.debug(logMsg);
-        return new TestResult(this, message, Result.getPassed(passedTest), logMsg);
+        return new TestResult(this, message, passedTest ? Result.PASSED : Result.FAILED, logMsg);
     }
 }

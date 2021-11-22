@@ -19,7 +19,7 @@ public class ReturnCodeTestTest extends AlcesTestCase {
         Test t = new ReturnCodeTest();
         TestResult tr = t.runTest(msg);
         Assertions.assertNotNull(tr);
-        Assertions.assertTrue(tr.isPassed());
+        Assertions.assertTrue(tr.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -29,7 +29,7 @@ public class ReturnCodeTestTest extends AlcesTestCase {
         Test t = new ReturnCodeTest();
         TestResult tr = t.runTest(msg);
         Assertions.assertNotNull(tr);
-        Assertions.assertFalse(tr.isPassed());
+        Assertions.assertFalse(tr.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -39,6 +39,6 @@ public class ReturnCodeTestTest extends AlcesTestCase {
         Test t = new ReturnCodeTest();
         TestResult tr = t.runTest(msg);
         Assertions.assertNotNull(tr);
-        Assertions.assertTrue(tr.isPassed());
+        Assertions.assertTrue(tr.getResult() == TestResult.Result.PASSED);
     }
 }

@@ -79,7 +79,8 @@ public class ReturnCodeTest extends Test {
 	                    + " Acknowledge message(s) failed: \n" + failedResponses;
 	        }
 	
-	        result = new TestResult(this, message, Result.getPassed(passedTest), logMsg);
+	        // result = new TestResult(this, message, Result.getPassed(passedTest), logMsg);
+	        result = new TestResult(this, message, passedTest ? Result.PASSED : Result.FAILED, logMsg);
         }
         return result;
     }

@@ -93,7 +93,8 @@ public class SubmitQueueEntryTest extends ConfigurableTest {
 				Result result = Result.FAILED;
 				for (JDFCommand jmfCommand : jmfCommands) {
 					String jdfUrl = getJDFURL(jmfCommand);
-					result = Result.getPassed(validateJDF(jdfUrl, testLog));
+					// result = Result.getPassed(validateJDF(jdfUrl, testLog));
+					result = validateJDF(jdfUrl, testLog) ? Result.PASSED : Result.FAILED;
 				}
 				InputStream isXslFile = CheckJDFTest.class.getResourceAsStream(RES_REPORT_XSL_FILE);
 				testResult = new XsltTestResult(isXslFile, this, message, result, testLog.toString());

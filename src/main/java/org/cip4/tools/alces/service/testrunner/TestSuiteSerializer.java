@@ -153,11 +153,11 @@ public class TestSuiteSerializer {
 		out.write("</suite>");
 	}
 
-	private void serializeTestSession(TestSession session, File outputDir, Writer out) throws IOException {
+	private void serializeTestSession(TestSession testSession, File outputDir, Writer out) throws IOException {
 		out.write("<session url='");
-		out.write(session.getTargetUrl());
+		out.write(testSession.getTargetUrl());
 		out.write("'>\n");
-		AbstractJmfMessage message = session.getInitiatingMessage();
+		AbstractJmfMessage message = testSession.getInitializingJmfMessage();
 		serializeMessage(message, outputDir, out);
 		out.write("</session>\n");
 	}
@@ -222,7 +222,7 @@ public class TestSuiteSerializer {
 	private void serializeTestResult(TestResult result, File outputDir, Writer out) throws IOException {
 		log.debug("Serializing " + result.getTest().getClass() + " TestResult...");
 		out.write("<test passed='");
-		out.write(Boolean.toString(result.isPassed()));
+		out.write(Boolean.toString(result.getResult() == TestResult.Result.PASSED));
 		out.write("' description='");
 		out.write(StringEscapeUtils.escapeXml(result.getTest().getDescription()));
 		out.write("' type='");

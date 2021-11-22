@@ -25,7 +25,7 @@ public class PreviewTestTest extends AlcesTestCase {
         Test test = new PreviewTest(previewDir);
         // Run test
         TestResult result = test.runTest(message);
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
         String log = result.getResultString();
         Assertions.assertEquals(3, StringUtils.countMatches(log, "Ignored Preview"));
         Assertions.assertEquals(1, StringUtils.countMatches(log, "Successfully downloaded Preview"));
@@ -41,7 +41,7 @@ public class PreviewTestTest extends AlcesTestCase {
         Test test = new PreviewTest(previewDir);
         // Run test
         TestResult result = test.runTest(message);
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
         String log = result.getResultString();
         Assertions.assertEquals(0, StringUtils.countMatches(log, "Ignored Preview"), log);
         Assertions.assertEquals(4, StringUtils.countMatches(log, "Successfully downloaded Preview"), log);
@@ -57,7 +57,7 @@ public class PreviewTestTest extends AlcesTestCase {
         Test test = new PreviewTest(previewDir);
         // Run test
         TestResult result = test.runTest(message);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
         String log = result.getResultString();
         Assertions.assertEquals(1, StringUtils.countMatches(log, "Could not download"), log);
         Assertions.assertEquals(0, StringUtils.countMatches(log, "Ignored Preview"), log);

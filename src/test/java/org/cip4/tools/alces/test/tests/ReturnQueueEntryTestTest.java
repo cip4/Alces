@@ -46,8 +46,8 @@ public class ReturnQueueEntryTestTest extends AlcesTestCase {
         IncomingJmfMessage msg = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf.toXML(), true);
         Test test = new ReturnQueueEntryTest();
         TestResult result = test.runTest(msg);
-        System.out.println("Validated: " + result.isPassed());
+        System.out.println("Validated: " + (result.getResult() == TestResult.Result.PASSED));
         System.out.println(result.getResultString());
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
     }
 }

@@ -62,7 +62,9 @@ public class JmfController {
 
         String remoteAddr = request.getRemoteAddr();
         String header = convertHttpHeadersToString(request);
-        final IncomingJmfMessage inMessage = testRunnerService.getTestSuite().createInMessage(contentType, header, messageBody, false);
+
+
+        final IncomingJmfMessage inMessage = new IncomingJmfMessage(contentType, header, messageBody, false);
 
         // create and send response
         final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(inMessage);
@@ -138,29 +140,30 @@ public class JmfController {
     private void startTestSession(IncomingJmfMessage inMessage, String remoteAddr) {
 
             // get test sesstion for in-message
-            TestSession testSession = testRunnerService.getTestSuite().findTestSession(inMessage);
+            TestSession testSession = testRunnerService.findTestSession(inMessage);
 
             // Add the message to the TestSession
             if (testSession != null) {
-                testSession.receiveMessage(inMessage);
+                testRunnerService.receiveMessage(testSession, inMessage);
 
             } else {
                 log.warn("No test session found that matches the message: {}", inMessage);
                 log.info("Creating new TestSession for InMessage...");
 
                 // Create a objects using factory
-                IncomingJmfMessage newMessage = testRunnerService.getTestSuite().createInMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
-                testSession = testRunnerService.getTestSuite().createTestSession(remoteAddr);
+
+                IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
+                testSession = new TestSession(remoteAddr, incomingJmfMessage);
 
                 // Add TestSession to suite
-                testRunnerService.getTestSuite().addTestSession(testSession);
+                testRunnerService.getTestSuite().getTestSessions().add(testSession);
 
                 // Configure tests
                 settingsService.configureIncomingTests(testSession);
                 settingsService.configureOutgoingTests(testSession);
 
                 // Add message to TestSession
-                testSession.receiveMessage(newMessage);
+                testRunnerService.receiveMessage(testSession, incomingJmfMessage);
             }
     }
 

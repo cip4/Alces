@@ -51,7 +51,7 @@ public class CheckJDFTest extends ConfigurableTest {
 			boolean passedTest = CheckJDFWrapper.validateCommandLine(commandLine, message.getContentType(), message.getBody(), xmlReport);
 			logMsg.append(xmlReport);
 			InputStream isXslFile = CheckJDFTest.class.getResourceAsStream(RES_REPORT_XSL_FILE);
-			result = new XsltTestResult(isXslFile, this, message, Result.getPassed(passedTest), logMsg.toString());
+			result = new XsltTestResult(isXslFile, this, message, passedTest ? Result.PASSED : Result.FAILED, logMsg.toString());
 
 		} catch (Exception e) {
 			logMsg.append("An error occurred while validating the message body. Maybe the" + " message body does not contain a JDF instance or a JMF message?");

@@ -346,31 +346,22 @@ public class SettingsServiceImpl implements SettingsService {
 	/**
 	 * Configures <code>Test</code>s that will be run on all incoming messages during a test session.
 	 * 
-	 * @param session the <code>TestSession</code> to add the incoming <code>Test</code>s to
+	 * @param testSession the <code>TestSession</code> to add the incoming <code>Test</code>s to
 	 */
-	public void configureIncomingTests(TestSession session) {
-		log.debug("Configuring incoming tests...");
+	public void configureIncomingTests(TestSession testSession) {
 		for (int i = 0; i < _incomingTests.length; i++) {
-			if (log.isDebugEnabled()) {
-				log.debug("Added Test: " + _incomingTests[i].getClass().getName());
-			}
-			session.addIncomingTest(_incomingTests[i]);
+			testSession.getInTests().add(_incomingTests[i]);
 		}
 	}
 
 	/**
 	 * Configures <code>Test</code>s that will be run on all outgoing messages during a test session.
 	 * 
-	 * @param session the <code>TestSession</code> to add the outgoing <code>Test</code>s to
+	 * @param testSession the <code>TestSession</code> to add the outgoing <code>Test</code>s to
 	 */
-	public void configureOutgoingTests(TestSession session) {
-		log.debug("Configuring outgoing tests...");
-		log.debug("Configuring incoming tests...");
+	public void configureOutgoingTests(TestSession testSession) {
 		for (int i = 0; i < _outgoingTests.length; i++) {
-			if (log.isDebugEnabled()) {
-				log.debug("Added Test: " + _outgoingTests[i].getClass().getName());
-			}
-			session.addOutgoingTest(_outgoingTests[i]);
+			testSession.getOutTests().add(_outgoingTests[i]);
 		}
 	}
 

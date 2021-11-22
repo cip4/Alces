@@ -29,7 +29,7 @@ public class TemplateJMFElementFactoryTest {
         IncomingJmfMessage msg = new IncomingJmfMessage(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
 
         System.out.println(result.getResultString());
     }
@@ -45,7 +45,7 @@ public class TemplateJMFElementFactoryTest {
         IncomingJmfMessage msg = new IncomingJmfMessage(null, jmfString, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
 
         System.out.println(result.getResultString());
     }

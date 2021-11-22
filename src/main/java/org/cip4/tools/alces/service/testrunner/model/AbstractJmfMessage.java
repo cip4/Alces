@@ -80,7 +80,7 @@ public abstract class AbstractJmfMessage {
         boolean passed;
 
         for (TestResult testResult : this.getTestResults()) {
-            passed = testResult.isPassed() || testResult.isIgnored();
+            passed = testResult.getResult()  == TestResult.Result.PASSED || testResult.getResult()  == TestResult.Result.IGNORED;
 
             if (!passed) {
                 return false;

@@ -23,7 +23,7 @@ public class CheckJDFTestTest extends AlcesTestCase {
         IncomingJmfMessage msg = new IncomingJmfMessage(null, jdf, true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertTrue(result.isPassed());
+        Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -33,7 +33,7 @@ public class CheckJDFTestTest extends AlcesTestCase {
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
         System.out.println(result);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -44,7 +44,7 @@ public class CheckJDFTestTest extends AlcesTestCase {
                 true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -52,11 +52,11 @@ public class CheckJDFTestTest extends AlcesTestCase {
         IncomingJmfMessage msg = new IncomingJmfMessage(null, "", true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
 
         msg = new IncomingJmfMessage(null, null, true);
         result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
     @org.junit.jupiter.api.Test
@@ -67,7 +67,7 @@ public class CheckJDFTestTest extends AlcesTestCase {
                 true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
     @Test
@@ -78,7 +78,7 @@ public class CheckJDFTestTest extends AlcesTestCase {
                 true);
         CheckJDFTest test = new CheckJDFTest();
         TestResult result = test.runTest(msg);
-        Assertions.assertFalse(result.isPassed());
+        Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);
     }
 
 }
