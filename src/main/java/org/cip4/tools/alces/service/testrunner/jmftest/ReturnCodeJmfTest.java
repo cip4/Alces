@@ -1,32 +1,40 @@
-package org.cip4.tools.alces.service.testrunner.tests;
+package org.cip4.tools.alces.service.testrunner.jmftest;
 
 import java.util.List;
 
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
+import org.cip4.tools.alces.service.testrunner.jmftest.JmfTest;
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;
+import org.springframework.stereotype.Component;
 
 /**
  * Checks whether the ReturnCode of JDFResponses and JDFAcknowledges equals 0
  * ("the message has been processed successfully")
- * 
- * @author Niels Boeger
  */
-public class ReturnCodeTest extends Test {
+@Component
+public class ReturnCodeJmfTest implements JmfTest {
 
-    public ReturnCodeTest() {
-        super(
-                "ReturnCodeTest - check whether the ReturnCode of all "
-                        + "JDFResponses and JDFAcknowledges equals 0 (the message has been processed successfully)");
-    }
+	@Override
+	public Type getType() {
+		return Type.JMF_IN_TEST;
+	}
 
-    @Override
+	@Override
+	public String getDescription() {
+		return "ReturnCodeTest - check whether the ReturnCode of all "
+				+ "JDFResponses and JDFAcknowledges equals 0 (the message has been processed successfully)";
+	}
+
+	@Override
 	public TestResult runTest(AbstractJmfMessage message) {
-        final TestResult result;    
+        final TestResult result;
+
         if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
         	result = new TestResult(this, message, Result.IGNORED,
         			"Test ignored because message did not contain JMF. Message content-type was: " 

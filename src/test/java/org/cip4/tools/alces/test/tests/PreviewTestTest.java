@@ -2,10 +2,11 @@ package org.cip4.tools.alces.test.tests;
 
 import org.apache.commons.lang.StringUtils;
 import org.cip4.tools.alces.junit.AlcesTestCase;
+import org.cip4.tools.alces.service.testrunner.jmftest.JmfTest;
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
-import org.cip4.tools.alces.service.testrunner.tests.PreviewTest;
+import org.cip4.tools.alces.service.testrunner.jmftest.PreviewTest;
 import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.junit.jupiter.api.Assertions;
@@ -20,9 +21,7 @@ public class PreviewTestTest extends AlcesTestCase {
         // Load JMF
         String jmf = getTestFileAsString("ResourceSignal_Preview_first.jmf");
         AbstractJmfMessage message = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
-        // Configure test
-        File previewDir = new File(System.getProperty("java.io.tmpdir"), "PreviewTestTest");
-        Test test = new PreviewTest(previewDir);
+        JmfTest test = new PreviewTest();
         // Run test
         TestResult result = test.runTest(message);
         Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
@@ -36,9 +35,7 @@ public class PreviewTestTest extends AlcesTestCase {
         // Load JMF
         String jmf = getTestFileAsString("ResourceCMD_Preview_all.jmf");
         AbstractJmfMessage message = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
-        // Configure test
-        File previewDir = new File(System.getProperty("java.io.tmpdir"), "PreviewTestTest");
-        Test test = new PreviewTest(previewDir);
+        JmfTest test = new PreviewTest();
         // Run test
         TestResult result = test.runTest(message);
         Assertions.assertTrue(result.getResult() == TestResult.Result.PASSED);
@@ -52,9 +49,7 @@ public class PreviewTestTest extends AlcesTestCase {
         // Load JMF
         String jmf = getTestFileAsString("ResourceSignal_Preview_all.jmf");
         AbstractJmfMessage message = new IncomingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, jmf, false);
-        // Configure test
-        File previewDir = new File(System.getProperty("java.io.tmpdir"), "PreviewTestTest");
-        Test test = new PreviewTest(previewDir);
+        JmfTest test = new PreviewTest();
         // Run test
         TestResult result = test.runTest(message);
         Assertions.assertFalse(result.getResult() == TestResult.Result.PASSED);

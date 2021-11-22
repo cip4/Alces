@@ -4,7 +4,9 @@ import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.mail.Multipart;
 
@@ -29,6 +31,7 @@ import org.cip4.tools.alces.preprocessor.jmf.SenderIDPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.URLPreprocessor;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
+import org.cip4.tools.alces.service.testrunner.jmftest.JmfTest;
 import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.*;
 import org.slf4j.Logger;
@@ -55,54 +58,52 @@ public class TestRunnerServiceImpl implements TestRunnerService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private List<TestSuiteListener> testSuiteListeners;
+    @Autowired
+    private List<JmfTest> jmfTests;
 
-    private TestSuite testSuite;
+    private List<TestSessionsListener> testSessionsListeners;
 
-    private final List<TestSessionListener> testSessionListeners;
+    private List<TestSession> testSessions;
 
     /**
      * Default constructor.
      */
     private TestRunnerServiceImpl() {
-        this.testSuite = new TestSuite();
-        testSuiteListeners = new ArrayList<>();
-
-        testSessionListeners = new ArrayList<>();
+        this.testSessions = new ArrayList<>();
+        testSessionsListeners = new ArrayList<>();
     }
 
     /**
-     * Returns the runners test suite.
-     *
-     * @return The runners test suite.
+     * Returns the list of active test sessions.
+     * @return The list of active test sessions.
      */
-    public TestSuite getTestSuite() {
-        return this.testSuite;
+    public List<TestSession> getTestSessions() {
+        return testSessions;
     }
 
     @Override
     public void clearTestSessions() {
 
         // remove all test sessions
-        getTestSuite().getTestSessions().clear();
+        testSessions.clear();
 
         // notify listeners
-        notifyTestSuiteListeners(this.testSuite);
+        notifyTestSessionsListeners(testSessions);
     }
 
     @Override
     public void clearTestSession(TestSession testSession) {
 
         // remove given test session
-        getTestSuite().getTestSessions().remove(testSession);
+        testSessions.remove(testSession);
 
         // notify listeners
-        notifyTestSuiteListeners(this.testSuite);
+        notifyTestSessionsListeners(testSessions);
     }
 
     @Override
-    public void registerTestSuiteListener(TestSuiteListener testSuiteListener) {
-        testSuiteListeners.add(testSuiteListener);
+    public void registerTestSuiteListener(TestSessionsListener testSessionsListener) {
+        testSessionsListeners.add(testSessionsListener);
     }
 
     /**
@@ -110,16 +111,10 @@ public class TestRunnerServiceImpl implements TestRunnerService {
      */
     public synchronized void sendMessage(TestSession testSession, OutgoingJmfMessage outgoingJmfMessage) {
 
-        // log message
-//		if (outMessages.size() == 0 && inMessages.size() == 0) {
-//			this.message = message;
-//		}
-
         testSession.getOutgoingJmfMessages().add(outgoingJmfMessage);
-        // outMessages.add(message);
 
         // run outgoing tests on message and log results
-        runTests(testSession, testSession.getOutTests(), outgoingJmfMessage);
+        runTests(testSession.getOutTests(), outgoingJmfMessage);
 
         // send message
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -172,20 +167,37 @@ public class TestRunnerServiceImpl implements TestRunnerService {
     }
 
     /**
-     * Runs tests on a message and logs the test results
-     *
-     * @param tests
-     * @param message
+     * Runs tests on a message and writes the test results to the message object.
+     * @param tests List of test to be applied (legacy approach)
+     * @param jmfMessage the jmf message to be tested.
      */
-    private void runTests(TestSession testSession, List<Test> tests, AbstractJmfMessage message) {
-        log.debug("Running tests on message...");
-        for (Test test : tests) {
-            log.debug("Running test: " + test.getClass().getName());
-            TestResult result = test.runTest(message);
+    private void runTests(List<Test> tests, AbstractJmfMessage jmfMessage) {
 
-            // TestResult->Message
-            message.getTestResults().add(result);
-            testSession.getTestResults().add(result);
+        // filter tets
+        List<JmfTest> jmfTests;
+
+        if(jmfMessage instanceof IncomingJmfMessage) {
+            jmfTests = this.jmfTests.stream()
+                    .filter(jmfTest -> jmfTest.getType() == JmfTest.Type.JMF_IN_TEST || jmfTest.getType() == JmfTest.Type.JMF_BOTH_TEST)
+                    .collect(Collectors.toList());
+
+        } else {
+            jmfTests = this.jmfTests.stream()
+                    .filter(jmfTest -> jmfTest.getType() == JmfTest.Type.JMF_OUT_TEST || jmfTest.getType() == JmfTest.Type.JMF_BOTH_TEST)
+                    .collect(Collectors.toList());
+
+        }
+
+        // run tests
+        jmfTests.forEach(jmfTest -> {
+            TestResult result = jmfTest.runTest(jmfMessage);
+            jmfMessage.getTestResults().add(result);
+        });
+
+        // legacy tests
+        for (Test test : tests) {
+            TestResult result = test.runTest(jmfMessage);
+            jmfMessage.getTestResults().add(result);
         }
     }
 
@@ -229,7 +241,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         testSession.getIncomingJmfMessages().add(incomingJmfMessage);
 
         // Run incoming tests on message
-        runTests(testSession, testSession.getInTests(), incomingJmfMessage); // Tests must be run before
+        runTests(testSession.getInTests(), incomingJmfMessage); // Tests must be run before
 
         // adding InMessage to
         // OutMessage
@@ -238,18 +250,49 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             outgoingJmfMessage.getIncomingJmfMessages().add(incomingJmfMessage);
         }
 
-        notifyListeners(incomingJmfMessage, testSession);
+        // notifyListeners(incomingJmfMessage, testSession);
     }
 
     /**
-     * Notify all listener about the updated test suite.
+     * Notify all listener about the updated test sessions.
      *
-     * @param testSuite The updated test suite.
+     * @param testSessions The updated list of test sessions.
      */
-    private void notifyTestSuiteListeners(TestSuite testSuite) {
-        this.testSuiteListeners.forEach(testSuiteListener -> {
-            testSuiteListener.handleTestSuiteUpdate(testSuite);
-        });
+    private void notifyTestSessionsListeners(List<TestSession> testSessions) {
+        this.testSessionsListeners.forEach(testSessionsListener -> testSessionsListener.handleTestSessionsUpdate(
+                Collections.unmodifiableList(testSessions)
+        ));
+    }
+
+
+    public void processIncomingJmfMessage(IncomingJmfMessage inMessage, String jmfEndpointUrl) {
+
+        // get test sesstion for in-message
+        TestSession testSession = findTestSession(inMessage);
+
+        // Add the message to the TestSession
+        if (testSession != null) {
+            receiveMessage(testSession, inMessage);
+
+        } else {
+            log.warn("No test session found that matches the message: {}", inMessage);
+            log.info("Creating new TestSession for InMessage...");
+
+            // Create a objects using factory
+
+            IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
+            testSession = new TestSession(jmfEndpointUrl, incomingJmfMessage);
+
+            // Add TestSession to suite
+            testSessions.add(testSession);
+
+            // Configure tests
+            settingsService.configureIncomingTests(testSession);
+            settingsService.configureOutgoingTests(testSession);
+
+            // Add message to TestSession
+            receiveMessage(testSession, incomingJmfMessage);
+        }
     }
 
     /**
@@ -371,10 +414,10 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         }
 
         // Configure and start test session
-        synchronized (testSuite) {
+        synchronized (testSessions) {
             log.debug("Configuring test session...");
             final TestSession testSession = new TestSession(targetUrl, outgoingJmfMessage);
-            testSuite.getTestSessions().add(testSession);
+            testSessions.add(testSession);
 
             // Configure tests
             settingsService.configureIncomingTests(testSession);
@@ -385,34 +428,9 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             sendMessage(testSession, outgoingJmfMessage);
 
             // notify listeners
-            notifyTestSuiteListeners(testSuite);
+            notifyTestSessionsListeners(testSessions);
 
             return testSession;
-        }
-    }
-
-    public void addListener(TestSessionListener listener) {
-        testSessionListeners.add(listener);
-    }
-
-    public void removeListener(TestSessionListener listener) {
-        testSessionListeners.remove(listener);
-    }
-
-    /**
-     * Synchronously notifies listeners that a new message has been received.
-     *
-     * @param message     the received message
-     * @param testSession the message's test session
-     */
-    protected void notifyListeners(IncomingJmfMessage message, TestSession testSession) {
-        if (testSessionListeners == null || testSessionListeners.size() == 0) {
-            return;
-        }
-        TestSessionListener[] listeners = testSessionListeners.toArray(new TestSessionListener[testSessionListeners.size()]);
-
-        for (int i = 0; i < listeners.length; i++) {
-            listeners[i].messageReceived(message, testSession);
         }
     }
 
@@ -431,7 +449,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         final JDFMessage jmfMsg = jmf.getMessageElement(null, null, 0);
         final String refId = jmfMsg.getrefID();
         log.debug("Searching for test session for incoming JMF message with refID '" + refId + "'...");
-        for (TestSession testSession : this.getTestSuite().getTestSessions()) {
+        for (TestSession testSession : testSessions) {
             for (AbstractJmfMessage mOut : testSession.getOutgoingJmfMessages()) {
                 JDFJMF jmfOut = JmfUtil.getBodyAsJMF(mOut);
                 if (jmfOut == null) {
@@ -854,20 +872,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             }
         }
         return jdf;
-    }
-
-    /**
-     * Serializes the test suite, all incoming and outgoing messages to a directory and creates an XML-based test report file containing a log of all messages
-     * and the test results.
-     *
-     * @param outputDir the directory to write the test suite to
-     * @return the XML-based test report file
-     * @throws IOException
-     */
-    public synchronized String serializeTestSuite(String outputDir) throws IOException {
-        TestSuiteSerializer serializer = new TestSuiteSerializer();
-        // TODO Synchronize TestSuite while serializing
-        return serializer.serialize(testSuite, outputDir);
     }
 
     /**

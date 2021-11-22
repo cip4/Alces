@@ -7,8 +7,7 @@ import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
-import org.cip4.tools.alces.service.testrunner.model.TestSuite;
-import org.cip4.tools.alces.service.testrunner.model.TestSuiteListener;
+import org.cip4.tools.alces.service.testrunner.model.TestSessionsListener;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -26,7 +25,7 @@ import java.util.List;
 /**
  * The TestSession tree object.
  */
-public class JTestSuiteTree extends JTree implements TestSuiteListener {
+public class JTestSuiteTree extends JTree implements TestSessionsListener {
 
     private final static String RES_ROOT = "/org/cip4/tools/alces/icons/";
 
@@ -91,11 +90,11 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
      * Create a new instance of the JTestSuiteTree object.
      * @return The new instance of the JTestSuiteTree object.
      */
-    public static JTestSuiteTree newInstance(TestSuite testSuite) throws IOException {
+    public static JTestSuiteTree newInstance(List<TestSession> testSessions) throws IOException {
 
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Test Suite");
 
-        testSuite.getTestSessions().forEach(testSession -> {
+        testSessions.forEach(testSession -> {
             rootNode.add(new DefaultMutableTreeNode(testSession));
         });
 
@@ -104,7 +103,7 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
     }
 
     @Override
-    public void handleTestSuiteUpdate(TestSuite testSuite) {
+    public void handleTestSessionsUpdate(List<TestSession> testSessions) {
 
         // save node expansion state
         List<Object> expandedUserObjects = new ArrayList<>();
@@ -121,7 +120,7 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
         rootNode.removeAllChildren();
 
         // build new node structure
-        testSuite.getTestSessions().forEach(testSession -> {
+        testSessions.forEach(testSession -> {
 
             // add test session node (if not present)
             DefaultMutableTreeNode testSessionTreeNode = new DefaultMutableTreeNode(testSession);
@@ -235,7 +234,7 @@ public class JTestSuiteTree extends JTree implements TestSuiteListener {
                 } else if (userObject instanceof TestResult testResult) {
 
                     // set text
-                    setText(testResult.getTest().getDescription());
+                    setText(testResult.getJmfTest().getDescription());
 
                     // set icons/tooltip
                     switch (testResult.getResult()) {

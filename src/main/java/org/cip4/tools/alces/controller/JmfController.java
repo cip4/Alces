@@ -73,23 +73,23 @@ public class JmfController {
         if (jmfIn != null) {
             if (jmfIn.getAcknowledge(0) != null) {
                 log.debug("Receiving Acknowledge message...");
-                startTestSession(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
                 responseEntity = ResponseEntity.ok().build();
 
             } else if (jmfIn.getSignal(0) != null) {
                 log.debug("Receiving Signal message...");
-                startTestSession(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
                 responseEntity = ResponseEntity.ok().build();
 
             } else if (jmfIn.getMessageElement(JDFMessage.EnumFamily.Command, JDFMessage.EnumType.ReturnQueueEntry, 0) != null) {
                 log.debug("Receiving RetunQueueEntry message...");
-                startTestSession(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
                 JDFJMF jmfOut = JMFMessageBuilder.buildResponse(jmfIn);
                 responseEntity = ResponseEntity.ok(jmfOut.toXML());
 
             } else {
                 log.debug("Receiving unhandled JMF message...");
-                startTestSession(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
                 JDFJMF jmfOut = JMFMessageBuilder.buildNotImplementedResponse(jmfIn);
                 jmfOut.getResponse(0).setReturnCode(Integer.parseInt(settingsService.getProp(SettingsServiceImpl.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
                 responseEntity = ResponseEntity.ok(jmfOut.toXML());
@@ -98,17 +98,17 @@ public class JmfController {
 
         } else if (contentType.equals(MIME_CONTENT_TYPE)) {
             log.debug("Receiving MIME package...");
-            startTestSession(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
             responseEntity = ResponseEntity.ok().build();
 
         } else if (contentType.startsWith(JDF_CONTENT_TYPE)) {
             log.debug("Receiving JDF file...");
-            startTestSession(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
             responseEntity = ResponseEntity.ok().build();
 
         } else {
             log.debug("Unknown content-type '" + contentType + "'...");
-            startTestSession(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
             responseEntity = ResponseEntity.badRequest().build();
         }
 
@@ -133,38 +133,4 @@ public class JmfController {
         }
         return header.toString();
     }
-
-    /**
-     * Helper method to start a test session
-     */
-    private void startTestSession(IncomingJmfMessage inMessage, String remoteAddr) {
-
-            // get test sesstion for in-message
-            TestSession testSession = testRunnerService.findTestSession(inMessage);
-
-            // Add the message to the TestSession
-            if (testSession != null) {
-                testRunnerService.receiveMessage(testSession, inMessage);
-
-            } else {
-                log.warn("No test session found that matches the message: {}", inMessage);
-                log.info("Creating new TestSession for InMessage...");
-
-                // Create a objects using factory
-
-                IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
-                testSession = new TestSession(remoteAddr, incomingJmfMessage);
-
-                // Add TestSession to suite
-                testRunnerService.getTestSuite().getTestSessions().add(testSession);
-
-                // Configure tests
-                settingsService.configureIncomingTests(testSession);
-                settingsService.configureOutgoingTests(testSession);
-
-                // Add message to TestSession
-                testRunnerService.receiveMessage(testSession, incomingJmfMessage);
-            }
-    }
-
 }

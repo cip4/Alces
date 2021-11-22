@@ -25,7 +25,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         // JMF Handshake
 
 
-        testRunnerService.startTestSession(jmfMessageService.createQueryKnownDevices(), jmfEndpointUrl);
+        // testRunnerService.startTestSession(jmfMessageService.createQueryKnownDevices(), jmfEndpointUrl);
 
 
         return null;

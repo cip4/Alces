@@ -39,6 +39,7 @@ import org.cip4.jdflib.jmf.*;
 import org.cip4.jdflib.jmf.JDFMessage.EnumType;
 import org.cip4.jdflib.resource.JDFDevice;
 import org.cip4.jdflib.resource.JDFDeviceList;
+import org.cip4.tools.alces.Application;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.jmf.JMFMessageFactory;
 import org.cip4.tools.alces.service.discovery.DiscoveryService;
@@ -339,7 +340,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         JScrollPane sessionTreeScrollPane = new JScrollPane();
 
         // init test suite tree
-        JTestSuiteTree jTestSuiteTree = JTestSuiteTree.newInstance(testRunnerService.getTestSuite());
+        JTestSuiteTree jTestSuiteTree = JTestSuiteTree.newInstance(testRunnerService.getTestSessions());
         testRunnerService.registerTestSuiteListener(jTestSuiteTree);
         jTestSuiteTree.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
@@ -415,81 +416,71 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         return jmf;
     }
 
-	/**
-	 * Finds the incoming message that the specified outgoing message is a response to.
-	 *
-	 * @param message the outgoing message
-	 * @return the incoming message that the outgoing message is a response to
-	 */
-	public IncomingJmfMessage getIncomingMessage(TestSession testSession, OutgoingJmfMessage message) {
-		String refID = null;
-		try {
-			// Configure JDF namespace
-			Namespace jdfNamespace = Namespace.getNamespace("jdf", "http://www.CIP4.org/JDFSchema_1_1");
+    /**
+     * Finds the incoming message that the specified outgoing message is a response to.
+     *
+     * @param message the outgoing message
+     * @return the incoming message that the outgoing message is a response to
+     */
+    public IncomingJmfMessage getIncomingMessage(TestSession testSession, OutgoingJmfMessage message) {
+        String refID = null;
+        try {
+            // Configure JDF namespace
+            Namespace jdfNamespace = Namespace.getNamespace("jdf", "http://www.CIP4.org/JDFSchema_1_1");
 
-			// Configure XPath for refID
-			// XPath refidXPath = XPath.newInstance("jdf:JMF/child::node()/@refID");
-			XPath refidXPath = XPath.newInstance("jdf:JMF/child::node()/@ID"); // bug fixed: no @refID in OutMessage
-			refidXPath.addNamespace(jdfNamespace);
+            // Configure XPath for refID
+            // XPath refidXPath = XPath.newInstance("jdf:JMF/child::node()/@refID");
+            XPath refidXPath = XPath.newInstance("jdf:JMF/child::node()/@ID"); // bug fixed: no @refID in OutMessage
+            refidXPath.addNamespace(jdfNamespace);
 
-			// Execute XPath query for refID
-			Attribute refIDAttr = (Attribute) refidXPath.selectSingleNode(JmfUtil.getBodyAsJDOM(message));
-			refID = refIDAttr.getValue();
-			log.info("Found: @refID / @ID = " + refID);
+            // Execute XPath query for refID
+            Attribute refIDAttr = (Attribute) refidXPath.selectSingleNode(JmfUtil.getBodyAsJDOM(message));
+            refID = refIDAttr.getValue();
+            log.info("Found: @refID / @ID = " + refID);
 
-			// Configure XPath for ID
-			// XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@ID='" + refID + "']");
-			XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@refID='" + refID + "']"); // bug fixed: no @ID in InMessage
-			idXPath.addNamespace(jdfNamespace);
+            // Configure XPath for ID
+            // XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@ID='" + refID + "']");
+            XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@refID='" + refID + "']"); // bug fixed: no @ID in InMessage
+            idXPath.addNamespace(jdfNamespace);
 
-			synchronized (testSession.getIncomingJmfMessages()) {
-				// Go through all messages sent during a session
-				for (IncomingJmfMessage msgIn : testSession.getIncomingJmfMessages()) {
-					// Execute XPath for ID
-					if (idXPath.selectSingleNode(JmfUtil.getBodyAsJDOM(msgIn)) != null) {
-						log.debug("Found ID matching refID: " + refID);
-						return msgIn;
-					}
-				}
-			}
-		} catch (Exception e) {
-			log.error("An error occurred while getting InMessage.", e);
-		}
-		log.debug("No incoming message was found that matches the outgoing message with refID: " + refID);
-		return null;
-	}
+            synchronized (testSession.getIncomingJmfMessages()) {
+                // Go through all messages sent during a session
+                for (IncomingJmfMessage msgIn : testSession.getIncomingJmfMessages()) {
+                    // Execute XPath for ID
+                    if (idXPath.selectSingleNode(JmfUtil.getBodyAsJDOM(msgIn)) != null) {
+                        log.debug("Found ID matching refID: " + refID);
+                        return msgIn;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("An error occurred while getting InMessage.", e);
+        }
+        log.debug("No incoming message was found that matches the outgoing message with refID: " + refID);
+        return null;
+    }
 
     /**
      * Sends a JMF message containing a Status message with a QueueInfo='true' and QueueStatus message.
      */
     private JDFJMF sendQueueStatus() throws IOException {
-        log.info("Sending QueueStatus...");
-        final OutgoingJmfMessage outgoingJmfMessage = createMessage("Connect_QueueStatus");
-        IncomingJmfMessage incomingJmfMessage;
 
-        if (settingsService.getProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES).equalsIgnoreCase("FALSE")) {
-            incomingJmfMessage = testRunnerService.sendMessage(outgoingJmfMessage, getDeviceUrl());
+        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createQueryQueueStatus(), getDeviceUrl());
+        OutgoingJmfMessage outgoingJmfMessage = testSession.getOutgoingJmfMessages().get(0);
 
-        } else {
-            TestSession testSession = testRunnerService.startTestSession(outgoingJmfMessage, getDeviceUrl());
-
-            int i = 0;
-            while (testSession.getIncomingJmfMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
-            {
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                i++;
+        int i = 0;
+        while (testSession.getIncomingJmfMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
+        {
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-
-            incomingJmfMessage = getIncomingMessage(testSession, outgoingJmfMessage);
+            i++;
         }
 
-        final JDFJMF jmf = JmfUtil.getBodyAsJMF(incomingJmfMessage);
-        log.info("Sending QueueStatus...done");
-        return jmf;
+        IncomingJmfMessage incomingJmfMessage = getIncomingMessage(testSession, outgoingJmfMessage);
+        return JmfUtil.getBodyAsJMF(incomingJmfMessage);
     }
 
     private void clearKnownDevices() {
@@ -827,13 +818,11 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
      * @see #connect()
      */
     private void cancelConnect() {
-        synchronized (testRunnerService.getTestSuite()) {
-            connectButton.setEnabled(false);
-            connectThread.cancel();
-            connectButton.setText("Connect");
-            connectButton.setActionCommand(Alces.ACTION_CONNECT);
-            connectButton.setEnabled(true);
-        }
+        connectButton.setEnabled(false);
+        connectThread.cancel();
+        connectButton.setText("Connect");
+        connectButton.setActionCommand(Alces.ACTION_CONNECT);
+        connectButton.setEnabled(true);
     }
 
     /**
@@ -879,15 +868,13 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
                     JDFJMF knownMessagesResponse = sendKnownMessages();
                     if (cancel)
                         return;
-                    synchronized (testRunnerService.getTestSuite()) {
-                        if (cancel)
-                            return;
-                        setKnownDevices(knownDevicesResponse);
-                        // Update queue
-                        JDFJMF queueStatusResponse = sendQueueStatus();
-                        processReceivedJMF(queueStatusResponse);
-                        buildMessageButtons(knownMessagesResponse);
-                    }
+                    if (cancel)
+                        return;
+                    setKnownDevices(knownDevicesResponse);
+                    // Update queue
+                    JDFJMF queueStatusResponse = sendQueueStatus();
+                    processReceivedJMF(queueStatusResponse);
+                    buildMessageButtons(knownMessagesResponse);
                 } catch (UnknownHostException e) {
                     log.error("Could not connect to device.", e);
                     String msg = "The device's hostname '" + e.getMessage() + "' could not\n" + "be found. Make sure that the entered device URL is correct.";
@@ -1326,25 +1313,13 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
      * Saves the configuration and writes a test report before Alces quits.
      */
     private void quitAlces() {
-        log.debug("Quitting Alces...");
-
-        // save test report
-        DateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-hhmmss");
-        String outputDir = settingsService.getProp(SettingsServiceImpl.OUTPUT_DIR) + dateFormat.format(new Date());
-        log.info("Writing test report to '" + outputDir + "'...");
-
-        String outputFile;
-        try {
-            outputFile = testRunnerService.serializeTestSuite(outputDir);
-            log.info("Wrote test report to: " + outputFile);
-        } catch (Exception e) {
-            log.error("Could not write test report.", e);
-        }
 
         // save configuration
         settingsService.saveHistory(addressComboBox.getModel());
         settingsService.saveConfiguration(this.getWidth(), this.getHeight(), sessionSplitPane.getDividerLocation(), infoQueueSplitPane.getDividerLocation(), mainSplitPane.getDividerLocation());
-        System.exit(0);
+
+        // quite alces
+        Application.initiateShutdown();
     }
 
     /**

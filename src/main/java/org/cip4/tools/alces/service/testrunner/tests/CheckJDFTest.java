@@ -1,6 +1,3 @@
-/*
- * Created on Apr 23, 2005
- */
 package org.cip4.tools.alces.service.testrunner.tests;
 
 import java.io.InputStream;

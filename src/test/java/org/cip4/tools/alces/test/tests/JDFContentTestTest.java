@@ -7,7 +7,7 @@ import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
-import org.cip4.tools.alces.service.testrunner.tests.JDFContentTest;
+import org.cip4.tools.alces.service.testrunner.jmftest.JDFContentTest;
 import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.junit.jupiter.api.Assertions;

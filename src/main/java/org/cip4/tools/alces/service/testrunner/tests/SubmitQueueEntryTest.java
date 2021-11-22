@@ -26,8 +26,6 @@ import org.cip4.tools.alces.util.JmfUtil;
 /**
  * If the message tested contains a JMF SubmitQueueEntry message, the JDF file referenced by the SubmitQueueEntry message
  * (JMF/Message[@Type='SubmitQueueEntry']/QueueSubmissionParams/@URL) will be validated.
- * 
- * @author Claes Buckwalter (clabu@itn.liu.se)
  */
 public class SubmitQueueEntryTest extends ConfigurableTest {
 

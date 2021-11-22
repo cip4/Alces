@@ -20,8 +20,6 @@ public class TestSession {
 
 	private final List<Test> inTests;
 
-	private final List<TestResult> testResults;
-
 	private final AbstractJmfMessage initializingJmfMessage;
 
 	/**
@@ -35,7 +33,6 @@ public class TestSession {
 		this.incomingJmfMessages = new ArrayList<>();
 		this.outTests = new ArrayList<>();
 		this.inTests = new ArrayList<>();
-		this.testResults = new ArrayList<>();
 	}
 
 	public String getTargetUrl() {
@@ -56,10 +53,6 @@ public class TestSession {
 
 	public List<Test> getInTests() {
 		return inTests;
-	}
-
-	public List<TestResult> getTestResults() {
-		return testResults;
 	}
 
 	public AbstractJmfMessage getInitializingJmfMessage() {

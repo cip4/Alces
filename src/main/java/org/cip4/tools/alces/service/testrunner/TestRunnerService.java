@@ -4,6 +4,7 @@ import org.cip4.tools.alces.service.testrunner.model.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Business interface for a test-runner.
@@ -12,15 +13,17 @@ public interface TestRunnerService {
 
     /**
      * Register a new TestSuite listener.
-     * @param testSuiteListener The TestSuite lister.
+     *
+     * @param testSessionsListener The TestSuite lister.
      */
-    void registerTestSuiteListener(TestSuiteListener testSuiteListener);
+    void registerTestSuiteListener(TestSessionsListener testSessionsListener);
 
     /**
-     * Returns the runners test suite.
-     * @return The runners test suite.
+     * Returns a list of all active test sessions.
+     *
+     * @return List of active test sessions.
      */
-    TestSuite getTestSuite();
+    List<TestSession> getTestSessions();
 
     /**
      * Clear all test sessions.
@@ -29,83 +32,74 @@ public interface TestRunnerService {
 
     /**
      * Clear the given test sessions.
+     *
+     * @param testSession The test session to be removed.
      */
     void clearTestSession(TestSession testSession);
 
+
     /**
-     * Starts a new test session based on a JMF Message and a traget url.
+     * Process an incoming jmf message. The message is being attached to the test session it belongs to.
+     * If no test session exists, a new one is being created.
+     *
+     * @param incomingJmfMessage The incoming jmf message.
+     * @param jmfEndpointUrl     The senders jmf endpoint url.
+     */
+    void processIncomingJmfMessage(IncomingJmfMessage incomingJmfMessage, String jmfEndpointUrl);
+
+    /**
+     * Starts a new test session based on an outgoing jmf message and a target url.
+     *
      * @param jmfMessage The JMF Message as String.
-     * @param targetUrl The target URL the JMF needs to be sent to.
+     * @param targetUrl  The target URL the JMF needs to be sent to.
      * @return The created test session.
      */
     TestSession startTestSession(String jmfMessage, String targetUrl);
 
-    void receiveMessage(TestSession testSession, IncomingJmfMessage incomingJmfMessage);
-
-    TestSession findTestSession(AbstractJmfMessage message);
-
-    @Deprecated
-    TestSession startTestSession(OutgoingJmfMessage message, String targetUrl);
-
     /**
-     * Sends a <code>OutMessage</code> to the preconfigured target URL. The message is preprocessed before it is sent.
+     * Starts a new test session based on an outgoing jmf message and a target url.
      *
-     * If <code>SenderIDPreprocessor</code> is enabled then <em>JMF/@SenderID</em> will be replaced with the value configured SenderID.
-     *
-     * @param message the <code>InMessage</code> received in the response
-     * @return
-     * @throws IOException if an communication exception occurs during the message sending
+     * @param outgoingJmfMessage The outgoing JMF Message as String.
+     * @param targetUrl          The target URL the JMF needs to be sent to.
+     * @return The created test session.
      */
-    IncomingJmfMessage sendMessage(OutgoingJmfMessage message, String targetUrl) throws IOException;
-
-
+    @Deprecated
+    TestSession startTestSession(OutgoingJmfMessage outgoingJmfMessage, String targetUrl);
 
     /**
      * Loads a message from a file.
      *
-     * @param file
-     * @return
+     * @param file The file to be sent.
+     * @return The file as outgoing jmf message.
      */
+    @Deprecated
     OutgoingJmfMessage loadMessage(File file);
 
     /**
      * Starts a new test session by sending a SubmitQueueEntry JMF message that refers to the specified JDF file. Before submitting the JDF job, the JDF file is
      * published to this TestRunners HTTP server and the resulting http URL is used in the SubmitQueueEntry JMF message.
-     *
-     * @param jdfFile the JDF file to submit
-     * @param targetUrl the URL to submit it to
+     * @param jdfFile       the JDF file to submit
+     * @param targetUrl     the URL to submit it to
      * @param preprocessJdf <code>true</code> to preprocess the JDF file before submitting it; <code>false</code> otherwise
-     * @param asMime packages the JDF file, its content files, and the SubmitQueueEntry JMF in a MIME package
-     *
+     * @param asMime        packages the JDF file, its content files, and the SubmitQueueEntry JMF in a MIME package
      * @return the test session
      */
+    @Deprecated
     TestSession startTestSessionWithSubmitQueueEntry(File jdfFile, String targetUrl, boolean preprocessJdf, boolean asMime);
 
     /**
-     * Starts a new test session by sending a <i>ResubmitQueueEntry</i> JMF message. that refers to the specified JDF file.
-     *
-     * If <code>asMime</code> is <code>true</code> the JDF file, its content files, and the <i>ResubmitQueueEntry</i> JMF message are bundled in a MIME package.
-     *
-     * If <code>asMime</code> is <code>false</code>, the JDF job, the JDF file is published to this TestRunners HTTP server and the resulting http URL is used
-     * in the <i>ResubmitQueueEntry</i> JMF message.
-     *
-     * @param jdfFile the JDF file to submit
-     * @param queueEntryId the queue entry ID of the job to resubmit
-     * @param jobId the /JDF/@JobID of the job to resubmit
-     * @param targetUrl the URL to submit it to
+     * Starts a new test session by sending a ResubmitQueueEntry JMF message. that refers to the specified JDF file.
+     * If asMime is true the JDF file, its content files, and the ResubmitQueueEntry JMF message are bundled in a MIME package.
+     * If asMime is false, the JDF job, the JDF file is published to this TestRunners HTTP server and the resulting http URL is used
+     * in the ResubmitQueueEntry JMF message.
+     * @param jdfFile       the JDF file to submit
+     * @param queueEntryId  the queue entry ID of the job to resubmit
+     * @param jobId         the /JDF/@JobID of the job to resubmit
+     * @param targetUrl     the URL to submit it to
      * @param preprocessJdf
-     * @param asMime packages the JDF file, its content files, and the SubmitQueueEntry JMF in a MIME package
+     * @param asMime        packages the JDF file, its content files, and the SubmitQueueEntry JMF in a MIME package
      * @return the test session
      */
+    @Deprecated
     TestSession startTestSessionWithResubmitQueueEntry(File jdfFile, String queueEntryId, String jobId, String targetUrl, boolean preprocessJdf, boolean asMime);
-
-    /**
-     * Serializes the test suite, all incoming and outgoing messages to a directory and creates an XML-based test report file containing a log of all messages
-     * and the test results.
-     *
-     * @param outputDir the directory to write the test suite to
-     * @return the XML-based test report file
-     * @throws IOException
-     */
-    String serializeTestSuite(String outputDir) throws IOException;
 }

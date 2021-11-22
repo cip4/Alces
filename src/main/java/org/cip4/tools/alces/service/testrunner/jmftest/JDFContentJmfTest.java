@@ -1,31 +1,36 @@
 /*
  * Created on May 5, 2005
  */
-package org.cip4.tools.alces.service.testrunner.tests;
+package org.cip4.tools.alces.service.testrunner.jmftest;
 
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
+import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
- * Tests that a <code>Message</code>'s body contains a JDF instance or a JMF
+ * Tests that a jmf message's body contains a JDF instance or a JMF
  * message, and that the message's content-type has the correct value.
- * 
- * @author Claes Buckwalter (clabu@itn.liu.se)
- * @version $Id$
  */
-public class JDFContentTest extends Test {
+@Component
+public class JDFContentJmfTest implements JmfTest {
 
-    private final static Logger log = LoggerFactory.getLogger(JDFContentTest.class);
+    private final static Logger log = LoggerFactory.getLogger(JDFContentJmfTest.class);
 
-    public JDFContentTest() {
-        super(
-                "JDFContentTest - Tests that a message's body contains a JDF instance or a JMF "
-                        + "message and that the message's header contains the corresponding "
-                        + "HTTP header Content-type.");
+    @Override
+    public Type getType() {
+        return Type.JMF_BOTH_TEST;
+    }
+
+    @Override
+    public String getDescription() {
+        return "JDFContentTest - Tests that a message's body contains a JDF instance or a JMF "
+                + "message and that the message's header contains the corresponding "
+                + "HTTP header Content-type.";
     }
 
     @Override

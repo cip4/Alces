@@ -77,7 +77,6 @@ import java.util.List;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
-import org.cip4.tools.alces.service.testrunner.TestSuiteSerializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -173,7 +172,7 @@ public class AlcesPathUtil {
 
 					new File(FilenameUtils.getFullPath(target)).mkdirs();
 					FileOutputStream fos = new FileOutputStream(target);
-					InputStream is = TestSuiteSerializer.class.getResourceAsStream(RES_BIN_ROOT + path);
+					InputStream is = AlcesPathUtil.class.getResourceAsStream(RES_BIN_ROOT + path);
 					IOUtils.copy(is, fos);
 					fos.close();
 					is.close();
@@ -286,7 +285,7 @@ public class AlcesPathUtil {
 
 					new File(FilenameUtils.getFullPath(target)).mkdirs();
 					FileOutputStream fos = new FileOutputStream(target);
-					InputStream is = TestSuiteSerializer.class.getResourceAsStream(RES_TESTDATA_ROOT + path);
+					InputStream is = AlcesPathUtil.class.getResourceAsStream(RES_TESTDATA_ROOT + path);
 					IOUtils.copy(is, fos);
 					fos.close();
 					is.close();

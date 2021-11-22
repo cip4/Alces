@@ -1,12 +1,13 @@
 package org.cip4.tools.alces.service.testrunner.tests;
 
+import org.cip4.tools.alces.service.testrunner.jmftest.JmfTest;
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 
 /**
  * A test for testing <code>Message</code>s.
  */
-public abstract class Test {
+public abstract class Test implements JmfTest {
 
 	protected String description = null;
 
@@ -30,6 +31,10 @@ public abstract class Test {
 	 */
 	public String getDescription() {
 		return description;
+	}
+
+	public Type getType() {
+		return null;
 	}
 
 	/**
