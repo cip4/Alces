@@ -14,12 +14,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 
 import javax.swing.*;
@@ -49,7 +46,7 @@ import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.ui.component.JRenderedTextArea;
-import org.cip4.tools.alces.ui.component.JTestSuiteTree;
+import org.cip4.tools.alces.ui.component.JTestSessionsTree;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JDFFileFilter;
@@ -340,13 +337,13 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         JScrollPane sessionTreeScrollPane = new JScrollPane();
 
         // init test suite tree
-        JTestSuiteTree jTestSuiteTree = JTestSuiteTree.newInstance(testRunnerService.getTestSessions());
-        testRunnerService.registerTestSuiteListener(jTestSuiteTree);
-        jTestSuiteTree.addTreeSelectionListener(e -> {
+        JTestSessionsTree jTestSessionsTree = JTestSessionsTree.newInstance(testRunnerService.getTestSessions());
+        testRunnerService.registerTestSuiteListener(jTestSessionsTree);
+        jTestSessionsTree.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
             sessionInfoScrollPane.setViewportView(new JRenderedTextArea(treeNode.getUserObject()));
         });
-        sessionTree = jTestSuiteTree;
+        sessionTree = jTestSessionsTree;
 
         sessionTreeScrollPane.setViewportView(sessionTree);
         sessionPanel.add(sessionTreeScrollPane, BorderLayout.CENTER);

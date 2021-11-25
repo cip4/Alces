@@ -25,11 +25,11 @@ import java.util.List;
 /**
  * The test suite tree component.
  */
-public class JTestSuiteTree extends JTree implements TestSessionsListener {
+public class JTestSessionsTree extends JTree implements TestSessionsListener {
 
     private final static String RES_ROOT = "/org/cip4/tools/alces/icons/";
 
-    private final JTestSuiteTree testSuiteTree;
+    private final JTestSessionsTree testSuiteTree;
 
     /**
      * The root node.
@@ -39,7 +39,7 @@ public class JTestSuiteTree extends JTree implements TestSessionsListener {
     /**
      * Private custom constructor. Accepting a TestSuite for initializing.
      */
-    private JTestSuiteTree(DefaultMutableTreeNode treeNode) throws IOException {
+    private JTestSessionsTree(DefaultMutableTreeNode treeNode) throws IOException {
         super(treeNode);
 
         this.rootNode = treeNode;
@@ -87,10 +87,10 @@ public class JTestSuiteTree extends JTree implements TestSessionsListener {
     }
 
     /**
-     * Create a new instance of the JTestSuiteTree object.
-     * @return The new instance of the JTestSuiteTree object.
+     * Create a new instance of the JTestSessionsTree object.
+     * @return The new instance of the JTestSessionsTree object.
      */
-    public static JTestSuiteTree newInstance(List<TestSession> testSessions) throws IOException {
+    public static JTestSessionsTree newInstance(List<TestSession> testSessions) throws IOException {
 
         DefaultMutableTreeNode rootNode = new DefaultMutableTreeNode("Test Suite");
 
@@ -99,7 +99,7 @@ public class JTestSuiteTree extends JTree implements TestSessionsListener {
         });
 
         // create and return object
-        return new JTestSuiteTree(rootNode);
+        return new JTestSessionsTree(rootNode);
     }
 
     @Override
