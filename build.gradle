@@ -3,7 +3,7 @@ import org.apache.tools.ant.filters.ReplaceTokens
 plugins {
     id 'org.springframework.boot' version '2.6.0'
     id 'io.spring.dependency-management' version '1.0.11.RELEASE'
-    id 'java'
+    id 'groovy'
     id 'application'
     id 'org.beryx.runtime' version '1.12.7'
     id 'com.github.johnrengelman.shadow' version '6.1.0'
@@ -47,6 +47,8 @@ shadowJar {
 
 dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.codehaus.groovy:groovy:+'
+    implementation 'org.codehaus.groovy:groovy-xml:+'
     implementation 'org.cip4.lib.jdf:JDFLibJ:2.1.7.+'
     implementation 'com.formdev:flatlaf:1.+'
 
