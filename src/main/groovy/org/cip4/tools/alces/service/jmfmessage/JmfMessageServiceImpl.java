@@ -41,28 +41,35 @@ public class JmfMessageServiceImpl implements JmfMessageService {
     }
 
     @Override
-    public String createQueryStatus() {
+    public String createStatusQuery() {
         return jmfBuilder
                 .buildStatus(EnumDeviceDetails.Details, EnumJobDetails.Brief)
                 .toXML();
     }
 
     @Override
-    public String createQueryQueueStatus() {
+    public String createStatusSubscription(String subscriberUrl) {
+        return jmfBuilder
+                .buildStatusSubscription(subscriberUrl, 0, 0, null)
+                .toXML();
+    }
+
+    @Override
+    public String createQueueStatusQuery() {
         return jmfBuilder
                 .buildQueueStatus()
                 .toXML();
     }
 
     @Override
-    public String createQueryKnownDevices() {
+    public String createKnownDevicesQuery() {
         return jmfBuilder
                 .buildKnownDevicesQuery(JDFAutoDeviceFilter.EnumDeviceDetails.Details)
                 .toXML();
     }
 
     @Override
-    public String createQueryKnownMessages() {
+    public String createKnownMessagesQuery() {
         return jmfBuilder
                 .buildKnownMessagesQuery()
                 .toXML();

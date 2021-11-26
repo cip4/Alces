@@ -7,10 +7,7 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -36,6 +33,9 @@ import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.jmf.JMFMessageFactory;
 import org.cip4.tools.alces.service.about.AboutService;
 import org.cip4.tools.alces.service.discovery.DiscoveryService;
+import org.cip4.tools.alces.service.discovery.model.JdfController;
+import org.cip4.tools.alces.service.discovery.model.JdfDevice;
+import org.cip4.tools.alces.service.discovery.model.JdfMessageService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
@@ -119,8 +119,10 @@ public class Alces extends JFrame implements ActionListener {
 
     private static final String ACTION_CONNECT = "ACTION_CONNECT";
     private static final String ACTION_CONNECT_CANCEL = "ACTION_CONNECT_CANCEL";
-    private static final String ACTION_SELECT_DEVICE = "ACTION_SELECT_DEVICE";
     private static final String ACTION_SEND_FILE = "ACTION_SEND_FILE";
+
+    private JdfController jdfController;
+    private JdfDevice activeJdfDevice;
 
     /**
      * Default constructor. Creates a new instance of the Alces Swing application.
@@ -252,10 +254,13 @@ public class Alces extends JFrame implements ActionListener {
         JPanel devicePanel = new JPanel(new BorderLayout());
         JPanel deviceInfoPanel = new JPanel();
         deviceInfoPanel.setLayout(new BoxLayout(deviceInfoPanel, BoxLayout.Y_AXIS));
+
         deviceListComboBox = new JComboBox<>();
         deviceListComboBox.setEnabled(false);
-        deviceListComboBox.setActionCommand(ACTION_SELECT_DEVICE);
-        deviceListComboBox.addActionListener(this);
+        deviceListComboBox.addActionListener(e -> {
+            String deviceId = (String) ((JComboBox) e.getSource()).getSelectedItem();
+            this.updateActiveDevice(deviceId);
+        });
         deviceInfoPanel.add(deviceListComboBox);
 
         // device status
@@ -353,32 +358,6 @@ public class Alces extends JFrame implements ActionListener {
         return sessionSplitPane;
     }
 
-    /**
-     * Sends a KnownDevices messages.
-     */
-    private JDFJMF sendKnownDevices() throws IOException {
-        log.info("Sending KnownDevices...");
-
-        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createQueryKnownDevices(), getDeviceUrl());
-        OutgoingJmfMessage outgoingJmfMessage = testSession.getOutgoingJmfMessages().get(0);
-
-        int i = 0;
-        while (testSession.getIncomingJmfMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
-        {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            i++;
-        }
-
-        IncomingJmfMessage incomingJmfMessage = getIncomingMessage(testSession, outgoingJmfMessage);
-
-        final JDFJMF jmf = JmfUtil.getBodyAsJMF(incomingJmfMessage);
-        log.info("Sending KnownDevices...done");
-        return jmf;
-    }
 
     /**
      * Finds the incoming message that the specified outgoing message is a response to.
@@ -429,7 +408,7 @@ public class Alces extends JFrame implements ActionListener {
      */
     private JDFJMF sendQueueStatus() throws IOException {
 
-        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createQueryQueueStatus(), getDeviceUrl());
+        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createQueueStatusQuery(), getDeviceUrl());
         OutgoingJmfMessage outgoingJmfMessage = testSession.getOutgoingJmfMessages().get(0);
 
         int i = 0;
@@ -453,42 +432,23 @@ public class Alces extends JFrame implements ActionListener {
         knownDevices = null;
     }
 
+
     /**
-     * Updates the combobox listing known devices.
+     * Update jdf devices.
      */
-    private void setKnownDevices(JDFJMF knownDevicesResponse) {
+    private void updateJdfDevices() {
 
-        // remove old known devices first
-        clearKnownDevices();
+        // clean up
         clearActiveDevice();
-        log.debug("Updating Known Devices combobox...");
-        if (knownDevicesResponse == null) {
-            return;
-        }
+        deviceListComboBox.removeAllItems();
+        deviceListComboBox.setEnabled(false);
 
-        // get list of known devices
-        final JDFResponse response = knownDevicesResponse.getResponse(0);
-        final JDFDeviceList deviceList = response.getDeviceList(0);
-        this.knownDevices = deviceList;
-        if (response.getDeviceList(0) == null) {
-            return;
-        }
-
-        // Fill combobox with known devices
-        for (int i = 0, imax = deviceList.getLength(); i < imax; i++) {
-            String deviceID = deviceList.getDeviceInfo(i).getDeviceID();
-            if (deviceID == null || deviceID.length() == 0) {
-                deviceID = deviceList.getDeviceInfo(i).getDevice().getDeviceID();
-            }
-            deviceListComboBox.addItem(deviceID);
-            // TODO Select active device
-            if (knownDevicesResponse.getSenderID() != null && knownDevicesResponse.getSenderID().equals(deviceID)) {
-                deviceListComboBox.setSelectedItem(deviceID);
-            }
-        }
+        // refresh devices list
+        this.jdfController.getJdfDevices().forEach(jdfDevice -> {
+            deviceListComboBox.addItem(jdfDevice.getDeviceId());
+        });
 
         deviceListComboBox.setEnabled(true);
-        log.debug("Known Devices combobox updated.");
     }
 
     private void clearActiveDevice() {
@@ -500,32 +460,58 @@ public class Alces extends JFrame implements ActionListener {
         deviceStatusValue.setText("");
     }
 
+
     /**
-     * Sets which device to display device information about and to send messages to.
+     * Updates the active device.
      *
-     * @param idx the index of the device in the combobox
+     * @param deviceId The device id of the new active device.
      */
-    private void setActiveDevice(int idx) {
-        log.debug("Updating device info...");
-        JDFDeviceInfo deviceInfo = this.knownDevices.getDeviceInfo(idx);
-        JDFDevice device = deviceInfo.getDevice();
-        setDeviceStatus(deviceInfo);
-        deviceInfoTextArea.setText("");
-        deviceInfoTextArea.append("DeviceID: " + device.getDeviceID() + "\n");
-        deviceInfoTextArea.append("JMFSenderID: " + device.getJMFSenderID() + "\n");
-        deviceInfoTextArea.append("JMFURL: " + device.getJMFURL() + "\n");
-        deviceInfoTextArea.append("JDFVersions: " + device.getJDFVersions() + "\n");
-        deviceInfoTextArea.append("ICSVersions: " + device.getAttribute(AttributeName.ICSVERSIONS) + "\n");
-        deviceInfoTextArea.append("DescriptiveName: " + device.getDescriptiveName() + "\n");
-        deviceInfoTextArea.append("AgentName: " + device.getAgentName() + "\n");
-        deviceInfoTextArea.append("AgentVersion: " + device.getAgentVersion() + "\n");
-        deviceInfoTextArea.append("DeviceType: " + device.getDeviceType() + "\n");
-        deviceInfoTextArea.append("Manufacturer: " + device.getManufacturer() + "\n");
-        deviceInfoTextArea.append("ModelName: " + device.getModelName() + "\n");
-        deviceInfoTextArea.append("ModelNumber: " + device.getModelNumber() + "\n");
+    private void updateActiveDevice(String deviceId) {
+
+        // get device
+        JdfDevice jdfDevice = this.jdfController.getJdfDevices().stream()
+                .filter(it -> it.getDeviceId().equals(deviceId))
+                .findFirst()
+                .orElseThrow();
+
+        // update active device
+        this.activeJdfDevice = jdfDevice;
+
+        // build info string
+        String tplInfoText = """
+                DeviceID: %s
+                JMFSenderID: %s
+                JMFURL: %s
+                JDFVersions: %s
+                ICSVersions: %s
+                DescriptiveName: %s
+                AgentName: %s
+                AgentVersion: %s
+                DeviceType: %s
+                Manufacturer: %s
+                ModelName: %s
+                ModelNumber: %s
+                """;
+
+        // fill template
+        String infoText = String.format(tplInfoText,
+                jdfDevice.getDeviceId(),
+                jdfDevice.getJmfSenderId(),
+                jdfDevice.getJmfUrl(),
+                jdfDevice.getJdfVersions(),
+                jdfDevice.getIcsVerions(),
+                jdfDevice.getDescriptiveName(),
+                jdfDevice.getAgentName(),
+                jdfDevice.getAgentVersion(),
+                jdfDevice.getDeviceType(),
+                jdfDevice.getManufacturer(),
+                jdfDevice.getModelName(),
+                jdfDevice.getModelNumber()
+        );
+
+        // update text area
+        deviceInfoTextArea.setText(infoText);
         deviceInfoTextArea.setCaretPosition(0);
-        deviceInfoTextArea.setEditable(false);
-        log.debug("Active device is now '" + device.getDeviceID() + "'.");
     }
 
     /**
@@ -534,7 +520,7 @@ public class Alces extends JFrame implements ActionListener {
     private JDFJMF sendKnownMessages() throws IOException {
 
         log.info("Sending KnownMessages...");
-        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createQueryKnownMessages(), getDeviceUrl());
+        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createKnownMessagesQuery(), getDeviceUrl());
         OutgoingJmfMessage outgoingJmfMessage = testSession.getOutgoingJmfMessages().get(0);
 
         int i = 0;
@@ -562,6 +548,59 @@ public class Alces extends JFrame implements ActionListener {
     private void clearMessageButtons() {
         log.debug("Clearing message buttons...");
         messagesPanel.removeAll();
+    }
+
+    /**
+     * Update jdf message services.
+     */
+    private void updateJdfMessageServices() {
+
+        // get supported messages
+        List<JdfMessageService> jdfMessageServices = jdfController.getJdfMessageServices();
+
+        // create buttons
+        jdfMessageServices.forEach(jdfMessageService -> {
+            JButton button;
+
+            // make the button JMF type specific
+            switch (jdfMessageService.getType()) {
+                case "Status":
+
+                    // status
+                    button = createButton("Status");
+                    button.addActionListener(e -> {
+                        testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), activeJdfDevice.getJmfUrl());
+                    });
+                    messagesPanel.add(button);
+
+                    // status subscription
+                    button = createButton("Status Subscription");
+                    button.addActionListener(e -> {
+                        testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), activeJdfDevice.getJmfUrl());
+                    });
+                    messagesPanel.add(button);
+
+                    break;
+
+                default:
+                    break;
+            }
+
+        });
+
+    }
+
+    /**
+     * Helper method to create a raw message button for further customization.
+     *
+     * @param text the text on the button, should be the message's type
+     * @return The raw message button
+     */
+    private JButton createButton(String text) {
+        JButton button = new JButton(text);
+        button.setHorizontalAlignment(SwingConstants.LEFT);
+        button.setMaximumSize(new Dimension(Short.MAX_VALUE, button.getPreferredSize().height));
+        return button;
     }
 
     /**
@@ -750,7 +789,7 @@ public class Alces extends JFrame implements ActionListener {
     }
 
     /**
-     * Updates the devices status in the GUI
+     * TBD Updates the devices status in the GUI
      *
      * @param deviceInfo the DeviceInfo to update the GUI with
      */
@@ -781,11 +820,11 @@ public class Alces extends JFrame implements ActionListener {
      * @see #connect()
      */
     private void cancelConnect() {
-        connectButton.setEnabled(false);
-        connectThread.cancel();
-        connectButton.setText("Connect");
-        connectButton.setActionCommand(Alces.ACTION_CONNECT);
-        connectButton.setEnabled(true);
+//        connectButton.setEnabled(false);
+//        connectThread.cancel();
+//        connectButton.setText("Connect");
+//        connectButton.setActionCommand(Alces.ACTION_CONNECT);
+//        connectButton.setEnabled(true);
     }
 
     /**
@@ -800,76 +839,90 @@ public class Alces extends JFrame implements ActionListener {
      * @see #cancelConnect()
      */
     private synchronized void connect() {
-        log.debug("Connecting...");
 
-        connectButton.setText("Cancel");
-        connectButton.setActionCommand(Alces.ACTION_CONNECT_CANCEL);
-
-        // Cleanup
+        // clean up
         clearMessageButtons();
         clearKnownDevices();
         clearActiveDevice();
         queuePanel.clearQueue();
 
-        // Create connect thread
-        connectThread = new ConnectThread() {
-            private boolean cancel = false;
+        // discover target url (controller)
+        JdfController jdfController = discoveryService.discover(getDeviceUrl());
+        this.jdfController = jdfController;
 
-            @Override
-            void cancel() {
-                cancel = true;
-            }
+        updateJdfDevices();
+        updateJdfMessageServices();
 
-            @Override
-            public void run() {
-
-                // Send JMF handshake
-                try {
-                    if (cancel)
-                        return;
-                    JDFJMF knownDevicesResponse = sendKnownDevices();
-                    JDFJMF knownMessagesResponse = sendKnownMessages();
-                    if (cancel)
-                        return;
-                    if (cancel)
-                        return;
-                    setKnownDevices(knownDevicesResponse);
-                    // Update queue
-                    JDFJMF queueStatusResponse = sendQueueStatus();
-                    processReceivedJMF(queueStatusResponse);
-                    buildMessageButtons(knownMessagesResponse);
-                } catch (UnknownHostException e) {
-                    log.error("Could not connect to device.", e);
-                    String msg = "The device's hostname '" + e.getMessage() + "' could not\n" + "be found. Make sure that the entered device URL is correct.";
-                    JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
-                } catch (IOException e) {
-                    if (cancel)
-                        return;
-                    log.error("Could not connect to device.", e);
-                    String msg = "The device did not respond correctly to the JMF handshake.\n" + "You can still try sending JMF to the device URL using\n" + "the buttons to the left.";
-                    JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
-                    buildMessageButtons(null);
-                } catch (Exception e) {
-                    if (cancel)
-                        return;
-                    log.error("Could not connect to device.", e);
-                    String msg = "An unexpected error occured while connecting to the device.\n" + "You can still try sending JMF to the device URL using\n" + "the buttons to the left.";
-                    JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
-                    buildMessageButtons(null);
-                } finally {
-                    connectButton.setText("Connect");
-                    connectButton.setActionCommand(Alces.ACTION_CONNECT);
-                    connectButton.setEnabled(true);
-                    if (cancel) {
-                        log.debug("Connecting cancelled. [Thread: " + hashCode() + "]");
-                    } else {
-                        log.debug("Connecting done. [Thread: " + hashCode() + "]");
-                    }
-                }
-            }
-        };
-        connectThread.start();
-        log.debug("Connected.");
+//        log.debug("Connecting...");
+//
+//        connectButton.setText("Cancel");
+//        connectButton.setActionCommand(Alces.ACTION_CONNECT_CANCEL);
+//
+//        // Cleanup
+//        clearMessageButtons();
+//        clearKnownDevices();
+//        clearActiveDevice();
+//        queuePanel.clearQueue();
+//
+//        // Create connect thread
+//        connectThread = new ConnectThread() {
+//            private boolean cancel = false;
+//
+//            @Override
+//            void cancel() {
+//                cancel = true;
+//            }
+//
+//            @Override
+//            public void run() {
+//
+//                // Send JMF handshake
+//                try {
+//                    if (cancel)
+//                        return;
+//                    JDFJMF knownDevicesResponse = sendKnownDevices();
+//                    JDFJMF knownMessagesResponse = sendKnownMessages();
+//                    if (cancel)
+//                        return;
+//                    if (cancel)
+//                        return;
+//                    setKnownDevices(knownDevicesResponse);
+//                    // Update queue
+//                    JDFJMF queueStatusResponse = sendQueueStatus();
+//                    processReceivedJMF(queueStatusResponse);
+//                    buildMessageButtons(knownMessagesResponse);
+//                } catch (UnknownHostException e) {
+//                    log.error("Could not connect to device.", e);
+//                    String msg = "The device's hostname '" + e.getMessage() + "' could not\n" + "be found. Make sure that the entered device URL is correct.";
+//                    JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
+//                } catch (IOException e) {
+//                    if (cancel)
+//                        return;
+//                    log.error("Could not connect to device.", e);
+//                    String msg = "The device did not respond correctly to the JMF handshake.\n" + "You can still try sending JMF to the device URL using\n" + "the buttons to the left.";
+//                    JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
+//                    buildMessageButtons(null);
+//                } catch (Exception e) {
+//                    if (cancel)
+//                        return;
+//                    log.error("Could not connect to device.", e);
+//                    String msg = "An unexpected error occured while connecting to the device.\n" + "You can still try sending JMF to the device URL using\n" + "the buttons to the left.";
+//                    JOptionPane.showMessageDialog(Alces.this, msg, "Could Not Connect", JOptionPane.WARNING_MESSAGE);
+//                    buildMessageButtons(null);
+//                } finally {
+//                    connectButton.setText("Connect");
+//                    connectButton.setActionCommand(Alces.ACTION_CONNECT);
+//                    connectButton.setEnabled(true);
+//                    if (cancel) {
+//                        log.debug("Connecting cancelled. [Thread: " + hashCode() + "]");
+//                    } else {
+//                        log.debug("Connecting done. [Thread: " + hashCode() + "]");
+//                    }
+//                }
+//            }
+//        };
+//        connectThread.start();
+//        log.debug("Connected.");
     }
 
     /**
@@ -1053,7 +1106,7 @@ public class Alces extends JFrame implements ActionListener {
                     OutgoingJmfMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
                     testRunnerService.startTestSession(message, getDeviceUrl());
                 } else {
-                    testRunnerService.startTestSession(jmfMessageService.createQueryStatus(), getDeviceUrl());
+                    testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), getDeviceUrl());
                 }
                 break;
 
@@ -1074,13 +1127,6 @@ public class Alces extends JFrame implements ActionListener {
                 processReceivedJMF(jmf);
                 break;
 
-            case ACTION_SELECT_DEVICE:
-                final int idx = ((JComboBox) e.getSource()).getSelectedIndex();
-                if (idx != -1) {
-                    setActiveDevice(idx);
-                }
-                break;
-
             default:
                 testRunnerService.startTestSession(createMessage(actionCommand), getDeviceUrl());
                 break;
@@ -1095,7 +1141,6 @@ public class Alces extends JFrame implements ActionListener {
         new SettingsDialog(this, "Settings");
         setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion() + "  -  " + settingsService.getServerJmfUrl());
     }
-
 
 
     /**

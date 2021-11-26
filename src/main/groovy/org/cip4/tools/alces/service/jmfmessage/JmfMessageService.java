@@ -9,23 +9,30 @@ public interface JmfMessageService {
      * Create a query status jmf message.
      * @return The QueryStatus JMF Message.
      */
-    String createQueryStatus();
+    String createStatusQuery();
+
+    /**
+     * Create a status subscription jmf message.
+     * @param subscriberUrl The subscribers url.
+     * @return The Status Subscription JMF Message.
+     */
+    String createStatusSubscription(String subscriberUrl);
 
     /**
      * Create a query queue status jmf message.
      * @return The QueryQueueStatus JMF Message.
      */
-    String createQueryQueueStatus();
+    String createQueueStatusQuery();
 
     /**
      * Create a query known devices jmf message.
      * @return The QueryKnownDevices JMF Message.
      */
-    String createQueryKnownDevices();
+    String createKnownDevicesQuery();
 
     /**
      * Create a query known messages jmf message.
      * @return The QueryKnownMessages JMF Message.
      */
-    String createQueryKnownMessages();
+    String createKnownMessagesQuery();
 }

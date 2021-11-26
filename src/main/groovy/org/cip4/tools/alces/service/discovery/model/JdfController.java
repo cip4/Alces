@@ -7,20 +7,23 @@ import java.util.List;
  */
 public class JdfController {
 
-    List<JdfDevice> jdfDevices;
+    final List<JdfDevice> jdfDevices;
+
+    final List<JdfMessageService> jdfMessageServices;
 
     /**
-     * Default constructor.
+     * Custom constructor.
      */
-    public JdfController() {
-
+    public JdfController(List<JdfDevice> jdfDevices, List<JdfMessageService> jdfMessageServices) {
+        this.jdfDevices = jdfDevices;
+        this.jdfMessageServices = jdfMessageServices;
     }
 
     public List<JdfDevice> getJdfDevices() {
         return jdfDevices;
     }
 
-    public void setJdfDevices(List<JdfDevice> jdfDevices) {
-        this.jdfDevices = jdfDevices;
+    public List<JdfMessageService> getJdfMessageServices() {
+        return jdfMessageServices;
     }
 }
