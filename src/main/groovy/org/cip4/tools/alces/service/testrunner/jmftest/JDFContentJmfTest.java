@@ -6,7 +6,6 @@ package org.cip4.tools.alces.service.testrunner.jmftest;
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
-import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.JDFConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

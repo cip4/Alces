@@ -23,20 +23,6 @@ public interface SettingsService {
     String getProp(String key);
 
     /**
-     * Configures Tests that will be run on all incoming messages during a test session.
-     *
-     * @param session the TestSession to add the incoming Tests to.
-     */
-    void configureIncomingTests(TestSession session);
-
-    /**
-     * Configures Tests that will be run on all outgoing messages during a test session.
-     *
-     * @param session the TestSession to add the outgoing Tests to
-     */
-    void configureOutgoingTests(TestSession session);
-
-    /**
      * Returns the URL used for receiving JMF messages. The URL is built from the hostname, port, and context properties.
      *
      * @return the server URL, for example http://localhost:9090/alces/jmf
@@ -65,22 +51,6 @@ public interface SettingsService {
     Properties getPropFile();
 
     /**
-     * Returns a map of the configured incoming <code>Test</code>s.
-     *
-     * @return A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code> "true" if the
-     * <code>Test</code> is enabled, "false" if it is disabled.
-     */
-    Map<String, Boolean> getIncomingTestConfig();
-
-    /**
-     * Returns a map of the configured outgoing <code>Test</code>s.
-     *
-     * @return A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code> "true" if the
-     * <code>Test</code> is enabled, "false" if it is disabled.
-     */
-    Map<String, Boolean> getOutgoingTestConfig();
-
-    /**
      * Storing of altered properties
      *
      * @param key
@@ -94,22 +64,6 @@ public interface SettingsService {
      * @return
      */
     Map<String, String> getGeneralPrefs();
-
-    /**
-     * Sets the incoming <code>Test</code> configuration.
-     *
-     * @param testConfig A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code>
-     * "true" if the <code>Test</code> is enabled, "false" if it is disabled.
-     */
-    void setIncomingTestConfig(Map<String, Boolean> testConfig);
-
-    /**
-     * Sets the outgoing <code>Test</code> configuration.
-     *
-     * @param testConfig A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code>
-     * "true" if the <code>Test</code> is enabled, "false" if it is disabled.
-     */
-    void setOutgoingTestConfig(Map<String, Boolean> testConfig);
 
     void setPreferences(Map<String, String> generalPrefs);
 

@@ -9,3 +9,7 @@ server:
 spring:
   main:
     banner-mode: off
+
+logging:
+  level:
+    org.cip4.jdflib: off

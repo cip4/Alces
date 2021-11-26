@@ -1,18 +1,21 @@
 package org.cip4.tools.alces.service.testrunner.model;
 
 import org.cip4.tools.alces.service.testrunner.jmftest.JmfTest;
-import org.cip4.tools.alces.service.testrunner.tests.Test;
 
 /**
  * Test result model object.
  */
 public class TestResult {
 
-    private final String resultString;
     private final Result result;
+    private final String resultBody;
+
     private final AbstractJmfMessage message;
     private final JmfTest jmfTest;
 
+    /**
+     * Enum representing the test results.
+     */
     public enum Result {
         PASSED, FAILED, IGNORED;
     }
@@ -22,17 +25,17 @@ public class TestResult {
      * @param jmfTest The test which has been applied.
      * @param message The JMF Message.
      * @param result The machine-readable test result.
-     * @param resultString the human-readable test result.
+     * @param resultBody the human-readable test result body.
      */
-    public TestResult(JmfTest jmfTest, AbstractJmfMessage message, Result result, String resultString) {
+    public TestResult(JmfTest jmfTest, AbstractJmfMessage message, Result result, String resultBody) {
         this.jmfTest = jmfTest;
         this.message = message;
         this.result= result;
-        this.resultString = resultString;
+        this.resultBody = resultBody;
     }
 
-    public String getResultString() {
-        return resultString;
+    public String getResultBody() {
+        return resultBody;
     }
 
     public Result getResult() {

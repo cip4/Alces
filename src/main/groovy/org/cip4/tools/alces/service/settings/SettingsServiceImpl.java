@@ -20,11 +20,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.service.about.AboutService;
-import org.cip4.tools.alces.service.testrunner.model.TestSession;
-import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.AlcesPathUtil;
-import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -48,10 +44,6 @@ public class SettingsServiceImpl implements SettingsService {
 	private Map<String, Boolean> _incomingTestsConfig = null;
 
 	private Map<String, Boolean> _outgoingTestsConfig = null;
-
-	private Test[] _incomingTests = null;
-
-	private Test[] _outgoingTests = null;
 
 	private Map<String, Boolean> _jmfPreprocessorsConfig = null;
 
@@ -246,7 +238,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 * @param propsFile the Java Properties File to load the configuration from
 	 * @return the loaded Properties
 	 */
-	public synchronized Properties loadConfiguration(String propsFile) {
+	private synchronized Properties loadConfiguration(String propsFile) {
 		return loadConfiguration(new File(propsFile));
 	}
 
@@ -255,9 +247,8 @@ public class SettingsServiceImpl implements SettingsService {
 	 * 
 	 * @param propsFile the Java Properties File to load the configuration from
 	 * @return the loaded Properties
-	 * @throws FileNotFoundException
 	 */
-	public synchronized Properties loadConfiguration(File propsFile) {
+	private synchronized Properties loadConfiguration(File propsFile) {
 		log.info("Loading configuration from '" + propsFile.getAbsolutePath() + "'...");
 		Properties props = new Properties(_props);
 
@@ -287,7 +278,6 @@ public class SettingsServiceImpl implements SettingsService {
 		log.info("Configuration loaded.");
 		_props = props;
 
-		loadAndInitTests();
 		loadAndInitPreprocessors();
 		_generalPrefs = new HashMap<String, String>();
 		_generalPrefs.put(JDF_PATH, getProp(JDF_PATH));
@@ -297,19 +287,11 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	/**
-	 * Returns the sender ID.
-	 * @return The sender ID.
-     */
-	public static String getSenderId() {
-		AboutService aboutService = ApplicationContextUtil.getBean(AboutService.class);
-		return aboutService.getAppName() + " " + aboutService.getAppVersion();
-	}
-
-	/**
 	 * Returns the URL used for receiving JMF messages. The URL is built from the hostname, port, and context properties.
 	 * 
 	 * @return the server URL, for example http://localhost:9090/alces/jmf
 	 */
+	@Override
 	public String getServerJmfUrl() {
 		return "http://" + getServerHost() + ":" + getServerPort() + getServerJmfContextPath();
 	}
@@ -317,7 +299,7 @@ public class SettingsServiceImpl implements SettingsService {
 	/**
 	 * @return the test server's port
 	 */
-	public int getServerPort() {
+	private int getServerPort() {
 		int port;
 		try {
 			port = Integer.parseInt(getProp(SettingsServiceImpl.PORT));
@@ -331,37 +313,15 @@ public class SettingsServiceImpl implements SettingsService {
 	/**
 	 * @return the test server's hostname/IP.
 	 */
-	public String getServerHost() {
+	private String getServerHost() {
 		return getProp(SettingsServiceImpl.HOST);
 	}
 
 	/**
 	 * @return the server's JMF context path.
 	 */
-	public String getServerJmfContextPath() {
+	private String getServerJmfContextPath() {
 		return getProp(SettingsServiceImpl.CONTEXT_PATH);
-	}
-
-	/**
-	 * Configures <code>Test</code>s that will be run on all incoming messages during a test session.
-	 * 
-	 * @param testSession the <code>TestSession</code> to add the incoming <code>Test</code>s to
-	 */
-	public void configureIncomingTests(TestSession testSession) {
-		for (int i = 0; i < _incomingTests.length; i++) {
-			testSession.getInTests().add(_incomingTests[i]);
-		}
-	}
-
-	/**
-	 * Configures <code>Test</code>s that will be run on all outgoing messages during a test session.
-	 * 
-	 * @param testSession the <code>TestSession</code> to add the outgoing <code>Test</code>s to
-	 */
-	public void configureOutgoingTests(TestSession testSession) {
-		for (int i = 0; i < _outgoingTests.length; i++) {
-			testSession.getOutTests().add(_outgoingTests[i]);
-		}
 	}
 
 	/**
@@ -373,6 +333,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 * @param testPaneWidth
 	 * @param mainPaneHeight
 	 */
+	@Override
 	public void saveConfiguration(int windowWidth, int windowHeight, int devicePaneWidth, int testPaneWidth, int mainPaneHeight) {
 		log.info("Saving configuration to '" + _props.getProperty(PROPERTIES_FILE).toString() + "'...");
 
@@ -382,12 +343,6 @@ public class SettingsServiceImpl implements SettingsService {
 		_props.put(DEVICE_WIDTH, devicePaneWidth + "");
 		_props.put(TEST_WIDTH, testPaneWidth + "");
 		_props.put(MAIN_HEIGHT, mainPaneHeight + "");
-
-		// Saving Preprocessor and Test configuration
-		_props.put(JMF_PREPROCESSORS, buildConfigProperty(_jmfPreprocessorsConfig));
-		_props.put(JDF_PREPROCESSORS, buildConfigProperty(_jdfPreprocessorsConfig));
-		_props.put(INCOMING_TESTS, buildConfigProperty(_incomingTestsConfig));
-		_props.put(OUTGOING_TESTS, buildConfigProperty(_outgoingTestsConfig));
 
 		// Saving Path settings for JDF- and JMF-Files
 		_props.put(JMF_PATH, _generalPrefs.get("alces.context.jmf.path").toString());
@@ -403,50 +358,11 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	/**
-	 * Returns a map of the configured incoming <code>Test</code>s.
-	 * 
-	 * @return A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code> "true" if the
-	 * <code>Test</code> is enabled, "false" if it is disabled.
-	 */
-	public Map<String, Boolean> getIncomingTestConfig() {
-		return _incomingTestsConfig;
-	}
-
-	/**
-	 * Returns a map of the configured outgoing <code>Test</code>s.
-	 * 
-	 * @return A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code> "true" if the
-	 * <code>Test</code> is enabled, "false" if it is disabled.
-	 */
-	public Map<String, Boolean> getOutgoingTestConfig() {
-		return _outgoingTestsConfig;
-	}
-
-	/**
-	 * Returns a map of the configured <code>Preprocessor</code>s.
-	 * 
-	 * @return A map where keys are the fully qualified classnames of the configured <code>Preprocessor</code> classes; values are the <code>String</code>
-	 * "true" if the <code>Preprocessor</code> is enabled, "false" if it is disabled.
-	 */
-	public Map<String, Boolean> getJMFPreprocessorConfig() {
-		return _jmfPreprocessorsConfig;
-	}
-
-	/**
-	 * Returns a map of the configured <code>JDFPreprocessor</code>s.
-	 * 
-	 * @return A map where keys are the fully qualified classnames of the configured <code>JDFPreprocessor</code> classes; values are the <code>String</code>
-	 * "true" if the <code>JDFPreprocessor</code> is enabled, "false" if it is disabled.
-	 */
-	public Map<String, Boolean> getJDFPreprocessorConfig() {
-		return _jdfPreprocessorsConfig;
-	}
-
-	/**
 	 * Returns an array of the currently enabled <code>Preprocessor</code>s.
 	 * 
 	 * @return a map of <code>Preprocessor</code>s
 	 */
+	@Override
 	public Preprocessor[] getJMFPreprocessors() {
 		return _jmfPreprocessors;
 	}
@@ -456,32 +372,17 @@ public class SettingsServiceImpl implements SettingsService {
 	 * 
 	 * @return a map of <code>Preprocessor</code>s
 	 */
+	@Override
 	public JDFPreprocessor[] getJDFPreprocessors() {
 		return _jdfPreprocessors;
 	}
 
-	private String buildConfigProperty(Map<String, Boolean> tests) {
-		// Saving outgoing test preferences
-		final StringBuffer testsOut = new StringBuffer();
-		for (String testName : tests.keySet()) {
-			Boolean testEnabled = tests.get(testName);
-			testsOut.append(testName).append(";").append(testEnabled).append(",");
-		}
-		return testsOut.toString();
-	}
 
 	private void loadAndInitPreprocessors() {
 		_jmfPreprocessorsConfig = parseConfigProperty(getProp(JMF_PREPROCESSORS));
 		_jdfPreprocessorsConfig = parseConfigProperty(getProp(JDF_PREPROCESSORS));
 		initJMFPreprocessors();
 		initJDFPreprocessors();
-	}
-
-	private void loadAndInitTests() {
-		_incomingTestsConfig = parseConfigProperty(_props.getProperty(INCOMING_TESTS));
-		initIncomingTests();
-		_outgoingTestsConfig = parseConfigProperty(_props.getProperty(OUTGOING_TESTS));
-		initOutgoingTests();
 	}
 
 	private void initJMFPreprocessors() {
@@ -541,14 +442,6 @@ public class SettingsServiceImpl implements SettingsService {
 		_jdfPreprocessors = pps.toArray(new JDFPreprocessor[pps.size()]);
 	}
 
-	private void initIncomingTests() {
-		_incomingTests = initTests(_incomingTestsConfig);
-	}
-
-	private void initOutgoingTests() {
-		_outgoingTests = initTests(_outgoingTestsConfig);
-	}
-
 	/**
 	 * Parses a configuration string of comma-separated elements on the format: CLASSNAME;ENABLED
 	 */
@@ -569,69 +462,12 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	/**
-	 * Instantiates <code>Test</code> objects based on the configuration. Only <code>Test</code>s that are enabled are instantiated.
-	 * 
-	 * @param testConfig The test configuration. Keys are fully qualified classnames of the classes of type <code>Test</code> to initialize. Values are the
-	 * <code>String</code> "true" if the <code>Test</code> is enabled and should be instantiated, "false" if the <code>Test</code> is disabled.
-	 * @return an array of instantiated objects of enabled <code>Test</code>s
-	 */
-	private Test[] initTests(Map<String, Boolean> testConfig) {
-		// Instantiate and cache tests
-		final List<Test> tests = new ArrayList<Test>();
-		for (String testName : testConfig.keySet()) {
-			final boolean testEnabled = testConfig.get(testName);
-			if (testEnabled) {
-
-				// adapt to new package structure
-				testName = testName.replace("org.cip4.tools.alces.test.tests", "org.cip4.tools.alces.service.testrunner.tests");
-
-				try {
-					Test test = (Test) Class.forName(testName).newInstance();
-					tests.add(test);
-					log.debug("Configured test: " + testName);
-				} catch (ClassNotFoundException cnfe) {
-					log.error("Could not find test class: " + testName, cnfe);
-				} catch (IllegalAccessException iae) {
-					log.error("Could not instantiate test class: " + testName, iae);
-				} catch (InstantiationException ie) {
-					log.error("Could not instantiate test class: " + testName, ie);
-				} catch (ClassCastException cce) {
-					log.error("Could not add test class because it was of incorrect type: " + testName, cce);
-				}
-			}
-		}
-		return tests.toArray(new Test[tests.size()]);
-	}
-
-	/**
-	 * Sets the incoming <code>Test</code> configuration.
-	 * 
-	 * @param testConfig A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code>
-	 * "true" if the <code>Test</code> is enabled, "false" if it is disabled.
-	 */
-	public void setIncomingTestConfig(Map<String, Boolean> testConfig) {
-		_incomingTestsConfig = testConfig;
-		initIncomingTests();
-	}
-
-	/**
-	 * Sets the outgoing <code>Test</code> configuration.
-	 * 
-	 * @param testConfig A map where keys are the fully qualified classnames of the configured <code>Test</code> classes; values are the <code>String</code>
-	 * "true" if the <code>Test</code> is enabled, "false" if it is disabled.
-	 */
-	public void setOutgoingTestConfig(Map<String, Boolean> testConfig) {
-		_outgoingTestsConfig = testConfig;
-		initOutgoingTests();
-	}
-
-	/**
 	 * Sets the <code>Preprocessor</code> configuration.
 	 * 
 	 * @param ppConfig A map where keys are the fully qualified classnames of the configured <code>Preprocessor</code> classes; values are the
 	 * <code>String</code> "true" if the <code>Preprocessor</code> is enabled, "false" if it is disabled.
 	 */
-	public void setJMFPreprocessorConfig(Map<String, Boolean> ppConfig) {
+	private void setJMFPreprocessorConfig(Map<String, Boolean> ppConfig) {
 		_jmfPreprocessorsConfig = ppConfig;
 		initJMFPreprocessors();
 	}
@@ -642,11 +478,12 @@ public class SettingsServiceImpl implements SettingsService {
 	 * @param ppConfig A map where keys are the fully qualified classnames of the configured <code>JDFPreprocessor</code> classes; values are the
 	 * <code>String</code> "true" if the <code>JDFPreprocessor</code> is enabled, "false" if it is disabled.
 	 */
-	public void setJDFPreprocessorConfig(Map<String, Boolean> ppConfig) {
+	private void setJDFPreprocessorConfig(Map<String, Boolean> ppConfig) {
 		_jdfPreprocessorsConfig = ppConfig;
 		initJDFPreprocessors();
 	}
 
+	@Override
 	public void setPreferences(Map<String, String> generalPrefs) {
 		_generalPrefs = generalPrefs;
 	}
@@ -656,6 +493,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 * 
 	 * @return
 	 */
+	@Override
 	public String[] loadHistory() {
 		log.debug("Loading history...");
 		String addressHistory = getProp(ADRESS_HISTORY);
@@ -667,6 +505,7 @@ public class SettingsServiceImpl implements SettingsService {
 	/**
 	 * Saves the address history and finds duplicate HTTP-Adresses and remove them before saving
 	 */
+	@Override
 	public void saveHistory(ComboBoxModel adresses) {
 		log.debug("Saving history...");
 
@@ -708,6 +547,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 * @param key
 	 * @return
 	 */
+	@Override
 	public String getProp(String key) {
 		log.debug("Looking up property with key: " + key);
 
@@ -720,6 +560,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 * @param key
 	 * @param value
 	 */
+	@Override
 	public void putProp(String key, String value) {
 		_props.put(key, value);
 
@@ -730,6 +571,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Properties getPropFile() {
 		return _props;
 
@@ -740,6 +582,7 @@ public class SettingsServiceImpl implements SettingsService {
 	 * 
 	 * @return
 	 */
+	@Override
 	public Map<String, String> getGeneralPrefs() {
 
 		return _generalPrefs;

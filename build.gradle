@@ -58,8 +58,6 @@ dependencies {
     implementation 'commons-vfs:commons-vfs:1.0'
     implementation 'org.mozilla:rhino:1.7.13'
     implementation 'jaxen:jaxen:1.2.0'
-    // workaround until https://github.com/cip4/JDFLibJ/commit/baf7a5013c57a7d9f81c15317c3ee087b3fc3561 is released
-    implementation 'log4j:log4j:1.2.17'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }

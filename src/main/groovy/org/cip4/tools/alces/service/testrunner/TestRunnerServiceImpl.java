@@ -32,7 +32,6 @@ import org.cip4.tools.alces.preprocessor.jmf.URLPreprocessor;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.service.testrunner.jmftest.JmfTest;
-import org.cip4.tools.alces.service.testrunner.tests.Test;
 import org.cip4.tools.alces.util.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +62,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
     private List<TestSessionsListener> testSessionsListeners;
 
-    private List<TestSession> testSessions;
+    private final List<TestSession> testSessions;
 
     /**
      * Default constructor.
@@ -115,7 +114,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         testSession.getOutgoingJmfMessages().add(outgoingJmfMessage);
 
         // run outgoing tests on message and log results
-        runTests(testSession.getOutTests(), outgoingJmfMessage);
+        runTests(outgoingJmfMessage);
 
         // send message
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -169,10 +168,9 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
     /**
      * Runs tests on a message and writes the test results to the message object.
-     * @param tests List of test to be applied (legacy approach)
      * @param jmfMessage the jmf message to be tested.
      */
-    private void runTests(List<Test> tests, AbstractJmfMessage jmfMessage) {
+    private void runTests(AbstractJmfMessage jmfMessage) {
 
         // filter tets
         List<JmfTest> jmfTests;
@@ -194,12 +192,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             TestResult result = jmfTest.runTest(jmfMessage);
             jmfMessage.getTestResults().add(result);
         });
-
-        // legacy tests
-        for (Test test : tests) {
-            TestResult result = test.runTest(jmfMessage);
-            jmfMessage.getTestResults().add(result);
-        }
     }
 
     /**
@@ -235,23 +227,15 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
     private void receiveMessage(TestSession testSession, IncomingJmfMessage incomingJmfMessage, OutgoingJmfMessage outgoingJmfMessage) {
 
-//		if (testSession.getOutgoingMessages()outgoingJmfMessage.size() == 0 && inMessages.size() == 0) {
-//			message = inMessage;
-//		}
-
         testSession.getIncomingJmfMessages().add(incomingJmfMessage);
 
         // Run incoming tests on message
-        runTests(testSession.getInTests(), incomingJmfMessage); // Tests must be run before
+        runTests(incomingJmfMessage); // Tests must be run before
 
-        // adding InMessage to
-        // OutMessage
 
         if (outgoingJmfMessage != null) {
             outgoingJmfMessage.getIncomingJmfMessages().add(incomingJmfMessage);
         }
-
-        // notifyListeners(incomingJmfMessage, testSession);
     }
 
     /**
@@ -286,10 +270,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
             // Add TestSession to suite
             testSessions.add(testSession);
-
-            // Configure tests
-            settingsService.configureIncomingTests(testSession);
-            settingsService.configureOutgoingTests(testSession);
 
             // Add message to TestSession
             receiveMessage(testSession, incomingJmfMessage);
@@ -354,11 +334,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
     /**
      * Starts a new test session using the specified file as the test session's initiating outgoing message.
-     * <p>
-     * All outgoing messages sent and incoming messages received during a test session are tested by the {@link Test}s
-     * configured for this <code>TestRunner</code>.
-     * <p>
-     * All outgoing messages are preprocessed by the {@link org.cip4.tools.alces.preprocessor.jmf.Preprocessor}s configured for this <code>TestRunner</code>.
      *
      * @param testFile  a file containing the message that starts the test session, for example a JMF message or a MIME package
      * @param targetUrl the URL to send the outgoing message to
@@ -395,7 +370,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
         if (context != null) {
             // Preprocess message
-            context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, SettingsServiceImpl.getSenderId());
+            context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, "ALCES");
             context.addAttribute(URLPreprocessor.URL_ATTR, settingsService.getServerJmfUrl());
             boolean mjmDetected = outgoingJmfMessage.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
             if (mjmDetected) {
@@ -420,10 +395,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             log.debug("Configuring test session...");
             final TestSession testSession = new TestSession(targetUrl, outgoingJmfMessage);
             testSessions.add(testSession);
-
-            // Configure tests
-            settingsService.configureIncomingTests(testSession);
-            settingsService.configureOutgoingTests(testSession);
 
             // Send message
             log.debug("Starting test session and sending message...");
@@ -531,7 +502,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
      */
     private IncomingJmfMessage sendMessage(OutgoingJmfMessage message, String targetUrl) throws IOException {
         PreprocessorContext context = new PreprocessorContext();
-        context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, SettingsServiceImpl.getSenderId());
+        context.addAttribute(SenderIDPreprocessor.SENDERID_ATTR, "ALCES");
         boolean mjmDetected = message.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE);
         if (mjmDetected) {
             preprocessMIME(message, context);

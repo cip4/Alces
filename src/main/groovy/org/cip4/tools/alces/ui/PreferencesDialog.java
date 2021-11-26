@@ -169,53 +169,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		incomingLabel = new JLabel("Incoming Messages:");
 		incomingLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 10));
 		inPanel.add(incomingLabel);
-		// Load incoming tests from file
-		_prefIn = settingsService.getIncomingTestConfig();
-		Set inTestClasses = _prefIn.keySet();
-		for (Iterator i = inTestClasses.iterator(); i.hasNext();) {
-			final String testClass = (String) i.next();
-			String testClassName = testClass.substring(testClass.lastIndexOf(".") + 1);
-			boolean checked = _prefIn.get(testClass);
-			JCheckBox testCheck = new JCheckBox(testClassName, checked);
-			testCheck.addItemListener(new ItemListener() {
-				public void itemStateChanged(ItemEvent ie) {
-					if (ie.getStateChange() == ItemEvent.SELECTED) {
-						_prefIn.put(testClass, true);
-					} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-						_prefIn.put(testClass, false);
-					}
-				}
-			});
-			inPanel.add(testCheck);
-		}
-		validationPanel.add(inPanel, BorderLayout.WEST);
 
-		// Outgoing tests
-		JPanel outPanel = new JPanel();
-		outPanel.setLayout(new BoxLayout(outPanel, BoxLayout.PAGE_AXIS));
-		outgoingLabel = new JLabel("Outgoing Messages:");
-		outgoingLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 10));
-		outPanel.add(outgoingLabel);
-		// Load outgoing tests from file
-		_prefOut = new HashMap(settingsService.getOutgoingTestConfig());
-		Set outTestClasses = _prefOut.keySet();
-		for (Iterator i = outTestClasses.iterator(); i.hasNext();) {
-			final String testClass = (String) i.next();
-			String testClassName = testClass.substring(testClass.lastIndexOf(".") + 1);
-			boolean checked = _prefOut.get(testClass);
-			JCheckBox testCheck = new JCheckBox(testClassName, checked);
-			testCheck.addItemListener(new ItemListener() {
-				public void itemStateChanged(ItemEvent ie) {
-					if (ie.getStateChange() == ItemEvent.SELECTED) {
-						_prefOut.put(testClass, true);
-					} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-						_prefOut.put(testClass, false);
-					}
-				}
-			});
-			outPanel.add(testCheck);
-		}
-		validationPanel.add(outPanel, BorderLayout.EAST);
 
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
@@ -580,8 +534,6 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		if (e.getSource() == cancelButton) {
 			this.dispose();
 		} else if (e.getSource() == saveButton) {
-			settingsService.setIncomingTestConfig(_prefIn);
-			settingsService.setOutgoingTestConfig(_prefOut);
 			settingsService.setPreferences(adoptGeneralPrefs());
 
 			settingsService.putProp(SettingsServiceImpl.NO_CONTENT_TYPE, "" + noContentTypeCheckBox.isSelected());

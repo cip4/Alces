@@ -39,13 +39,14 @@ import org.cip4.jdflib.resource.JDFDeviceList;
 import org.cip4.tools.alces.Application;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.jmf.JMFMessageFactory;
+import org.cip4.tools.alces.service.about.AboutService;
 import org.cip4.tools.alces.service.discovery.DiscoveryService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.ui.component.JRenderedTextArea;
+import org.cip4.tools.alces.ui.component.JContentRenderer;
 import org.cip4.tools.alces.ui.component.JTestSessionsTree;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
@@ -86,6 +87,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
     private static final Logger log = LoggerFactory.getLogger(Alces.class);
 
     private String deviceUrl;
+
+
+    @Autowired
+    private AboutService aboutService;
 
     @Autowired
     private DiscoveryService discoveryService;
@@ -158,7 +163,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
 
         // window configurations
         setIconImage(Toolkit.getDefaultToolkit().getImage(Alces.class.getResource("/org/cip4/tools/alces/alces.png")));
-        this.setTitle(SettingsServiceImpl.getSenderId() + "  -  " + settingsService.getServerJmfUrl());
+        this.setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion() + "  -  " + settingsService.getServerJmfUrl());
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
@@ -341,7 +346,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         testRunnerService.registerTestSuiteListener(jTestSessionsTree);
         jTestSessionsTree.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
-            sessionInfoScrollPane.setViewportView(new JRenderedTextArea(treeNode.getUserObject()));
+            sessionInfoScrollPane.setViewportView(JContentRenderer.newInstance(treeNode.getUserObject()));
         });
         sessionTree = jTestSessionsTree;
 
@@ -373,7 +378,7 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         sessionSplitPane.add(infoQueueSplitPane, JSplitPane.RIGHT);
 
         sessionInfoScrollPane = new JScrollPane();
-        sessionInfoScrollPane.setViewportView(new JRenderedTextArea());
+        sessionInfoScrollPane.setViewportView(JContentRenderer.newInstance());
         infoQueueSplitPane.add(sessionInfoScrollPane, JSplitPane.TOP);
 
         queuePanel = new QueuePanel(this);
@@ -1205,8 +1210,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
      * Show the preferences dialog.
      */
     private void showPreferencesDialog() {
+
+
         new PreferencesDialog(this, "Preferences");
-        setTitle(SettingsServiceImpl.getSenderId() + "  -  " + settingsService.getServerJmfUrl());
+        setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion() + "  -  " + settingsService.getServerJmfUrl());
     }
 
     // ----------------------------------------------------------------

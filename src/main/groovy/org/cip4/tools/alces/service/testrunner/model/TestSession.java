@@ -3,8 +3,6 @@ package org.cip4.tools.alces.service.testrunner.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.cip4.tools.alces.service.testrunner.tests.Test;
-
 /**
  * Test session model object.
  */
@@ -15,10 +13,6 @@ public class TestSession {
 	private final List<OutgoingJmfMessage> outgoingJmfMessages;
 
 	private final List<IncomingJmfMessage> incomingJmfMessages;
-
-	private final List<Test> outTests;
-
-	private final List<Test> inTests;
 
 	private final AbstractJmfMessage initializingJmfMessage;
 
@@ -31,8 +25,6 @@ public class TestSession {
 		this.initializingJmfMessage = initializingJmfMessage;
 		this.outgoingJmfMessages = new ArrayList<>();
 		this.incomingJmfMessages = new ArrayList<>();
-		this.outTests = new ArrayList<>();
-		this.inTests = new ArrayList<>();
 	}
 
 	public String getTargetUrl() {
@@ -45,14 +37,6 @@ public class TestSession {
 
 	public List<IncomingJmfMessage> getIncomingJmfMessages() {
 		return incomingJmfMessages;
-	}
-
-	public List<Test> getOutTests() {
-		return outTests;
-	}
-
-	public List<Test> getInTests() {
-		return inTests;
 	}
 
 	public AbstractJmfMessage getInitializingJmfMessage() {
