@@ -1,5 +1,5 @@
 app:
-  name: Alces
+  name: CIP4 Alces
   version: @version@
   buildtime: @timestamp@
 
@@ -9,3 +9,7 @@ server:
 spring:
   main:
     banner-mode: off
+
+logging:
+  level:
+    org.cip4.jdflib: off
