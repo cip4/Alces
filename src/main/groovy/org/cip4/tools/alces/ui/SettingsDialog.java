@@ -16,9 +16,7 @@ import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Enumeration;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -47,11 +45,9 @@ import org.slf4j.LoggerFactory;
 /**
  * Display the Preferences DiaLOGGER. To choose settings for validation
  */
-public class PreferencesDialog extends JDialog implements ActionListener {
+public class SettingsDialog extends JDialog implements ActionListener {
 
-	private static Logger log = LoggerFactory.getLogger(PreferencesDialog.class);
-
-	private JPanel validationPanel = null;
+	private static Logger log = LoggerFactory.getLogger(SettingsDialog.class);
 
 	private JPanel pathPanel = null;
 
@@ -59,12 +55,6 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 	 * Custom Panel represents Custom Settings only.
 	 */
 	private JPanel customPanel = null;
-
-	private JPanel mimePanel = null;
-
-	private JPanel messagePanel = null;
-
-	private JPanel batchPanel = null;
 
 	private JTabbedPane tabbedPane = null;
 
@@ -76,10 +66,6 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 
 	private JButton jmfPathButton = null;
 
-	private JLabel incomingLabel = null;
-
-	private JLabel outgoingLabel = null;
-
 	private JLabel jdfPathDesLabel = null;
 
 	private JLabel jmfPathDesLabel = null;
@@ -88,13 +74,7 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 
 	JTextField jmfPathField = null;
 
-	private Map<String, Boolean> _prefIn = null;
-
-	private Map<String, Boolean> _prefOut = null;
-
 	private Map _gerneralPrefs = null;
-
-	private Alces _owner = null;
 
 	private SettingsService settingsService;
 
@@ -108,29 +88,21 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 	private JCheckBox specificIpCheckBox = null;
 	private JComboBox ipComboBox = null;
 
-	private JTextField indentTextField;
-
-	private JTextField indentWidthTextField;
-
 	/**
 	 * Constructor for the Dialog
 	 * 
 	 * @param owner
 	 * @param title
 	 */
-	public PreferencesDialog(Alces owner, String title) {
+	public SettingsDialog(Alces owner, String title) {
 		super(owner, true);
 		settingsService = ApplicationContextUtil.getBean(SettingsService.class);
-		_owner = owner;
 
-		setTitle("Preferences");
+		setTitle("Settings");
 		tabbedPane = new JTabbedPane(JTabbedPane.TOP);
 		getContentPane().setLayout(new BorderLayout());
 		getContentPane().add(tabbedPane, BorderLayout.CENTER);
 		setSize(500, 300);
-
-		validationPanel = new JPanel();
-		validationPanel.setLayout(new BorderLayout());
 
 		pathPanel = new JPanel();
 		buildPathPanel();
@@ -139,37 +111,8 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		customPanel.setLayout(new BorderLayout());
 		buildCustomPanel();
 
-		mimePanel = new JPanel();
-		mimePanel.setLayout(new BorderLayout());
-		buildMimePanel();
-
-		messagePanel = new JPanel();
-		messagePanel.setLayout(new BorderLayout());
-		buildMessagePanel();
-
-		batchPanel = new JPanel();
-		batchPanel.setLayout(new BorderLayout());
-		buildBatchPanel();
-
-		tabbedPane.addTab("Validation", createIcon("/org/cip4/tools/alces/icons/test_pass.gif"), validationPanel, "");
-
-		tabbedPane.addTab("JMF Preprocessing", createIcon("/org/cip4/tools/alces/icons/test_pass.gif"), messagePanel, "");
-
-		tabbedPane.addTab("MIME Preprocessing", createIcon("/org/cip4/tools/alces/icons/test_pass.gif"), mimePanel, "");
-
 		tabbedPane.addTab("Directories", createIcon("/org/cip4/tools/alces/icons/jmf.gif"), pathPanel, "");
-
-		tabbedPane.addTab("Batch Mode", createIcon("/org/cip4/tools/alces/icons/test_pass.gif"), batchPanel, "");
-
 		tabbedPane.addTab("Advanced", createIcon("/org/cip4/tools/alces/icons/test_pass.gif"), customPanel, "");
-
-		// Incoming tests
-		JPanel inPanel = new JPanel();
-		inPanel.setLayout(new BoxLayout(inPanel, BoxLayout.PAGE_AXIS));
-		incomingLabel = new JLabel("Incoming Messages:");
-		incomingLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 10));
-		inPanel.add(incomingLabel);
-
 
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
@@ -260,13 +203,11 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 			fillWithIPAddress(ipComboBox);
 		}
 
-		specificIpCheckBox.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				if (specificIpCheckBox.isSelected()) {
-					fillWithIPAddresses(ipComboBox);
-				} else {
-					fillWithIPAddress(ipComboBox);
-				}
+		specificIpCheckBox.addActionListener(e -> {
+			if (specificIpCheckBox.isSelected()) {
+				fillWithIPAddresses(ipComboBox);
+			} else {
+				fillWithIPAddress(ipComboBox);
 			}
 		});
 		ipPanel.add(specificIpCheckBox, BorderLayout.NORTH);
@@ -340,164 +281,6 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		ipComboBox.setSelectedItem(settingsService.getProp(SettingsServiceImpl.HOST));
 	}
 
-	private void buildMimePanel() {
-		JPanel inPanel = new JPanel();
-		inPanel.setLayout(new BoxLayout(inPanel, BoxLayout.PAGE_AXIS));
-
-		// .MJM Panel
-		JPanel sendMjmMimeFilePanel = new JPanel();
-		sendMjmMimeFilePanel.setBorder(BorderFactory.createCompoundBorder(
-				BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 6, 6, 6), BorderFactory.createTitledBorder("Send .MJM MIME File")), BorderFactory.createEmptyBorder(0, 5, 5, 5)));
-		sendMjmMimeFilePanel.setLayout(new BorderLayout());
-
-		String mjmCheckedStr = settingsService.getProp(SettingsServiceImpl.MJM_MIME_FILE_PARSE);
-		boolean mjmChecked = Boolean.parseBoolean(mjmCheckedStr);
-		JCheckBox fileParsingCheck = new JCheckBox("Enable .MJM MIME file parsing", mjmChecked);
-		fileParsingCheck.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.MJM_MIME_FILE_PARSE, "true");
-				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-					settingsService.putProp(SettingsServiceImpl.MJM_MIME_FILE_PARSE, "false");
-				}
-			}
-		});
-
-		// Panel with MIME specific settings
-		JPanel mimeSettingsPanel = new JPanel(new GridLayout(3, 2));
-		JLabel contentTypeLabel = new JLabel("Content-Type");
-		JComboBox contentTypeComboBox = new JComboBox();
-		contentTypeComboBox.addItem("binary");
-		contentTypeComboBox.addItem("7bit");
-		contentTypeComboBox.addItem("quoted-printable");
-		contentTypeComboBox.setSelectedItem(settingsService.getProp(SettingsServiceImpl.MIME_CONTENT_TYPE));
-		contentTypeComboBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.MIME_CONTENT_TYPE, (String) ie.getItem());
-				}
-			}
-		});
-
-		JLabel indentLabel = new JLabel("XML indent");
-		indentTextField = new JTextField(settingsService.getProp(SettingsServiceImpl.MIME_INDENT));
-
-		JLabel indentWidthLabel = new JLabel("XML line width");
-		indentWidthTextField = new JTextField(settingsService.getProp(SettingsServiceImpl.MIME_LINE_WIDTH));
-
-		mimeSettingsPanel.add(contentTypeLabel);
-		mimeSettingsPanel.add(contentTypeComboBox);
-		mimeSettingsPanel.add(indentLabel);
-		mimeSettingsPanel.add(indentTextField);
-		mimeSettingsPanel.add(indentWidthLabel);
-		mimeSettingsPanel.add(indentWidthTextField);
-
-		sendMjmMimeFilePanel.add(fileParsingCheck, BorderLayout.NORTH);
-		sendMjmMimeFilePanel.add(mimeSettingsPanel, BorderLayout.CENTER);
-
-		inPanel.add(sendMjmMimeFilePanel);
-		mimePanel.add(inPanel);
-	}
-
-	private void buildMessagePanel() {
-		JPanel westPanel = new JPanel();
-		westPanel.setLayout(new BoxLayout(westPanel, BoxLayout.PAGE_AXIS));
-
-		boolean checked = false;
-
-		JLabel messageIdPreprocessorLabel = new JLabel("MessageIDPreprocessor:");
-		messageIdPreprocessorLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 5, 10));
-		westPanel.add(messageIdPreprocessorLabel);
-
-		checked = Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.UPDATE_MESSAGEID));
-		JCheckBox updateMessageIdCheckBox = new JCheckBox("Update Message-ID (Query@ID, Command@ID)", checked);
-		updateMessageIdCheckBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_MESSAGEID, "true");
-				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_MESSAGEID, "false");
-				}
-			}
-		});
-		westPanel.add(updateMessageIdCheckBox);
-
-		JLabel urlPreprocessorLabel = new JLabel("URLPreprocessor:");
-		urlPreprocessorLabel.setBorder(BorderFactory.createEmptyBorder(15, 0, 5, 10));
-		westPanel.add(urlPreprocessorLabel);
-
-		checked = Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.UPDATE_ACKNOWLEDGEURL));
-		JCheckBox updateAcknowledgeUrlCheckBox = new JCheckBox("Update AcknowledgeURL", checked);
-		updateAcknowledgeUrlCheckBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_ACKNOWLEDGEURL, "true");
-				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_ACKNOWLEDGEURL, "false");
-				}
-			}
-		});
-		westPanel.add(updateAcknowledgeUrlCheckBox);
-
-		checked = Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.UPDATE_RETURNURL));
-		JCheckBox updateReturnUrlCheckBox = new JCheckBox("Update ReturnURL", checked);
-		updateReturnUrlCheckBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_RETURNURL, "true");
-				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_RETURNURL, "false");
-				}
-			}
-		});
-		westPanel.add(updateReturnUrlCheckBox);
-
-		checked = Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.UPDATE_RETURNURL));
-		JCheckBox updateReturnJmfCheckBox = new JCheckBox("Update ReturnJMF", checked);
-		updateReturnJmfCheckBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_RETURNJMF, "true");
-				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_RETURNJMF, "false");
-				}
-			}
-		});
-		westPanel.add(updateReturnJmfCheckBox);
-
-		checked = Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.UPDATE_WATCHURL));
-		JCheckBox updateWatchUrlCheckBox = new JCheckBox("Update WatchURL", checked);
-		updateWatchUrlCheckBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_WATCHURL, "true");
-				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-					settingsService.putProp(SettingsServiceImpl.UPDATE_WATCHURL, "false");
-				}
-			}
-		});
-		westPanel.add(updateWatchUrlCheckBox);
-
-		messagePanel.add(westPanel, BorderLayout.WEST);
-	}
-
-	private void buildBatchPanel() {
-		JPanel panel = new JPanel();
-		String value = settingsService.getProp(SettingsServiceImpl.BATCHMODE_DELAYTONEXT_FILE);
-		final JSpinner s = new JSpinner();
-		s.setValue(Integer.parseInt(value));
-		s.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				settingsService.putProp(SettingsServiceImpl.BATCHMODE_DELAYTONEXT_FILE, "" + (Integer) s.getValue());
-			}
-		});
-		panel.add(s);
-
-		panel.add(new JLabel("Delay to next file, ms"));
-
-		batchPanel.add(panel);
-	}
-
 	private void getGeneralPrefs() {
 		_gerneralPrefs = settingsService.getGeneralPrefs();
 
@@ -523,7 +306,6 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 	 * @return _gerneralPrefs
 	 */
 	private Map adoptGeneralPrefs() {
-		_gerneralPrefs = null;
 		_gerneralPrefs = new HashMap();
 		_gerneralPrefs.put("alces.context.jdf.path", jdfPath.getPath());
 		_gerneralPrefs.put("alces.context.jmf.path", jmfPath.getPath());
@@ -540,9 +322,6 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 
 			settingsService.putProp(SettingsServiceImpl.USE_SPECIFIED_IP, "" + specificIpCheckBox.isSelected());
 			settingsService.putProp(SettingsServiceImpl.HOST, (String) ipComboBox.getSelectedItem());
-
-			settingsService.putProp(SettingsServiceImpl.MIME_INDENT, indentTextField.getText());
-			settingsService.putProp(SettingsServiceImpl.MIME_LINE_WIDTH, indentWidthTextField.getText());
 
 			this.dispose();
 		} else if (e.getSource() == jdfPathButton) {
@@ -611,5 +390,4 @@ public class PreferencesDialog extends JDialog implements ActionListener {
 		}
 		return icon;
 	}
-
 }

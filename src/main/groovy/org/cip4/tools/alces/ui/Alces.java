@@ -5,8 +5,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -14,15 +12,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.event.TreeModelEvent;
-import javax.swing.event.TreeModelListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 
 import org.apache.commons.io.IOUtils;
@@ -66,7 +61,7 @@ import org.springframework.context.event.EventListener;
  * The Alces Swing GUI application for interactive testing.
  */
 @org.springframework.stereotype.Component
-public class Alces extends JFrame implements ActionListener, TreeModelListener, MouseListener {
+public class Alces extends JFrame implements ActionListener {
 
     // -----------------------------------------------------
     // | Address Bar                                       |
@@ -114,7 +109,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
     private JComboBox<String> deviceListComboBox;
     private JButton connectButton;
     private JLabel deviceStatusValue;
-    private JLabel batchModeLabel;
     private JTextArea deviceInfoTextArea;
     private JTree sessionTree;
 
@@ -127,16 +121,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
     private static final String ACTION_CONNECT_CANCEL = "ACTION_CONNECT_CANCEL";
     private static final String ACTION_SELECT_DEVICE = "ACTION_SELECT_DEVICE";
     private static final String ACTION_SEND_FILE = "ACTION_SEND_FILE";
-
-    // variables related to Batch-execution
-    private static final String ACTION_BATCH_SELECT_FILE = "ACTION_BATCH_SELECT_FILE";
-    private static final String ACTION_BATCH_SELECT_FOLDER = "ACTION_BATCH_SELECT_FOLDER";
-    private static final String ACTION_BATCH_START = "ACTION_BATCH_START";
-    private static final String ACTION_BATCH_STOP = "ACTION_BATCH_STOP";
-    private final List<File> filesToSendInBatch = new ArrayList<>();
-    private JButton batchStartButton;
-    private JButton batchStopButton;
-    private static boolean isBatchRunned;
 
     /**
      * Default constructor. Creates a new instance of the Alces Swing application.
@@ -217,10 +201,10 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         addressBarPanel.setLayout(new BoxLayout(addressBarPanel, BoxLayout.X_AXIS));
         addressBarPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 11));
 
-        // preferences Button
-        JButton preferenceButton = new JButton("Preferences...");
-        preferenceButton.addActionListener(e -> showPreferencesDialog());
-        addressBarPanel.add(preferenceButton);
+        // settings Button
+        JButton settingsButton = new JButton("Settings...");
+        settingsButton.addActionListener(e -> showSettingsDialog());
+        addressBarPanel.add(settingsButton);
         addressBarPanel.add(Box.createRigidArea(new Dimension(11, 0)));
 
         // address field
@@ -301,25 +285,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         messagesPanel.setLayout(new BoxLayout(messagesPanel, BoxLayout.Y_AXIS));
         devicePanel.add(messagesPanel, BorderLayout.CENTER);
 
-        // batch panel
-        JPanel batchPanel = new JPanel();
-        batchPanel.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createCompoundBorder(BorderFactory.createEmptyBorder(5, 6, 6, 6), BorderFactory.createTitledBorder("Batch Mode")),
-                BorderFactory.createEmptyBorder(0, 5, 5, 5)));
-        batchPanel.setLayout(new BoxLayout(batchPanel, BoxLayout.Y_AXIS));
-        batchPanel.add(createMessageButton("Select file", "", ACTION_BATCH_SELECT_FILE));
-        batchPanel.add(createMessageButton("Select folder", "", ACTION_BATCH_SELECT_FOLDER));
-
-        batchModeLabel = new JLabel();
-        batchModeLabel.setText("Batch: File or Folder");
-        batchPanel.add(batchModeLabel);
-
-        batchStartButton = createMessageButton("Start execution", null, ACTION_BATCH_START);
-        batchStartButton.setEnabled(false);
-        batchStopButton = createMessageButton("Stop execution", null, ACTION_BATCH_STOP);
-        batchStopButton.setEnabled(false);
-        batchPanel.add(batchStartButton);
-        batchPanel.add(batchStopButton);
-        devicePanel.add(batchPanel, BorderLayout.SOUTH);
         controlPanel.setViewportView(devicePanel);
 
         // return control panel
@@ -688,7 +653,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
         button.setActionCommand(actionCommand);
         button.setHorizontalAlignment(SwingConstants.LEFT);
         button.addActionListener(this);
-        button.addMouseListener(this);
         button.setMaximumSize(new Dimension(Short.MAX_VALUE, button.getPreferredSize().height));
         return button;
     }
@@ -953,89 +917,6 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
                 }
                 break;
 
-            case ACTION_BATCH_SELECT_FILE:
-                fileChooser = new JFileChooser(settingsService.getProp(SettingsServiceImpl.LAST_DIR));
-                fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                fileChooser.addChoosableFileFilter(new JMFFileFilter());
-                fileChooser.setAcceptAllFileFilterUsed(true);
-                fileChooser.setDialogTitle("Batch Mode: Select a File to Send");
-                returnValue = fileChooser.showOpenDialog(this);
-
-                settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    batchStartButton.setEnabled(true);
-                    batchModeLabel.setText(fileChooser.getSelectedFile().getAbsolutePath());
-
-                    filesToSendInBatch.clear();
-                    filesToSendInBatch.add(fileChooser.getSelectedFile());
-                }
-                break;
-
-            case ACTION_BATCH_SELECT_FOLDER:
-                fileChooser = new JFileChooser(settingsService.getProp(SettingsServiceImpl.LAST_DIR));
-                fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-                fileChooser.addChoosableFileFilter(new JMFFileFilter());
-                fileChooser.setAcceptAllFileFilterUsed(true);
-                fileChooser.setDialogTitle("Batch Mode: Select a Folder to Send");
-                returnValue = fileChooser.showOpenDialog(this);
-
-                settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    batchStartButton.setEnabled(true);
-                    batchModeLabel.setText(fileChooser.getSelectedFile().getAbsolutePath());
-
-                    filesToSendInBatch.clear();
-                    File folder = fileChooser.getSelectedFile();
-                    File[] listOfFiles = folder.listFiles();
-                    for (int i = 0; i < listOfFiles.length; i++) {
-                        if (listOfFiles[i].isFile())
-                            filesToSendInBatch.add(listOfFiles[i]);
-                    }
-                }
-                break;
-
-            case ACTION_BATCH_START:
-                // create and run thread
-                batchStartButton.setEnabled(false);
-                batchStopButton.setEnabled(true);
-                SwingWorker<Object, Object> worker = new SwingWorker<>() {
-                    @Override
-                    protected Object doInBackground() {
-                        isBatchRunned = true;
-                        while (isBatchRunned) {
-                            log.info("-> batch executer");
-                            // prepare file to send
-                            for (File f : filesToSendInBatch) {
-                                log.info("Batch: send file: " + f.getAbsolutePath());
-                                testRunnerService.startTestSession(
-                                        testRunnerService.loadMessage(f), getDeviceUrl());
-
-                                try {
-                                    String delayStr = settingsService.getProp(SettingsServiceImpl.BATCHMODE_DELAYTONEXT_FILE);
-                                    int delayMs = Integer.parseInt(delayStr);
-                                    Thread.sleep(delayMs);
-                                } catch (InterruptedException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                        }
-                        return null;
-                    }
-
-                    @Override
-                    protected void done() {
-                        batchStartButton.setEnabled(true);
-                        batchStopButton.setEnabled(false);
-                    }
-                };
-                worker.execute();
-                break;
-
-            case ACTION_BATCH_STOP:
-                batchStopButton.setEnabled(false);
-                isBatchRunned = false;
-                break;
-
             case "CommandSubmitQueueEntry":
                 fileChooser = new JFileChooser(settingsService.getProp(SettingsServiceImpl.LAST_DIR));
                 fileChooser.addChoosableFileFilter(new JDFFileFilter());
@@ -1207,89 +1088,14 @@ public class Alces extends JFrame implements ActionListener, TreeModelListener, 
     }
 
     /**
-     * Show the preferences dialog.
+     * Show the settings dialog.
      */
-    private void showPreferencesDialog() {
+    private void showSettingsDialog() {
 
-
-        new PreferencesDialog(this, "Preferences");
+        new SettingsDialog(this, "Settings");
         setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion() + "  -  " + settingsService.getServerJmfUrl());
     }
 
-    // ----------------------------------------------------------------
-    // TreeModelListener
-    // ----------------------------------------------------------------
-
-    public void treeNodesChanged(TreeModelEvent e) {
-
-    }
-
-    public void treeNodesInserted(TreeModelEvent e) {
-        // Expand and scroll to inserted node
-        int pathLength = e.getPath().length;
-        if (pathLength == 2) {
-            sessionTree.expandPath(e.getTreePath());
-        } else if (pathLength == 3) {
-            sessionTree.scrollPathToVisible(e.getTreePath());
-            // expand current path also
-            sessionTree.expandPath(e.getTreePath());
-        }
-        // Examine node
-        Object[] children = e.getChildren();
-        for (int i = 0; i < children.length; i++) {
-            Object child = children[i];
-            if (child instanceof IncomingJmfMessage) {
-                JDFJMF jmf = JmfUtil.getBodyAsJMF((IncomingJmfMessage) child);
-                if (jmf != null) {
-                    processReceivedJMF(jmf);
-                }
-            }
-        }
-    }
-
-    public void treeNodesRemoved(TreeModelEvent e) {
-    }
-
-    public void treeStructureChanged(TreeModelEvent e) {
-    }
-
-    // ----------------------------------------------------------------
-    // MouseListener
-    // ----------------------------------------------------------------
-
-    // MouseEvent for the right mouse button (count = 3)
-    public void mouseClicked(MouseEvent e) {
-        JButton comp = (JButton) e.getComponent();
-        if (e.getButton() == 3 && comp.getActionCommand().equals(ACTION_SEND_FILE)) {
-            SendContext sc = new SendContext(this, "jmf");
-            sc.show(e.getComponent(), e.getX(), e.getY());
-        }
-        if (e.getButton() == 3 && comp.getActionCommand().equals("CommandSubmitQueueEntry")) {
-            SendContext sc = new SendContext(this, "jdf");
-            sc.show(e.getComponent(), e.getX(), e.getY());
-        }
-
-    }
-
-    @Override
-    public void mousePressed(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseReleased(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseEntered(MouseEvent e) {
-
-    }
-
-    @Override
-    public void mouseExited(MouseEvent e) {
-
-    }
 
 
     /**
