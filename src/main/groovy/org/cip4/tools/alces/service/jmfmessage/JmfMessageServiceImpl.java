@@ -3,10 +3,14 @@ package org.cip4.tools.alces.service.jmfmessage;
 import org.cip4.jdflib.auto.JDFAutoDeviceFilter;
 import org.cip4.jdflib.jmf.JMFBuilder;
 import org.cip4.jdflib.jmf.JMFBuilderFactory;
+import org.cip4.tools.alces.service.file.FileService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
+
+import java.io.File;
 
 import static org.cip4.jdflib.auto.JDFAutoStatusQuParams.*;
 
@@ -19,6 +23,9 @@ public class JmfMessageServiceImpl implements JmfMessageService {
     private static final String SENDER_ID = "ALCES";
 
     private final JMFBuilder jmfBuilder;
+
+    @Autowired
+    private FileService fileService;
 
     @Value("${app.name}")
     private String agentName;
@@ -87,5 +94,12 @@ public class JmfMessageServiceImpl implements JmfMessageService {
         return jmfBuilder
                 .buildKnownMessagesQuery()
                 .toXML();
+    }
+
+    @Override
+    public String createSubmitQueueEntry(File file) {
+        fileService.publishFile(file);
+
+        return "";
     }
 }

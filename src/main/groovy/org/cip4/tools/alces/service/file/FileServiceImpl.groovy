@@ -1,6 +1,9 @@
 package org.cip4.tools.alces.service.file
 
 import groovy.xml.XmlSlurper
+import org.apache.commons.io.FilenameUtils
+import org.apache.commons.lang.RandomStringUtils
+import org.apache.commons.lang.StringUtils
 import org.apache.commons.lang.SystemUtils
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -10,7 +13,6 @@ import org.springframework.context.event.EventListener
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
-import javax.annotation.PostConstruct
 import java.nio.file.Files
 import java.nio.file.Path;
 
@@ -20,66 +22,93 @@ class FileServiceImpl implements FileService {
     private static Logger log = LoggerFactory.getLogger(FileServiceImpl.class)
 
     private static final String JDF_SCHEMA_URL = "https://schema.cip4.org/jdfschema_1_7/"
-
     private static final String JDF_SCHEMA_FOLDER = "jdf-schema"
+    private static final String JDF_SCHEMA_FILENAME = "JDF.xsd"
+
+    private static final String CACHE_FOLDER = "cache"
+
+    private static final String PUBLIC_FOLDER = "public"
 
     private final Path rootDir
-
-    private final Path cacheDir
 
     /**
      * Default constructor.
      */
     FileServiceImpl() {
         rootDir = new File(SystemUtils.getUserHome(), ".alces").toPath()
-        cacheDir = rootDir.resolve("cache")
-    }
-
-    /**
-     * Init file service.
-     */
-    @PostConstruct
-    init() {
-        rootDir.toFile().mkdirs()
-        cacheDir.toFile().mkdirs()
     }
 
     @Autowired
     private RestTemplate restTemplate
 
     /**
-     * Event is called after applications start up.
+     * Helper method to define the cache folder.
+     * @return A path object pointing to the cache folders location.
      */
-    @EventListener(ApplicationReadyEvent.class)
-    void onStartUp() {
-        reloadJdfSchema();
+    private Path getCacheDir() {
+        return rootDir.resolve(CACHE_FOLDER)
     }
 
     /**
-     * Return the JDF Schema directory.
-     * @return The JDF Schema directory as path.
+     * Helper method to define the public folder.
+     * @return A path object pointing to the public folders location.
      */
-    Path getJdfSchemaDir() {
+    private Path getPublicDir() {
+        return getCacheDir().resolve(PUBLIC_FOLDER)
+    }
 
-        Path jdfSchemaDir = cacheDir.resolve(JDF_SCHEMA_FOLDER)
+    /**
+     * Helper method to define the cache folder.
+     * @return A path object pointing to the cache folders location.
+     */
+    private Path getJdfSchemaDir() {
+        return getCacheDir().resolve(JDF_SCHEMA_FOLDER)
+    }
 
-        if(!jdfSchemaDir.toFile().exists()) {
-            jdfSchemaDir.toFile().mkdirs()
+    /**
+     * Returns the path to the JDF Schema.
+     * @return The path to JDF Schema as path object.
+     */
+    @Override
+    Path getJdfSchema() {
+        return getJdfSchemaDir().resolve(JDF_SCHEMA_FILENAME)
+    }
+
+    @Override
+    String publishFile(File file) {
+
+        // create folder if not exists
+        getPublicDir().toFile().mkdirs()
+
+        // build new filename
+        String extension = FilenameUtils.getExtension(file.getName()).toLowerCase()
+        String filename = RandomStringUtils.randomAlphanumeric(16)
+
+        if(StringUtils.isNotEmpty(extension)) {
+            filename += "." + extension
         }
 
-        return cacheDir.resolve(JDF_SCHEMA_FOLDER)
+        // copy file to public folder
+        Path target = getPublicDir().resolve(filename)
+        Files.write(target, file.readBytes())
+
+        // return filename
+        return filename
     }
 
     /**
      * Helper method to reload the JDF Schema from website.
      */
+    @EventListener(ApplicationReadyEvent.class)
     private void reloadJdfSchema() {
         log.info("Download JDF Schema...")
 
+        // create folder structure
+        getJdfSchemaDir().toFile().mkdirs()
+
         // download JDF.xsd xsd
-        String JDF_XSD = "JDF.xsd"
-        byte[] jdfXsdBytes = restTemplate.getForEntity(JDF_SCHEMA_URL + JDF_XSD, byte[].class).getBody()
-        Files.write(getJdfSchemaDir().resolve(JDF_XSD), jdfXsdBytes)
+        byte[] jdfXsdBytes = restTemplate.getForEntity(JDF_SCHEMA_URL + JDF_SCHEMA_FILENAME, byte[].class).getBody()
+        Files.write(getJdfSchemaDir().resolve(JDF_SCHEMA_FILENAME), jdfXsdBytes)
 
         // download referenced files
         def jdfXsd = new XmlSlurper().parse(new ByteArrayInputStream(jdfXsdBytes))

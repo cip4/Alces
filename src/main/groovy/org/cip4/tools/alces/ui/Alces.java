@@ -595,9 +595,27 @@ public class Alces extends JFrame implements ActionListener {
                     break;
 
                 case "KnownSubscriptions":
-                    button = createButton("Known Subscriptons");
+                    button = createButton("KnownSubscriptions");
                     button.addActionListener(e -> {
                         testRunnerService.startTestSession(jmfMessageService.createKnownSubscriptionsQuery(), activeJdfDevice.getJmfUrl());
+                    });
+                    messagesPanel.add(button);
+                    break;
+
+                case "SubmitQueueEntry":
+                    button = createButton("SubmitQueueEntry");
+                    button.addActionListener(e -> {
+                        JFileChooser fileChooser = new JFileChooser(settingsService.getProp(SettingsServiceImpl.LAST_DIR));
+                        fileChooser.addChoosableFileFilter(new JDFFileFilter());
+                        fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
+                        int returnValue = fileChooser.showOpenDialog(this);
+                        settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+                        if (returnValue == JFileChooser.APPROVE_OPTION) {
+
+                            jmfMessageService.createSubmitQueueEntry(fileChooser.getSelectedFile());
+                            // testRunnerService.startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
+                        }
+                        // testRunnerService.startTestSession(jmfMessageService.createKnownSubscriptionsQuery(), activeJdfDevice.getJmfUrl());
                     });
                     messagesPanel.add(button);
                     break;

@@ -1,5 +1,7 @@
 package org.cip4.tools.alces.service.jmfmessage;
 
+import java.io.File;
+
 /**
  * Business interface encapsulating the JMF Message functionality.
  */
@@ -48,4 +50,11 @@ public interface JmfMessageService {
      * @return The QueryKnownSubscriptions JMF Message.
      */
     String createKnownSubscriptionsQuery();
+
+    /**
+     * Create a submit queue entry JMF command.
+     * @param file The fle to be submitted.
+     * @return The SubmitQueueEntry JMF Message.
+     */
+    String createSubmitQueueEntry(File file);
 }

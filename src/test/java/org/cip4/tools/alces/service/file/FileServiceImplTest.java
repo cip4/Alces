@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -39,6 +40,7 @@ class FileServiceImplTest {
         byte[] jdfBytes = FileServiceImplTest.class.getResourceAsStream(RES_ROOT + "jdf.xsd").readAllBytes();
         byte[] jdfCoreBytes = FileServiceImplTest.class.getResourceAsStream(RES_ROOT + "jdfcapability.xsd").readAllBytes();
         byte[] jdfCapabilityBytes = FileServiceImplTest.class.getResourceAsStream(RES_ROOT + "jdfcore.xsd").readAllBytes();
+        byte[] jdfTypesBytes = FileServiceImplTest.class.getResourceAsStream(RES_ROOT + "jdftypes.xsd").readAllBytes();
 
         doReturn(new ResponseEntity<>(jdfBytes, HttpStatus.OK)).when(restTemplateMock)
                 .getForEntity(eq("https://schema.cip4.org/jdfschema_1_7/JDF.xsd"), eq(byte[].class));
@@ -46,20 +48,22 @@ class FileServiceImplTest {
                 .getForEntity(eq("https://schema.cip4.org/jdfschema_1_7/JDFCore.xsd"), eq(byte[].class));
         doReturn(new ResponseEntity<>(jdfCapabilityBytes, HttpStatus.OK)).when(restTemplateMock)
                 .getForEntity(eq("https://schema.cip4.org/jdfschema_1_7/JDFCapability.xsd"), eq(byte[].class));
+        doReturn(new ResponseEntity<>(jdfTypesBytes, HttpStatus.OK)).when(restTemplateMock)
+                .getForEntity(eq("https://schema.cip4.org/jdfschema_1_7/JDFTypes.xsd"), eq(byte[].class));
 
         Path testDir = Files.createTempDirectory("alces-test-files-");
-        testDir.toFile().mkdirs();
         assertTrue(testDir.toFile().exists(), "Test Dir does not exist.");
 
-        ReflectionTestUtils.setField(fileService, "cacheDir", testDir);
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
 
         // act
         ReflectionTestUtils.invokeMethod(fileService, "reloadJdfSchema");
 
         // assert
-        assertTrue(testDir.resolve("jdf-schema/JDF.xsd").toFile().exists(), "JDF.xsd does not exist.");
-        assertTrue(testDir.resolve("jdf-schema/JDFCore.xsd").toFile().exists(), "JDFCore.xsd does not exist.");
-        assertTrue(testDir.resolve("jdf-schema/JDFCapability.xsd").toFile().exists(), "JDFCapability.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDF.xsd").toFile().exists(), "JDF.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDFCore.xsd").toFile().exists(), "JDFCore.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDFCapability.xsd").toFile().exists(), "JDFCapability.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDFTypes.xsd").toFile().exists(), "JDFTypes.xsd does not exist.");
 
         FileUtils.forceDelete(testDir.toFile());
         assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
@@ -84,61 +88,130 @@ class FileServiceImplTest {
                 .getForEntity(eq("https://schema.cip4.org/jdfschema_1_7/JDFTypes.xsd"), eq(byte[].class));
 
         Path testDir = Files.createTempDirectory("alces-test-files-");
-        testDir.resolve("jdf-schema").toFile().mkdirs();
+        testDir.resolve("cache/jdf-schema").toFile().mkdirs();
 
-        Files.write(testDir.resolve("jdf-schema/JDF.xsd"), "FILE_EXISTS".getBytes());
+        Files.write(testDir.resolve("cache/jdf-schema/JDF.xsd"), "FILE_EXISTS".getBytes());
 
         assertTrue(testDir.toFile().exists(), "Test Dir does not exist.");
-        assertTrue(testDir.resolve("jdf-schema/JDF.xsd").toFile().exists(), "Test JDF File does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDF.xsd").toFile().exists(), "Test JDF File does not exist.");
 
-        ReflectionTestUtils.setField(fileService, "cacheDir", testDir);
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
 
         // act
         ReflectionTestUtils.invokeMethod(fileService, "reloadJdfSchema");
 
         // assert
-        assertTrue(testDir.resolve("jdf-schema/JDF.xsd").toFile().exists(), "JDF.xsd does not exist.");
-        assertTrue(testDir.resolve("jdf-schema/JDFCore.xsd").toFile().exists(), "JDFCore.xsd does not exist.");
-        assertTrue(testDir.resolve("jdf-schema/JDFCapability.xsd").toFile().exists(), "JDFCapability.xsd does not exist.");
-        assertTrue(testDir.resolve("jdf-schema/JDFTypes.xsd").toFile().exists(), "JDFTypes.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDF.xsd").toFile().exists(), "JDF.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDFCore.xsd").toFile().exists(), "JDFCore.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDFCapability.xsd").toFile().exists(), "JDFCapability.xsd does not exist.");
+        assertTrue(testDir.resolve("cache/jdf-schema/JDFTypes.xsd").toFile().exists(), "JDFTypes.xsd does not exist.");
 
         FileUtils.forceDelete(testDir.toFile());
         assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
 
     @Test
-    public void getJdfSchemaDir_0() throws Exception {
+    public void getJdfSchema_0() throws Exception {
 
         // arrange
         Path testDir = Files.createTempDirectory("alces-test-dir-");
-        ReflectionTestUtils.setField(fileService, "cacheDir", testDir);
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
 
         assertTrue(testDir.toFile().exists(), "Folder not does exist.");
 
         // act
-        Path jdfSchemaDir = fileService.getJdfSchemaDir();
+        Path jdfSchema = fileService.getJdfSchema();
 
         // assert
-        assertTrue(jdfSchemaDir.toFile().exists(), "Folder not does exist.");
-        assertTrue(jdfSchemaDir.toString().endsWith("jdf-schema"), "Path is wrong.");
+        System.out.println(jdfSchema.toString());
+        assertTrue(jdfSchema.toString().contains("jdf-schema"), "Path is wrong.");
+        assertTrue(jdfSchema.toString().endsWith("JDF.xsd"), "Path is wrong.");
+
+        FileUtils.forceDelete(testDir.toFile());
+        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
 
     @Test
-    public void getJdfSchemaDir_1() throws Exception {
+    public void publishFile_1() throws Exception {
 
         // arrange
         Path testDir = Files.createTempDirectory("alces-test-dir-");
-        ReflectionTestUtils.setField(fileService, "cacheDir", testDir);
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
 
-        assertTrue(testDir.toFile().exists(), "Folder not does exist.");
-        assertFalse(testDir.resolve("jdf-schema").toFile().exists(), "Folder does exist.");
+        File file = new File(FileServiceImplTest.class.getResource(RES_ROOT + "test.jdf").toURI());
 
         // act
-        Path jdfSchemaDir = fileService.getJdfSchemaDir();
+        String filename = fileService.publishFile(file);
 
         // assert
-        assertTrue(jdfSchemaDir.toFile().exists(), "Folder not does exist.");
-        assertTrue(jdfSchemaDir.toString().endsWith("jdf-schema"), "Path is wrong.");
-        assertTrue(testDir.resolve("jdf-schema").toFile().exists(), "Folder does not exist.");
+        System.out.println("Filename: " + filename);
+        assertTrue(filename.endsWith(".jdf"), "Extension is wrong.");
+        assertTrue(testDir.resolve("cache/public").resolve(filename).toFile().exists(), "File is missing.");
+
+        FileUtils.forceDelete(testDir.toFile());
+        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
+    }
+
+    @Test
+    public void publishFile_2() throws Exception {
+
+        // arrange
+        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
+
+        File file = new File(FileServiceImplTest.class.getResource(RES_ROOT + "test-2.jDf").toURI());
+
+        // act
+        String filename = fileService.publishFile(file);
+
+        // assert
+        System.out.println("Filename: " + filename);
+        assertTrue(filename.endsWith(".jdf"), "Extension is wrong.");
+        assertTrue(testDir.resolve("cache/public").resolve(filename).toFile().exists(), "File is missing.");
+
+        FileUtils.forceDelete(testDir.toFile());
+        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
+    }
+
+    @Test
+    public void publishFile_3() throws Exception {
+
+        // arrange
+        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
+
+        File file = new File(FileServiceImplTest.class.getResource(RES_ROOT + "test-3").toURI());
+
+        // act
+        String filename = fileService.publishFile(file);
+
+        // assert
+        System.out.println("Filename: " + filename);
+        assertFalse(filename.contains("."), "Extension is wrong.");
+        assertTrue(testDir.resolve("cache/public").resolve(filename).toFile().exists(), "File is missing.");
+
+        FileUtils.forceDelete(testDir.toFile());
+        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
+    }
+
+    @Test
+    public void publishFile_4() throws Exception {
+
+        // arrange
+        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
+
+        File file = new File(FileServiceImplTest.class.getResource(RES_ROOT + "jdf.xsd").toURI());
+
+        // act
+        String filename = fileService.publishFile(file);
+
+        // assert
+        System.out.println("Filename: " + filename);
+        assertTrue(filename.endsWith(".xsd"), "Extension is wrong.");
+        assertTrue(testDir.resolve("cache/public").resolve(filename).toFile().exists(), "File is missing.");
+
+        FileUtils.forceDelete(testDir.toFile());
+        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
 }
