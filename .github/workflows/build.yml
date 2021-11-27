@@ -25,6 +25,9 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew test jacocoTestReport
 
+      - name: Diagnose report file
+        run:  find  build/reports
+
       - name: Submit Code coverage
         uses: codecov/codecov-action@v2
         with:
