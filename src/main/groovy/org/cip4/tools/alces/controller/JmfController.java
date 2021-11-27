@@ -6,7 +6,6 @@ import org.cip4.tools.alces.jmf.JMFMessageBuilder;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JmfUtil;
@@ -61,35 +60,33 @@ public class JmfController {
         log.info("Receiving message from {} @ {} ({})...", userAgent, request.getRemoteHost(), request.getRemoteAddr());
 
         String remoteAddr = request.getRemoteAddr();
-        String header = convertHttpHeadersToString(request);
 
-
-        final IncomingJmfMessage inMessage = new IncomingJmfMessage(contentType, header, messageBody, false);
+        final IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(contentType, messageBody);
 
         // create and send response
-        final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(inMessage);
+        final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(incomingJmfMessage);
         ResponseEntity<String> responseEntity;
 
         if (jmfIn != null) {
             if (jmfIn.getAcknowledge(0) != null) {
                 log.debug("Receiving Acknowledge message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
                 responseEntity = ResponseEntity.ok().build();
 
             } else if (jmfIn.getSignal(0) != null) {
                 log.debug("Receiving Signal message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
                 responseEntity = ResponseEntity.ok().build();
 
             } else if (jmfIn.getMessageElement(JDFMessage.EnumFamily.Command, JDFMessage.EnumType.ReturnQueueEntry, 0) != null) {
                 log.debug("Receiving RetunQueueEntry message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
                 JDFJMF jmfOut = JMFMessageBuilder.buildResponse(jmfIn);
                 responseEntity = ResponseEntity.ok(jmfOut.toXML());
 
             } else {
                 log.debug("Receiving unhandled JMF message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
                 JDFJMF jmfOut = JMFMessageBuilder.buildNotImplementedResponse(jmfIn);
                 jmfOut.getResponse(0).setReturnCode(Integer.parseInt(settingsService.getProp(SettingsServiceImpl.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
                 responseEntity = ResponseEntity.ok(jmfOut.toXML());
@@ -98,39 +95,20 @@ public class JmfController {
 
         } else if (contentType.equals(MIME_CONTENT_TYPE)) {
             log.debug("Receiving MIME package...");
-            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
             responseEntity = ResponseEntity.ok().build();
 
         } else if (contentType.startsWith(JDF_CONTENT_TYPE)) {
             log.debug("Receiving JDF file...");
-            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
             responseEntity = ResponseEntity.ok().build();
 
         } else {
             log.debug("Unknown content-type '" + contentType + "'...");
-            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
             responseEntity = ResponseEntity.badRequest().build();
         }
 
         return responseEntity;
-    }
-
-    /**
-     * Converts the headers in a <code>HttpServletRequest</code> to a
-     * <code>String</code>.
-     *
-     * @param request
-     * @return
-     */
-    private static String convertHttpHeadersToString(HttpServletRequest request) {
-        StringBuffer header = new StringBuffer();
-        for (Enumeration e = request.getHeaderNames(); e.hasMoreElements();) {
-            String headerName = (String) e.nextElement();
-            header.append(headerName);
-            header.append(": ");
-            header.append(request.getHeader(headerName));
-            header.append("\n");
-        }
-        return header.toString();
     }
 }

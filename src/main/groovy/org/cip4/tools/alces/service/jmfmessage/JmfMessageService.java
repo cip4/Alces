@@ -19,6 +19,13 @@ public interface JmfMessageService {
     String createStatusSubscription(String subscriberUrl);
 
     /**
+     * Create a stop persistent channel command.
+     * @param subscriberUrl The subscribers url.
+     * @return The StopPersistentChannel JMF Command.
+     */
+    String createStopPersistentChannelCommand(String subscriberUrl);
+
+    /**
      * Create a query queue status jmf message.
      * @return The QueryQueueStatus JMF Message.
      */
@@ -35,4 +42,10 @@ public interface JmfMessageService {
      * @return The QueryKnownMessages JMF Message.
      */
     String createKnownMessagesQuery();
+
+    /**
+     * Create a query known subscriptions jmf message.
+     * @return The QueryKnownSubscriptions JMF Message.
+     */
+    String createKnownSubscriptionsQuery();
 }

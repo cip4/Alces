@@ -126,7 +126,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
         List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");
 
-        IncomingJmfMessage responseMessage = new IncomingJmfMessage(responseHeaders.get(0), "n. a.", responseEntity.getBody(), false);
+        IncomingJmfMessage responseMessage = new IncomingJmfMessage(responseHeaders.get(0), responseEntity.getBody());
 
         receiveMessage(testSession, responseMessage, outgoingJmfMessage);
 
@@ -212,7 +212,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             for (int i = 0; i < fileUrls.length; i++) {
                 if (fileUrls[i].endsWith(JDFConstants.JMF_EXTENSION)) {
                     String body = IOUtils.toString(new FileInputStream(new File(new URI(fileUrls[i]))));
-                    OutgoingJmfMessage tempMsgOut = new OutgoingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, "", body, false);
+                    OutgoingJmfMessage tempMsgOut = new OutgoingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, body);
                     log.debug("Extracted JMF from JMF MIME package: " + tempMsgOut);
                     return tempMsgOut;
                 }
@@ -265,7 +265,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
             // Create a objects using factory
 
-            IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(inMessage.getContentType(), inMessage.getHeader(), inMessage.getBody(), true);
+            IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(inMessage.getContentType(), inMessage.getBody());
             testSession = new TestSession(jmfEndpointUrl, incomingJmfMessage);
 
             // Add TestSession to suite
@@ -274,6 +274,8 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             // Add message to TestSession
             receiveMessage(testSession, incomingJmfMessage);
         }
+
+        notifyTestSessionsListeners(testSessions);
     }
 
     /**
@@ -518,7 +520,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
         List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");
 
-        return new IncomingJmfMessage(responseHeaders.get(0), "n. a.", responseEntity.getBody(), false);
+        return new IncomingJmfMessage(responseHeaders.get(0), responseEntity.getBody());
     }
 
     /**
@@ -555,7 +557,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         log.debug("Loaded message from file.");
 
 
-        OutgoingJmfMessage message = new OutgoingJmfMessage(contentType, header, body, true); // new
+        OutgoingJmfMessage message = new OutgoingJmfMessage(contentType, body); // new
 
         return message;
     }
@@ -889,7 +891,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             for (int i = 0; i < fileUrls.length; i++) {
                 if (fileUrls[i].endsWith(JDFConstants.JDF_EXTENSION)) {
                     String body = IOUtils.toString(new FileInputStream(new File(new URI(fileUrls[i]))));
-                    OutgoingJmfMessage tempMsgOut = new OutgoingJmfMessage(JDFConstants.JDF_CONTENT_TYPE, "", body, false);
+                    OutgoingJmfMessage tempMsgOut = new OutgoingJmfMessage(JDFConstants.JDF_CONTENT_TYPE, body);
                     log.debug("Extracted JDF from JMF MIME package: " + tempMsgOut);
                     // return tempMsgOut;
                     return fileUrls[i];

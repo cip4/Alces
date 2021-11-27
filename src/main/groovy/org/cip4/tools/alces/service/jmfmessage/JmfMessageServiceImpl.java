@@ -55,6 +55,13 @@ public class JmfMessageServiceImpl implements JmfMessageService {
     }
 
     @Override
+    public String createStopPersistentChannelCommand(String subscriberUrl) {
+        return jmfBuilder
+                .buildStopPersistentChannel(null, null, subscriberUrl)
+                .toXML();
+    }
+
+    @Override
     public String createQueueStatusQuery() {
         return jmfBuilder
                 .buildQueueStatus()
@@ -70,6 +77,13 @@ public class JmfMessageServiceImpl implements JmfMessageService {
 
     @Override
     public String createKnownMessagesQuery() {
+        return jmfBuilder
+                .buildKnownMessagesQuery()
+                .toXML();
+    }
+
+    @Override
+    public String createKnownSubscriptionsQuery() {
         return jmfBuilder
                 .buildKnownMessagesQuery()
                 .toXML();

@@ -1,6 +1,3 @@
-/*
- * Created on Feb 28, 2007
- */
 package org.cip4.tools.alces.jmf;
 
 import java.util.Iterator;
@@ -16,7 +13,6 @@ import org.cip4.jdflib.jmf.JDFStatusQuParams;
 import org.cip4.jdflib.jmf.JDFStopPersChParams;
 import org.cip4.jdflib.resource.JDFNotification;
 import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
-import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 
 public class JMFMessageBuilder {
 
@@ -233,8 +229,7 @@ public class JMFMessageBuilder {
 	 * @return a message generated from the specified template
 	 */
 	public static OutgoingJmfMessage createMessage(JDFJMF jmf) {
-		String header = "Content-Type: " + JMF_MIMETYPE;
-		String body = jmf.getOwnerDocument_KElement().write2String(2);
-		return new OutgoingJmfMessage(header, body, true);
+		String jmfBody = jmf.getOwnerDocument_KElement().write2String(2);
+		return new OutgoingJmfMessage(jmfBody);
 	}
 }

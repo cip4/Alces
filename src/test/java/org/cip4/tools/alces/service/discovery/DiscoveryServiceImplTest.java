@@ -117,9 +117,7 @@ public class DiscoveryServiceImplTest {
         // prepare incoming message
         IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(
                 JDFConstants.MIME_JMF,
-                "HEADER",
-                new String(body),
-                true
+                new String(body)
         );
 
         // create and return containing test session

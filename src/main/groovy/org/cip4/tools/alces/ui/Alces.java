@@ -565,21 +565,49 @@ public class Alces extends JFrame implements ActionListener {
             // make the button JMF type specific
             switch (jdfMessageService.getType()) {
                 case "Status":
-
-                    // status
                     button = createButton("Status");
                     button.addActionListener(e -> {
                         testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), activeJdfDevice.getJmfUrl());
                     });
                     messagesPanel.add(button);
 
-                    // status subscription
                     button = createButton("Status Subscription");
                     button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), activeJdfDevice.getJmfUrl());
+                        testRunnerService.startTestSession(jmfMessageService.createStatusSubscription("http://localhost:9090/alces/jmf"), activeJdfDevice.getJmfUrl());
                     });
                     messagesPanel.add(button);
+                    break;
 
+                case "KnownMessages":
+                    button = createButton("Known Messages");
+                    button.addActionListener(e -> {
+                        testRunnerService.startTestSession(jmfMessageService.createKnownMessagesQuery(), activeJdfDevice.getJmfUrl());
+                    });
+                    messagesPanel.add(button);
+                    break;
+
+                case "KnownDevices":
+                    button = createButton("Known Devices");
+                    button.addActionListener(e -> {
+                        testRunnerService.startTestSession(jmfMessageService.createKnownDevicesQuery(), activeJdfDevice.getJmfUrl());
+                    });
+                    messagesPanel.add(button);
+                    break;
+
+                case "KnownSubscriptions":
+                    button = createButton("Known Subscriptons");
+                    button.addActionListener(e -> {
+                        testRunnerService.startTestSession(jmfMessageService.createKnownSubscriptionsQuery(), activeJdfDevice.getJmfUrl());
+                    });
+                    messagesPanel.add(button);
+                    break;
+
+                case "StopPersistentChannel":
+                    button = createButton("StopPersistentChannel");
+                    button.addActionListener(e -> {
+                        testRunnerService.startTestSession(jmfMessageService.createStopPersistentChannelCommand("http://localhost:9090/alces/jmf"), activeJdfDevice.getJmfUrl());
+                    });
+                    messagesPanel.add(button);
                     break;
 
                 default:
@@ -703,15 +731,13 @@ public class Alces extends JFrame implements ActionListener {
      * @return a message generated from the specified template
      */
     public OutgoingJmfMessage createMessage(String messageTemplate) {
-        String header = null;
         String body = null;
-        header = "Content-Type: application/vnd.cip4-jmf+xml";
         JDFJMF jmf = JMFMessageFactory.getInstance().createJMF(messageTemplate);
         if (deviceListComboBox.getSelectedItem() != null) {
             jmf.setDeviceID("" + deviceListComboBox.getSelectedItem());
         }
         body = jmf.getOwnerDocument_KElement().write2String(2);
-        return new OutgoingJmfMessage(header, body, true);
+        return new OutgoingJmfMessage(body);
     }
 
     private OutgoingJmfMessage createSubmitQueueEntry(File jdfFile) {
