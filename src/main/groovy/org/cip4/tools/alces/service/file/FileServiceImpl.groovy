@@ -96,6 +96,11 @@ class FileServiceImpl implements FileService {
         return filename
     }
 
+    @Override
+    File getPublishedFile(String filename) {
+        return getPublicDir().resolve(filename).toFile()
+    }
+
     /**
      * Helper method to reload the JDF Schema from website.
      */

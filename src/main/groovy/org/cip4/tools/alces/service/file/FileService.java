@@ -20,4 +20,11 @@ public interface FileService {
      * @return The new filename of the published file.
      */
     String publishFile(File file);
+
+    /**
+     * Returns a published file as byte array.
+     * @param filename The requested file's name.
+     * @return The requested file as file.
+     */
+    File getPublishedFile(String filename);
 }

@@ -1,8 +1,11 @@
 package org.cip4.tools.alces.controller;
 
+import org.apache.commons.io.FilenameUtils;
+import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.jmf.JMFMessageBuilder;
+import org.cip4.tools.alces.service.file.FileService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
@@ -12,11 +15,14 @@ import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -36,17 +42,58 @@ public class JmfController {
     private SettingsService settingsService;
 
     @Autowired
+    private FileService fileService;
+
+    @Autowired
     private TestRunnerService testRunnerService;
 
     private final String testDataDir = AlcesPathUtil.ALCES_TEST_DATA_DIR;
 
     @RequestMapping(value = "/jdf/{filename}", method = RequestMethod.GET, produces = MediaType.TEXT_XML_VALUE)
+    @Deprecated
     public byte[] loadJdfAsset(@PathVariable String filename) throws IOException {
 
         Path jdfDir = Paths.get(testDataDir, "testdata", "jdf", filename);
 
         log.info("New path: {}", jdfDir);
         return Files.readAllBytes(jdfDir);
+    }
+
+    @RequestMapping(value = "/alces/file/{filename}", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> loadFle(@PathVariable String filename) throws IOException {
+        log.info("Load file '{}'", filename);
+
+        File file = fileService.getPublishedFile(filename);
+
+        // check if file exists
+        if(file.exists()) {
+
+            // extract extension
+            String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
+
+            // define content type
+            String contentType = switch (extension) {
+                case "jdf" -> JDFConstants.MIME_JDF;
+                case "ppf" -> JDFConstants.MIME_CIP3;
+                default -> MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            };
+
+            // return file
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Type", contentType);
+            headers.add("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+
+            return new ResponseEntity<>(
+                    Files.readAllBytes(file.toPath()),
+                    headers,
+                    HttpStatus.OK
+            );
+
+        } else {
+
+            // return 404 error
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @RequestMapping(value = "/alces/jmf", method = RequestMethod.POST, consumes = {JMF_CONTENT_TYPE, MIME_CONTENT_TYPE}, produces = JMF_CONTENT_TYPE)

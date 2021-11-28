@@ -214,4 +214,23 @@ class FileServiceImplTest {
         FileUtils.forceDelete(testDir.toFile());
         assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
+
+    @Test
+    public void getPublishedFile() throws Exception {
+
+        // arrange
+        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        ReflectionTestUtils.setField(fileService, "rootDir", testDir);
+
+        // act
+        File result = fileService.getPublishedFile("abc.jdf");
+
+        // assert
+        System.out.println(result.toString());
+        assertTrue(result.toString().endsWith("abc.jdf"), "File is wrong.");
+
+        FileUtils.forceDelete(testDir.toFile());
+        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
+
+    }
 }
