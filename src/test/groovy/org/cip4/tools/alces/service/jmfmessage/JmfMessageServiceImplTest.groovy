@@ -80,4 +80,53 @@ class JmfMessageServiceImplTest {
         def jmf = new XmlSlurper().parseText(strJmf)
         assertEquals("http://www.example.org/alces/jmf/", jmf.Query.Subscription.@URL.toString(), "ReturnJMF Attribute is wrong.")
     }
+
+    @Test
+    void createHoldQueue() throws Exception {
+
+        // arrange
+
+        // act
+        String strJmf = jmfMessageService.createHoldQueue()
+
+        // assert
+        System.out.println(strJmf)
+
+        def jmf = new XmlSlurper().parseText(strJmf)
+        assertEquals("HoldQueue", jmf.Command.@Type.toString(), "Type Attribute is wrong.")
+    }
+
+    @Test
+    void createNotificationSubscription() throws Exception {
+
+        // arrange
+        doReturn("http://www.example.org").when(settingsServiceMock).getBaseUrl()
+
+        // act
+        String strJmf = jmfMessageService.createNotificationSubscription()
+
+        // assert
+        System.out.println(strJmf)
+
+        def jmf = new XmlSlurper().parseText(strJmf)
+        assertEquals("Notification", jmf.Query.@Type.toString(), "Type Attribute is wrong.")
+        assertEquals("http://www.example.org/alces/jmf/", jmf.Query.Subscription.@URL.toString(), "Subscription URL Attribute is wrong.")
+    }
+
+    @Test
+    void createResourceSubscription() throws Exception {
+
+        // arrange
+        doReturn("http://www.example.org").when(settingsServiceMock).getBaseUrl()
+
+        // act
+        String strJmf = jmfMessageService.createResourceSubscription()
+
+        // assert
+        System.out.println(strJmf)
+
+        def jmf = new XmlSlurper().parseText(strJmf)
+        assertEquals("Resource", jmf.Query.@Type.toString(), "Type Attribute is wrong.")
+        assertEquals("http://www.example.org/alces/jmf/", jmf.Query.Subscription.@URL.toString(), "Subscription URL Attribute is wrong.")
+    }
 }

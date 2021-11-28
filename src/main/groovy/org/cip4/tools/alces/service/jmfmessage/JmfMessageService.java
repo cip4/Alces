@@ -8,6 +8,24 @@ import java.io.File;
 public interface JmfMessageService {
 
     /**
+     * Create a query resource jmf message.
+     * @return The QueryResource JMF Message.
+     */
+    String createResourceQuery();
+
+    /**
+     * Create a resource subscription jmf message.
+     * @return The Resource Subscription JMF Message.
+     */
+    String createResourceSubscription();
+
+    /**
+     * Create a notification subscription jmf message.
+     * @return The Notification Subscription JMF Message.
+     */
+    String createNotificationSubscription();
+
+    /**
      * Create a query status jmf message.
      * @return The QueryStatus JMF Message.
      */
@@ -51,8 +69,38 @@ public interface JmfMessageService {
 
     /**
      * Create a submit queue entry JMF command.
-     * @param file The fle to be submitted.
+     * @param file The file to be submitted.
      * @return The SubmitQueueEntry JMF Message.
      */
     String createSubmitQueueEntry(File file);
+
+    /**
+     * Create a hold queue command.
+     * @return The hold queue command.
+     */
+    String createHoldQueue();
+
+    /**
+     * Create a open queue command.
+     * @return The open queue command.
+     */
+    String createOpenQueue();
+
+    /**
+     * Create a resume queue command.
+     * @return The resume queue command.
+     */
+    String createResumeQueue();
+
+    /**
+     * Create a close queue command.
+     * @return The close queue command.
+     */
+    String createCloseQueue();
+
+    /**
+     * Create a flush queue command.
+     * @return The flush queue command.
+     */
+    String createFlushQueue();
 }

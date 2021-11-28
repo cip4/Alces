@@ -514,33 +514,33 @@ public class Alces extends JFrame implements ActionListener {
         deviceInfoTextArea.setCaretPosition(0);
     }
 
-    /**
-     * Sends a KnownMessages query to the configured device and populates the UI with the buttons representing all messages the device supports.
-     */
-    private JDFJMF sendKnownMessages() throws IOException {
-
-        log.info("Sending KnownMessages...");
-        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createKnownMessagesQuery(), getDeviceUrl());
-        OutgoingJmfMessage outgoingJmfMessage = testSession.getOutgoingJmfMessages().get(0);
-
-        int i = 0;
-        while (testSession.getIncomingJmfMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
-        {
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            i++;
-        }
-
-        IncomingJmfMessage inMessage = getIncomingMessage(testSession, outgoingJmfMessage);
-
-
-        JDFJMF jmf = JmfUtil.getBodyAsJMF(inMessage);
-        log.info("Sending KnownMessages...done");
-        return jmf;
-    }
+//    /**
+//     * Sends a KnownMessages query to the configured device and populates the UI with the buttons representing all messages the device supports.
+//     */
+//    private JDFJMF sendKnownMessages() throws IOException {
+//
+//        log.info("Sending KnownMessages...");
+//        TestSession testSession = testRunnerService.startTestSession(jmfMessageService.createKnownMessagesQuery(), getDeviceUrl());
+//        OutgoingJmfMessage outgoingJmfMessage = testSession.getOutgoingJmfMessages().get(0);
+//
+//        int i = 0;
+//        while (testSession.getIncomingJmfMessages().isEmpty() && i < 120) // 0.5 sec * 120 = 60 sec
+//        {
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//            i++;
+//        }
+//
+//        IncomingJmfMessage inMessage = getIncomingMessage(testSession, outgoingJmfMessage);
+//
+//
+//        JDFJMF jmf = JmfUtil.getBodyAsJMF(inMessage);
+//        log.info("Sending KnownMessages...done");
+//        return jmf;
+//    }
 
     /**
      * Removes all messages buttons from the GUI
@@ -559,51 +559,57 @@ public class Alces extends JFrame implements ActionListener {
         List<JdfMessageService> jdfMessageServices = jdfController.getJdfMessageServices();
 
         // create buttons
-        jdfMessageServices.forEach(jdfMessageService -> {
-            JButton button;
+        jdfMessageServices.stream()
+                .sorted(Comparator.comparing(JdfMessageService::getType))
+                .forEach(jdfMessageService -> {
 
             // make the button JMF type specific
             switch (jdfMessageService.getType()) {
-                case "Status":
-                    button = createButton("Status");
-                    button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), activeJdfDevice.getJmfUrl());
-                    });
+
+                // queries
+                case "Status" -> {
+                    JButton button = createButton("Status");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createStatusQuery()));
                     messagesPanel.add(button);
 
                     button = createButton("StatusSubscription");
-                    button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createStatusSubscription(), activeJdfDevice.getJmfUrl());
-                    });
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createStatusSubscription()));
                     messagesPanel.add(button);
-                    break;
-
-                case "KnownMessages":
-                    button = createButton("KnownMessages");
-                    button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createKnownMessagesQuery(), activeJdfDevice.getJmfUrl());
-                    });
+                }
+                case "Resource" -> {
+                    JButton button = createButton("Resource");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createResourceQuery()));
                     messagesPanel.add(button);
-                    break;
 
-                case "KnownDevices":
-                    button = createButton("KnownDevices");
-                    button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createKnownDevicesQuery(), activeJdfDevice.getJmfUrl());
-                    });
+                    button = createButton("ResourceSubscription");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createResourceSubscription()));
                     messagesPanel.add(button);
-                    break;
-
-                case "KnownSubscriptions":
-                    button = createButton("KnownSubscriptions");
-                    button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createKnownSubscriptionsQuery(), activeJdfDevice.getJmfUrl());
-                    });
+                }
+                case "Notification" -> {
+                    JButton button = createButton("NotificationSubscription");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createNotificationSubscription()));
                     messagesPanel.add(button);
-                    break;
+                }
+                // discovery queries
+                case "KnownMessages" -> {
+                    JButton button = createButton("KnownMessages");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createKnownMessagesQuery()));
+                    messagesPanel.add(button);
+                }
+                case "KnownDevices" -> {
+                    JButton button = createButton("KnownDevices");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createKnownDevicesQuery()));
+                    messagesPanel.add(button);
+                }
+                case "KnownSubscriptions" -> {
+                    JButton button = createButton("KnownSubscriptions");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createKnownSubscriptionsQuery()));
+                    messagesPanel.add(button);
+                }
 
-                case "SubmitQueueEntry":
-                    button = createButton("SubmitQueueEntry");
+                // queue entry commands
+                case "SubmitQueueEntry" -> {
+                    JButton button = createButton("SubmitQueueEntry");
                     button.addActionListener(e -> {
                         JFileChooser fileChooser = new JFileChooser(settingsService.getProp(SettingsServiceImpl.LAST_DIR));
                         fileChooser.addChoosableFileFilter(new JDFFileFilter());
@@ -611,26 +617,56 @@ public class Alces extends JFrame implements ActionListener {
                         int returnValue = fileChooser.showOpenDialog(this);
                         settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
                         if (returnValue == JFileChooser.APPROVE_OPTION) {
-                            testRunnerService.startTestSession(jmfMessageService.createSubmitQueueEntry(fileChooser.getSelectedFile()), activeJdfDevice.getJmfUrl());
+                            startTestSession(jmfMessageService.createSubmitQueueEntry(fileChooser.getSelectedFile()));
                         }
                     });
                     messagesPanel.add(button);
-                    break;
-
-                case "StopPersistentChannel":
-                    button = createButton("StopPersistentChannel");
-                    button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createStopPersistentChannelCommand(), activeJdfDevice.getJmfUrl());
-                    });
+                }
+                case "StopPersistentChannel" -> {
+                    JButton button = createButton("StopPersistentChannel");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createStopPersistentChannelCommand()));
                     messagesPanel.add(button);
-                    break;
+                }
 
-                default:
-                    break;
+                // queue commands
+                case "HoldQueue" -> {
+                    JButton button = createButton("HoldQueue");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createHoldQueue()));
+                    messagesPanel.add(button);
+                }
+                case "ResumeQueue" -> {
+                    JButton button = createButton("ResumeQueue");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createResumeQueue()));
+                    messagesPanel.add(button);
+                }
+                case "OpenQueue" -> {
+                    JButton button = createButton("OpenQueue");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createOpenQueue()));
+                    messagesPanel.add(button);
+                }
+                case "CloseQueue" -> {
+                    JButton button = createButton("CloseQueue");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createCloseQueue()));
+                    messagesPanel.add(button);
+                }
+                case "FlushQueue" -> {
+                    JButton button = createButton("FlushQueue");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createFlushQueue()));
+                    messagesPanel.add(button);
+                }
+                default -> {
+                }
             }
 
         });
+    }
 
+    /**
+     * Helper method for starting a test session.
+     * @param jmf The JMF Message initializing the test session.
+     */
+    private void startTestSession(String jmf) {
+        testRunnerService.startTestSession(jmf, activeJdfDevice.getJmfUrl());
     }
 
     /**
@@ -646,98 +682,98 @@ public class Alces extends JFrame implements ActionListener {
         return button;
     }
 
-    /**
-     * Adds buttons to the GUI based on the message services specified in the JMF response. If the JMF
-     * response does not contain any message services a warning dialog box is displayed.
-     *
-     * @param knownMessages The KnownMessages JMF message
-     */
-    public void buildMessageButtons(JDFJMF knownMessages) {
-
-        // add 'Send File...' button (default)
-        JButton sendFileButton = createMessageButton("Send File...", "Send File...", ACTION_SEND_FILE);
-        sendFileButton.setMnemonic(KeyEvent.VK_D);
-        messagesPanel.add(sendFileButton);
-
-        // add SubmitQueueEntry button if there was no JMF response
-        if (knownMessages == null || knownMessages.getResponse(0) == null || knownMessages.getResponse(0).getMessageService(0) == null) {
-            JButton sqeButton = createMessageButton(EnumType.SubmitQueueEntry.getName() + "...", "Command", "Command" + EnumType.SubmitQueueEntry.getName());
-            sqeButton.setMnemonic(KeyEvent.VK_E);
-            messagesPanel.add(sqeButton);
-            return;
-        }
-
-        // Get known message services
-        JDFMessage response = knownMessages.getResponse(0);
-        List<org.cip4.jdflib.core.KElement> services = response.getChildElementVector(ElementName.MESSAGESERVICE, null, null, true, 0, false);
-        if (services.size() == 0) {
-            JOptionPane.showMessageDialog(this, "The device's reply to a KnownMessages query did not contain\n" + "any message services. You can still try sending JMF to the\n"
-                    + "device using the 'Send File...' button to the left.", "No Message Services", JOptionPane.WARNING_MESSAGE);
-            return;
-        }
-        // Sort services alphabetically
-        JDFMessageService[] jmfServices = services.toArray(new JDFMessageService[0]);
-        Arrays.sort(jmfServices, Comparator.comparing(o -> o.getType()));
-
-        // Create buttons
-        for (int i = 0; i < jmfServices.length; i++) {
-            if (jmfServices[i].getJMFRole() != null && jmfServices[i].getJMFRole().equals(EnumJMFRole.Sender)) {
-                continue;
-            }
-            StringBuffer toolTip = new StringBuffer();
-            String actionCommand = null;
-            if (jmfServices[i].getAcknowledge()) {
-                toolTip.append("Acknowledge ");
-            }
-            if (jmfServices[i].getCommand() || jmfServices[i].getType().contains("QueueEntry")) {
-                toolTip.append("Command ");
-                actionCommand = "Command" + jmfServices[i].getType();
-            }
-            if (jmfServices[i].getPersistent()) {
-                toolTip.append("Persistent ");
-            }
-            if (jmfServices[i].getQuery() || jmfServices[i].getType().contains("Status") || jmfServices[i].getType().contains("Known")) {
-                toolTip.append("Query ");
-                actionCommand = "Query" + jmfServices[i].getType();
-            }
-            if (jmfServices[i].getSignal()) {
-                toolTip.append("Signal ");
-            }
-            JButton button = createMessageButton(jmfServices[i].getType(), toolTip.toString(), actionCommand);
-
-            // Add ... to SubmitQueueEntry button
-            if (jmfServices[i].getType().equals("SubmitQueueEntry")) {
-                button.setText(jmfServices[i].getType() + "...");
-                button.setMnemonic(KeyEvent.VK_E);
-            }
-
-            // Add ... to ResubmitQueueEntry button
-            if (jmfServices[i].getType().equals("ResubmitQueueEntry")) {
-                button.setText(jmfServices[i].getType() + "...");
-                button.setMnemonic(KeyEvent.VK_U);
-            }
-            messagesPanel.add(Box.createRigidArea(new Dimension(0, 2)));
-            messagesPanel.add(button);
-        }
-    }
-
-    /**
-     * Creates a new message button
-     *
-     * @param text          the text on the button, should be the message's type
-     * @param toolTip       a help message
-     * @param actionCommand the message's xsi:type
-     * @return
-     */
-    private JButton createMessageButton(String text, String toolTip, String actionCommand) {
-        JButton button = new JButton(text);
-        button.setToolTipText(toolTip);
-        button.setActionCommand(actionCommand);
-        button.setHorizontalAlignment(SwingConstants.LEFT);
-        button.addActionListener(this);
-        button.setMaximumSize(new Dimension(Short.MAX_VALUE, button.getPreferredSize().height));
-        return button;
-    }
+//    /**
+//     * Adds buttons to the GUI based on the message services specified in the JMF response. If the JMF
+//     * response does not contain any message services a warning dialog box is displayed.
+//     *
+//     * @param knownMessages The KnownMessages JMF message
+//     */
+//    public void buildMessageButtons(JDFJMF knownMessages) {
+//
+//        // add 'Send File...' button (default)
+//        JButton sendFileButton = createMessageButton("Send File...", "Send File...", ACTION_SEND_FILE);
+//        sendFileButton.setMnemonic(KeyEvent.VK_D);
+//        messagesPanel.add(sendFileButton);
+//
+//        // add SubmitQueueEntry button if there was no JMF response
+//        if (knownMessages == null || knownMessages.getResponse(0) == null || knownMessages.getResponse(0).getMessageService(0) == null) {
+//            JButton sqeButton = createMessageButton(EnumType.SubmitQueueEntry.getName() + "...", "Command", "Command" + EnumType.SubmitQueueEntry.getName());
+//            sqeButton.setMnemonic(KeyEvent.VK_E);
+//            messagesPanel.add(sqeButton);
+//            return;
+//        }
+//
+//        // Get known message services
+//        JDFMessage response = knownMessages.getResponse(0);
+//        List<org.cip4.jdflib.core.KElement> services = response.getChildElementVector(ElementName.MESSAGESERVICE, null, null, true, 0, false);
+//        if (services.size() == 0) {
+//            JOptionPane.showMessageDialog(this, "The device's reply to a KnownMessages query did not contain\n" + "any message services. You can still try sending JMF to the\n"
+//                    + "device using the 'Send File...' button to the left.", "No Message Services", JOptionPane.WARNING_MESSAGE);
+//            return;
+//        }
+//        // Sort services alphabetically
+//        JDFMessageService[] jmfServices = services.toArray(new JDFMessageService[0]);
+//        Arrays.sort(jmfServices, Comparator.comparing(o -> o.getType()));
+//
+//        // Create buttons
+//        for (int i = 0; i < jmfServices.length; i++) {
+//            if (jmfServices[i].getJMFRole() != null && jmfServices[i].getJMFRole().equals(EnumJMFRole.Sender)) {
+//                continue;
+//            }
+//            StringBuffer toolTip = new StringBuffer();
+//            String actionCommand = null;
+//            if (jmfServices[i].getAcknowledge()) {
+//                toolTip.append("Acknowledge ");
+//            }
+//            if (jmfServices[i].getCommand() || jmfServices[i].getType().contains("QueueEntry")) {
+//                toolTip.append("Command ");
+//                actionCommand = "Command" + jmfServices[i].getType();
+//            }
+//            if (jmfServices[i].getPersistent()) {
+//                toolTip.append("Persistent ");
+//            }
+//            if (jmfServices[i].getQuery() || jmfServices[i].getType().contains("Status") || jmfServices[i].getType().contains("Known")) {
+//                toolTip.append("Query ");
+//                actionCommand = "Query" + jmfServices[i].getType();
+//            }
+//            if (jmfServices[i].getSignal()) {
+//                toolTip.append("Signal ");
+//            }
+//            JButton button = createMessageButton(jmfServices[i].getType(), toolTip.toString(), actionCommand);
+//
+//            // Add ... to SubmitQueueEntry button
+//            if (jmfServices[i].getType().equals("SubmitQueueEntry")) {
+//                button.setText(jmfServices[i].getType() + "...");
+//                button.setMnemonic(KeyEvent.VK_E);
+//            }
+//
+//            // Add ... to ResubmitQueueEntry button
+//            if (jmfServices[i].getType().equals("ResubmitQueueEntry")) {
+//                button.setText(jmfServices[i].getType() + "...");
+//                button.setMnemonic(KeyEvent.VK_U);
+//            }
+//            messagesPanel.add(Box.createRigidArea(new Dimension(0, 2)));
+//            messagesPanel.add(button);
+//        }
+//    }
+//
+//    /**
+//     * Creates a new message button
+//     *
+//     * @param text          the text on the button, should be the message's type
+//     * @param toolTip       a help message
+//     * @param actionCommand the message's xsi:type
+//     * @return
+//     */
+//    private JButton createMessageButton(String text, String toolTip, String actionCommand) {
+//        JButton button = new JButton(text);
+//        button.setToolTipText(toolTip);
+//        button.setActionCommand(actionCommand);
+//        button.setHorizontalAlignment(SwingConstants.LEFT);
+//        button.addActionListener(this);
+//        button.setMaximumSize(new Dimension(Short.MAX_VALUE, button.getPreferredSize().height));
+//        return button;
+//    }
 
     /**
      * Returns an instance of a <code>Message</code> generated from the specified message template.
@@ -1011,24 +1047,24 @@ public class Alces extends JFrame implements ActionListener {
                 }
                 break;
 
-            case "CommandSubmitQueueEntry":
-                fileChooser = new JFileChooser(settingsService.getProp(SettingsServiceImpl.LAST_DIR));
-                fileChooser.addChoosableFileFilter(new JDFFileFilter());
-                fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
-                packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
-                if (packageAsMime) {
-                    fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " in a MIME package");
-                }
-                disablePreprocessing = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
-                if (disablePreprocessing) {
-                    fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " - JDF preprocessing is disabled");
-                }
-                returnValue = fileChooser.showOpenDialog(this);
-                settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
-                if (returnValue == JFileChooser.APPROVE_OPTION) {
-                    testRunnerService.startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
-                }
-                break;
+//            case "CommandSubmitQueueEntry":
+//                fileChooser = new JFileChooser(settingsService.getProp(SettingsServiceImpl.LAST_DIR));
+//                fileChooser.addChoosableFileFilter(new JDFFileFilter());
+//                fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
+//                packageAsMime = (e.getModifiers() & ActionEvent.ALT_MASK) != 0;
+//                if (packageAsMime) {
+//                    fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " in a MIME package");
+//                }
+//                disablePreprocessing = (e.getModifiers() & ActionEvent.SHIFT_MASK) != 0;
+//                if (disablePreprocessing) {
+//                    fileChooser.setDialogTitle(fileChooser.getDialogTitle() + " - JDF preprocessing is disabled");
+//                }
+//                returnValue = fileChooser.showOpenDialog(this);
+//                settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
+//                if (returnValue == JFileChooser.APPROVE_OPTION) {
+//                    testRunnerService.startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
+//                }
+//                break;
 
             case "CommandResubmitQueueEntry":
                 queueEntryId = queuePanel.getSelectedQueueEntryID();
@@ -1056,12 +1092,12 @@ public class Alces extends JFrame implements ActionListener {
                 }
                 break;
 
-            case "CommandStopPersistentChannel":
-                queueEntryId = queuePanel.getSelectedQueueEntryID();
-                jobId = queuePanel.getSelectedJobID();
-                outMessage = JMFMessageBuilder.buildStopPersistentChannel(settingsService.getServerJmfUrl(), queueEntryId, jobId);
-                testRunnerService.startTestSession(outMessage, getDeviceUrl());
-                break;
+//            case "CommandStopPersistentChannel":
+//                queueEntryId = queuePanel.getSelectedQueueEntryID();
+//                jobId = queuePanel.getSelectedJobID();
+//                outMessage = JMFMessageBuilder.buildStopPersistentChannel(settingsService.getServerJmfUrl(), queueEntryId, jobId);
+//                testRunnerService.startTestSession(outMessage, getDeviceUrl());
+//                break;
 
             case "CommandAbortQueueEntry":
                 queueEntryId = queuePanel.getSelectedQueueEntryID();
@@ -1140,16 +1176,16 @@ public class Alces extends JFrame implements ActionListener {
                 }
                 break;
 
-            case "QueryStatus":
-                queueEntryId = queuePanel.getSelectedQueueEntryID();
-                jobId = queuePanel.getSelectedJobID();
-                if (queueEntryId != null) {
-                    OutgoingJmfMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
-                    testRunnerService.startTestSession(message, getDeviceUrl());
-                } else {
-                    testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), getDeviceUrl());
-                }
-                break;
+//            case "QueryStatus":
+//                queueEntryId = queuePanel.getSelectedQueueEntryID();
+//                jobId = queuePanel.getSelectedJobID();
+//                if (queueEntryId != null) {
+//                    OutgoingJmfMessage message = JMFMessageBuilder.buildStatus(queueEntryId, jobId);
+//                    testRunnerService.startTestSession(message, getDeviceUrl());
+//                } else {
+//                    testRunnerService.startTestSession(jmfMessageService.createStatusQuery(), getDeviceUrl());
+//                }
+//                break;
 
             case "QueryResource":
                 queueEntryId = queuePanel.getSelectedQueueEntryID();
