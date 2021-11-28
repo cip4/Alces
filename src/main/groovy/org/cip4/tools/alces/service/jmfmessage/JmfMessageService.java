@@ -15,17 +15,15 @@ public interface JmfMessageService {
 
     /**
      * Create a status subscription jmf message.
-     * @param subscriberUrl The subscribers url.
      * @return The Status Subscription JMF Message.
      */
-    String createStatusSubscription(String subscriberUrl);
+    String createStatusSubscription();
 
     /**
      * Create a stop persistent channel command.
-     * @param subscriberUrl The subscribers url.
      * @return The StopPersistentChannel JMF Command.
      */
-    String createStopPersistentChannelCommand(String subscriberUrl);
+    String createStopPersistentChannelCommand();
 
     /**
      * Create a query queue status jmf message.

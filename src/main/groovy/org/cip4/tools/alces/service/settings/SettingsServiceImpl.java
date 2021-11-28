@@ -296,6 +296,11 @@ public class SettingsServiceImpl implements SettingsService {
 		return "http://" + getServerHost() + ":" + getServerPort() + getServerJmfContextPath();
 	}
 
+	@Override
+	public String getBaseUrl() {
+		return "http://" + getServerHost() + ":" + getServerPort();
+	}
+
 	/**
 	 * @return the test server's port
 	 */

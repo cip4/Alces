@@ -571,15 +571,15 @@ public class Alces extends JFrame implements ActionListener {
                     });
                     messagesPanel.add(button);
 
-                    button = createButton("Status Subscription");
+                    button = createButton("StatusSubscription");
                     button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createStatusSubscription("http://localhost:9090/alces/jmf"), activeJdfDevice.getJmfUrl());
+                        testRunnerService.startTestSession(jmfMessageService.createStatusSubscription(), activeJdfDevice.getJmfUrl());
                     });
                     messagesPanel.add(button);
                     break;
 
                 case "KnownMessages":
-                    button = createButton("Known Messages");
+                    button = createButton("KnownMessages");
                     button.addActionListener(e -> {
                         testRunnerService.startTestSession(jmfMessageService.createKnownMessagesQuery(), activeJdfDevice.getJmfUrl());
                     });
@@ -587,7 +587,7 @@ public class Alces extends JFrame implements ActionListener {
                     break;
 
                 case "KnownDevices":
-                    button = createButton("Known Devices");
+                    button = createButton("KnownDevices");
                     button.addActionListener(e -> {
                         testRunnerService.startTestSession(jmfMessageService.createKnownDevicesQuery(), activeJdfDevice.getJmfUrl());
                     });
@@ -611,11 +611,8 @@ public class Alces extends JFrame implements ActionListener {
                         int returnValue = fileChooser.showOpenDialog(this);
                         settingsService.putProp("last.dir", fileChooser.getCurrentDirectory().getAbsolutePath());
                         if (returnValue == JFileChooser.APPROVE_OPTION) {
-
-                            jmfMessageService.createSubmitQueueEntry(fileChooser.getSelectedFile());
-                            // testRunnerService.startTestSessionWithSubmitQueueEntry(fileChooser.getSelectedFile(), getDeviceUrl(), !disablePreprocessing, packageAsMime);
+                            testRunnerService.startTestSession(jmfMessageService.createSubmitQueueEntry(fileChooser.getSelectedFile()), activeJdfDevice.getJmfUrl());
                         }
-                        // testRunnerService.startTestSession(jmfMessageService.createKnownSubscriptionsQuery(), activeJdfDevice.getJmfUrl());
                     });
                     messagesPanel.add(button);
                     break;
@@ -623,7 +620,7 @@ public class Alces extends JFrame implements ActionListener {
                 case "StopPersistentChannel":
                     button = createButton("StopPersistentChannel");
                     button.addActionListener(e -> {
-                        testRunnerService.startTestSession(jmfMessageService.createStopPersistentChannelCommand("http://localhost:9090/alces/jmf"), activeJdfDevice.getJmfUrl());
+                        testRunnerService.startTestSession(jmfMessageService.createStopPersistentChannelCommand(), activeJdfDevice.getJmfUrl());
                     });
                     messagesPanel.add(button);
                     break;

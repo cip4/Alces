@@ -4,6 +4,7 @@ import org.cip4.jdflib.auto.JDFAutoDeviceFilter;
 import org.cip4.jdflib.jmf.JMFBuilder;
 import org.cip4.jdflib.jmf.JMFBuilderFactory;
 import org.cip4.tools.alces.service.file.FileService;
+import org.cip4.tools.alces.service.settings.SettingsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,10 +23,17 @@ public class JmfMessageServiceImpl implements JmfMessageService {
 
     private static final String SENDER_ID = "ALCES";
 
+    private static final String CONTEXT_PATH_FILES = "/alces/file/";
+
+    private static final String CONTEXT_PATH_JMF = "/alces/jmf/";
+
     private final JMFBuilder jmfBuilder;
 
     @Autowired
     private FileService fileService;
+
+    @Autowired
+    private SettingsService settingsService;
 
     @Value("${app.name}")
     private String agentName;
@@ -55,16 +63,16 @@ public class JmfMessageServiceImpl implements JmfMessageService {
     }
 
     @Override
-    public String createStatusSubscription(String subscriberUrl) {
+    public String createStatusSubscription() {
         return jmfBuilder
-                .buildStatusSubscription(subscriberUrl, 0, 0, null)
+                .buildStatusSubscription(getAlcesJmfUrl(), 0, 0, null)
                 .toXML();
     }
 
     @Override
-    public String createStopPersistentChannelCommand(String subscriberUrl) {
+    public String createStopPersistentChannelCommand() {
         return jmfBuilder
-                .buildStopPersistentChannel(null, null, subscriberUrl)
+                .buildStopPersistentChannel(null, null, getAlcesJmfUrl())
                 .toXML();
     }
 
@@ -92,14 +100,36 @@ public class JmfMessageServiceImpl implements JmfMessageService {
     @Override
     public String createKnownSubscriptionsQuery() {
         return jmfBuilder
-                .buildKnownMessagesQuery()
+                .buildKnownSubscriptionsQuery(null, null)
                 .toXML();
     }
 
     @Override
     public String createSubmitQueueEntry(File file) {
-        fileService.publishFile(file);
 
-        return "";
+        // publish given file
+        String filename = fileService.publishFile(file);
+
+        // create and return message
+        return jmfBuilder.
+                buildSubmitQueueEntry(getAlcesJmfUrl(), getAlcesFileUrl(filename))
+                .toXML();
+    }
+
+    /**
+     * Helper method to provide Alces' JMF URL.
+     * @return Alces confgured JMF URL
+     */
+    private String getAlcesJmfUrl() {
+        return settingsService.getBaseUrl() + CONTEXT_PATH_JMF;
+    }
+
+    /**
+     * Helper method to create a file url for a given file name.
+     * @param filename The given file name.
+     * @return The Alces' file url.
+     */
+    private String getAlcesFileUrl(String filename) {
+        return settingsService.getBaseUrl() + CONTEXT_PATH_FILES + filename;
     }
 }

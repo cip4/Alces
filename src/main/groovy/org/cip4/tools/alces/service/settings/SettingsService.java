@@ -2,7 +2,6 @@ package org.cip4.tools.alces.service.settings;
 
 import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
 import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.service.testrunner.model.TestSession;
 
 import javax.swing.*;
 import java.util.Map;
@@ -28,6 +27,12 @@ public interface SettingsService {
      * @return the server URL, for example http://localhost:9090/alces/jmf
      */
     String getServerJmfUrl();
+
+    /**
+     * Returns Alces configured base url.
+     * @return Alces' base URL a String.
+     */
+    String getBaseUrl();
 
     /**
      * Returns an array of the currently enabled <code>Preprocessor</code>s.
