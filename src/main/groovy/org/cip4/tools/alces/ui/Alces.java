@@ -576,6 +576,15 @@ public class Alces extends JFrame implements ActionListener {
                     button.addActionListener(e -> startTestSession(jmfMessageService.createStatusSubscription()));
                     messagesPanel.add(button);
                 }
+                case "QueueStatus" -> {
+                    JButton button = createButton("QueueStatus");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createQueueStatusQuery()));
+                    messagesPanel.add(button);
+
+                    button = createButton("QueueStatusSubscription");
+                    button.addActionListener(e -> startTestSession(jmfMessageService.createQueueStatusSubscription()));
+                    messagesPanel.add(button);
+                }
                 case "Resource" -> {
                     JButton button = createButton("Resource");
                     button.addActionListener(e -> startTestSession(jmfMessageService.createResourceQuery()));

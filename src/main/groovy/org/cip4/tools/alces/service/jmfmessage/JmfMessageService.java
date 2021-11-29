@@ -38,16 +38,22 @@ public interface JmfMessageService {
     String createStatusSubscription();
 
     /**
-     * Create a stop persistent channel command.
-     * @return The StopPersistentChannel JMF Command.
-     */
-    String createStopPersistentChannelCommand();
-
-    /**
      * Create a query queue status jmf message.
      * @return The QueryQueueStatus JMF Message.
      */
     String createQueueStatusQuery();
+
+    /**
+     * Create a queue status subscription jmf message.
+     * @return The QueueStatusSubscription JMF Message.
+     */
+    String createQueueStatusSubscription();
+
+    /**
+     * Create a stop persistent channel command.
+     * @return The StopPersistentChannel JMF Command.
+     */
+    String createStopPersistentChannelCommand();
 
     /**
      * Create a query known devices jmf message.

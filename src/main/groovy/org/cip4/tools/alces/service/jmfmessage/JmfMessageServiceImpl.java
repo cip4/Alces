@@ -102,6 +102,13 @@ public class JmfMessageServiceImpl implements JmfMessageService {
     }
 
     @Override
+    public String createQueueStatusSubscription() {
+        return jmfBuilder
+                .buildQueueStatusSubscription(getAlcesJmfUrl())
+                .toXML();
+    }
+
+    @Override
     public String createKnownDevicesQuery() {
         return jmfBuilder
                 .buildKnownDevicesQuery(JDFAutoDeviceFilter.EnumDeviceDetails.Details)
