@@ -2,7 +2,6 @@ package org.cip4.tools.alces.service.settings;
 
 import org.apache.commons.io.FileUtils;
 import org.cip4.tools.alces.service.file.FileService;
-import org.cip4.tools.alces.service.jmfmessage.JmfMessageServiceImpl;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,7 +32,7 @@ class SettingsServiceImplTest {
     public void readDefaultValue() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        Path testDir = Files.createTempDirectory("alces-test-readDefaultValue-");
         Path confFile = testDir.resolve("alces.conf");
 
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
@@ -54,7 +53,7 @@ class SettingsServiceImplTest {
     public void changeValue() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        Path testDir = Files.createTempDirectory("alces-test-changeValue-");
         Path confFile = testDir.resolve("alces.conf");
 
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
@@ -127,7 +126,7 @@ class SettingsServiceImplTest {
     public void appendAddress_new_value() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        Path testDir = Files.createTempDirectory("alces-test-appendAddress_new_value-");
         Path confFile = testDir.resolve("alces.conf");
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
 
@@ -156,7 +155,7 @@ class SettingsServiceImplTest {
     public void appendAddress_existing_value() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-dir-");
+        Path testDir = Files.createTempDirectory("alces-test-appendAddress_existing_value-");
         Path confFile = testDir.resolve("alces.conf");
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
 
