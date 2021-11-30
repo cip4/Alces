@@ -1,6 +1,5 @@
 package org.cip4.tools.alces.service.settings;
 
-import org.apache.commons.io.FileUtils;
 import org.cip4.tools.alces.service.file.FileService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,7 +9,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Properties;
 

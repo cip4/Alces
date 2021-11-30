@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -56,10 +57,8 @@ public class SettingsServiceImpl implements SettingsService {
 	 * Save the properties state to file.
 	 */
 	private void saveState() {
-		try {
-			this.properties.store(Files.newOutputStream(
-					fileService.getAlcesSettingsFile()), null
-			);
+		try (OutputStream outputStream = Files.newOutputStream(fileService.getAlcesSettingsFile())) {
+			this.properties.store(outputStream, null);
 		} catch (IOException e) {
 			log.error("Error writing settings.");
 		}
