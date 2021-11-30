@@ -1,17 +1,13 @@
 package org.cip4.tools.alces.controller;
 
 import org.apache.commons.io.FilenameUtils;
-import org.cip4.jdflib.core.JDFComment;
 import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.jdflib.jmf.JDFResponse;
-import org.cip4.jdflib.resource.JDFNotification;
 import org.cip4.tools.alces.service.file.FileService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,7 +22,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.Iterator;
 
 @RestController
 public class JmfController {

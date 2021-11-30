@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
@@ -43,13 +44,20 @@ public class SettingsServiceImpl implements SettingsService {
 	private Properties properties;
 
 	@PostConstruct
-	public void init() throws IOException {
+	public void init() {
 		this.properties = new Properties();
 
 		if(fileService.getAlcesSettingsFile().toFile().exists()) {
-			this.properties.load(
-					Files.newInputStream(fileService.getAlcesSettingsFile())
-			);
+			try(InputStream inputStream = Files.newInputStream(fileService.getAlcesSettingsFile())) {
+				this.properties.load(inputStream);
+				log.info("Config file has been read successfully.");
+
+			} catch (IOException e) {
+				log.error("Error reading config file.");
+			}
+
+		} else {
+			log.info("No config file has been found. Load default values.");
 		}
 	}
 
@@ -149,12 +157,12 @@ public class SettingsServiceImpl implements SettingsService {
 
 	@Override
 	public int getDevicePaneWidth() {
-		return Integer.parseInt(properties.getProperty(KEY_TEST_PANE_WIDTH, "235"));
+		return Integer.parseInt(properties.getProperty(KEY_DEVICE_PANE_WIDTH, "235"));
 	}
 
 	@Override
 	public void setDevicePaneWidth(int devicePaneWidth) {
-		properties.setProperty(KEY_TEST_PANE_WIDTH, Integer.toString(devicePaneWidth));
+		properties.setProperty(KEY_DEVICE_PANE_WIDTH, Integer.toString(devicePaneWidth));
 		saveState();
 	}
 }
