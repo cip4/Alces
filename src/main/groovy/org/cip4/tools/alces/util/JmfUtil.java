@@ -1,5 +1,6 @@
 package org.cip4.tools.alces.util;
 
+import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.jdflib.core.JDFDoc;
 import org.cip4.jdflib.core.JDFParser;
 import org.cip4.jdflib.jmf.JDFJMF;
@@ -7,10 +8,10 @@ import org.cip4.jdflib.util.MimeUtil;
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 
 import javax.mail.Multipart;
 import java.io.ByteArrayInputStream;
-import java.io.StringReader;
 
 public class JmfUtil {
 
@@ -25,10 +26,10 @@ public class JmfUtil {
         JDFJMF jmf = null;
 
         try {
-            if (jmfMessage.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
+            if (jmfMessage.getContentType().startsWith(JDFConstants.MIME_JMF)) {
                 jmf = new JDFParser().parseString(jmfMessage.getBody()).getJMFRoot();
 
-            } else if (jmfMessage.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE)) {
+            } else if (jmfMessage.getContentType().startsWith(MediaType.MULTIPART_RELATED_VALUE)) {
                 Multipart multipart = MimeUtil.getMultiPart(new ByteArrayInputStream(jmfMessage.getBody().getBytes()));
                 JDFDoc jdfDoc = MimeUtil.getJDFDoc(multipart.getBodyPart(0));
 

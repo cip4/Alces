@@ -32,7 +32,6 @@ import org.cip4.tools.alces.ui.component.JQueuePanel;
 import org.cip4.tools.alces.ui.component.JTestSessionsTree;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.util.JDFFileFilter;
-import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -154,8 +153,12 @@ public class Alces extends JFrame {
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
 
         JLabel statusLabel = new JLabel("JDF Library: CIP4 JDFLibJ " + JDFAudit.getStaticAgentVersion() + "  ");
-        statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        statusPanel.add(statusLabel);
+        // statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
+        statusPanel.add(statusLabel, BorderLayout.WEST);
+
+        JLabel baseUrlLabel = new JLabel("BaseUrl: " + settingsService.getBaseUrl());
+        // baseUrlLabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        statusPanel.add(baseUrlLabel, BorderLayout.EAST);
 
         return statusPanel;
     }

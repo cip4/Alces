@@ -8,20 +8,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.mail.Multipart;
-
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang.RandomStringUtils;
-import org.cip4.jdflib.core.JDFDoc;
-import org.cip4.jdflib.core.JDFParser;
+import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.jdflib.node.JDFNode;
-import org.cip4.jdflib.util.MimeUtil;
 import org.cip4.tools.alces.service.testrunner.model.*;
 import org.cip4.tools.alces.service.settings.SettingsService;
-import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.service.testrunner.jmftest.JmfTest;
 import org.cip4.tools.alces.util.*;
 import org.slf4j.Logger;
@@ -29,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -135,13 +128,13 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
         for (OutgoingJmfMessage mOut : testSession.getOutgoingJmfMessages()) {
             JDFJMF jmfOut = JmfUtil.getBodyAsJMF(mOut);
-            if (mOut.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
+            if (mOut.getContentType().startsWith(JDFConstants.MIME_JMF)) {
                 JDFMessage jmfMsgOut = jmfOut.getMessageElement(null, null, 0);
                 if (jmfMsgOut != null && refId.startsWith(jmfMsgOut.getID())) {
                     log.debug("Found outgoing JMF message with refID '" + jmfMsgOut.getID() + "' that matches incoming JMF message with refID '" + refId + "'.");
                     return mOut;
                 }
-            } else if (mOut.getContentType().startsWith(JDFConstants.MIME_CONTENT_TYPE)) {
+            } else if (mOut.getContentType().startsWith(MediaType.MULTIPART_RELATED_VALUE)) {
                 log.debug("Looking for refID '" + refId + "' in outgoing JMF MIME package...");
                 AbstractJmfMessage tempMsg = getJMFFromMime(mOut);
                 if (tempMsg != null) {
@@ -201,9 +194,9 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             String[] fileUrls = org.cip4.tools.alces.util.MimeUtil.extractMimePackage(mimeStream, outputDir.toURI().toURL().toExternalForm());
             // Load first file, JMF is always at first position
             for (int i = 0; i < fileUrls.length; i++) {
-                if (fileUrls[i].endsWith(JDFConstants.JMF_EXTENSION)) {
+                if (fileUrls[i].endsWith(".jmf")) {
                     String body = IOUtils.toString(new FileInputStream(new File(new URI(fileUrls[i]))));
-                    OutgoingJmfMessage tempMsgOut = new OutgoingJmfMessage(JDFConstants.JMF_CONTENT_TYPE, body);
+                    OutgoingJmfMessage tempMsgOut = new OutgoingJmfMessage(JDFConstants.MIME_JMF, body);
                     log.debug("Extracted JMF from JMF MIME package: " + tempMsgOut);
                     return tempMsgOut;
                 }
