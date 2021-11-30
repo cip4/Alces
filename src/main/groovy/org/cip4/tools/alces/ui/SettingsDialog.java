@@ -4,11 +4,8 @@
 package org.cip4.tools.alces.ui;
 
 import java.awt.BorderLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -30,14 +27,10 @@ import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JSpinner;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import org.cip4.tools.alces.service.settings.SettingsService;
-import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.ApplicationContextUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,8 +104,8 @@ public class SettingsDialog extends JDialog implements ActionListener {
 		customPanel.setLayout(new BorderLayout());
 		buildCustomPanel();
 
-		tabbedPane.addTab("Directories", createIcon("/org/cip4/tools/alces/icons/jmf.gif"), pathPanel, "");
-		tabbedPane.addTab("Advanced", createIcon("/org/cip4/tools/alces/icons/test_pass.gif"), customPanel, "");
+		tabbedPane.addTab("Directories", createIcon("/org/cip4/tools/alces/ui/jmf.gif"), pathPanel, "");
+		tabbedPane.addTab("Advanced", createIcon("/org/cip4/tools/alces/ui/test_pass.gif"), customPanel, "");
 
 		JPanel buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.LINE_AXIS));
@@ -171,29 +164,29 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
 		JPanel noContentTypePanel = new JPanel();
 		noContentTypePanel.setLayout(new BorderLayout());
-		Boolean noContentTypeEnabled = Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.NO_CONTENT_TYPE));
+		Boolean noContentTypeEnabled = true; // Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.NO_CONTENT_TYPE));
 		noContentTypeCheckBox = new JCheckBox("Treat incoming messages with empty Content-Type as JMF", noContentTypeEnabled);
 		noContentTypePanel.add(noContentTypeCheckBox, BorderLayout.NORTH);
 
 		JPanel connectMsgPanel = new JPanel();
 		connectMsgPanel.setLayout(new BorderLayout());
-		Boolean showConnectMessagesEnabled = Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES));
+		Boolean showConnectMessagesEnabled = true; // Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES));
 		JCheckBox showConnectMsgCheckBox = new JCheckBox("Show JMF messages sent during connect handshake", showConnectMessagesEnabled);
-		showConnectMsgCheckBox.addItemListener(new ItemListener() {
-			public void itemStateChanged(ItemEvent ie) {
-				if (ie.getStateChange() == ItemEvent.SELECTED) {
-					settingsService.putProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES, "true");
-				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
-					settingsService.putProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES, "false");
-				}
-			}
-		});
+//		showConnectMsgCheckBox.addItemListener(new ItemListener() {
+//			public void itemStateChanged(ItemEvent ie) {
+//				if (ie.getStateChange() == ItemEvent.SELECTED) {
+//					settingsService.putProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES, "true");
+//				} else if (ie.getStateChange() == ItemEvent.DESELECTED) {
+//					settingsService.putProp(SettingsServiceImpl.SHOW_CONNECT_MESSAGES, "false");
+//				}
+//			}
+//		});
 		connectMsgPanel.add(showConnectMsgCheckBox, BorderLayout.NORTH);
 
 		JPanel ipPanel = new JPanel();
 		ipPanel.setLayout(new BorderLayout());
 
-		specificIpCheckBox = new JCheckBox("Use specified IP-address", Boolean.parseBoolean(settingsService.getProp(SettingsServiceImpl.USE_SPECIFIED_IP)));
+		specificIpCheckBox = new JCheckBox("Use specified IP-address", true);
 		ipPanel.add(new JLabel("Reply IP-address to use:"), BorderLayout.WEST);
 		ipComboBox = new JComboBox();
 		ipComboBox.setEditable(true);
@@ -218,7 +211,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
 
 		JLabel pathLabel = new JLabel("Path to save Requests / Responses");
 		pathLabel.setBorder(BorderFactory.createEmptyBorder(5, 0, 0, 0));
-		final JTextField pathTextField = new JTextField(settingsService.getProp(SettingsServiceImpl.PATH_TO_SAVE));
+		final JTextField pathTextField = new JTextField("laba"); //settingsService.getProp(SettingsServiceImpl.PATH_TO_SAVE));
 		JButton savePathButton = new JButton("Browse...");
 		savePathButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -230,7 +223,7 @@ public class SettingsDialog extends JDialog implements ActionListener {
 				chooser.setFileHidingEnabled(true);
 				if (returnVal == JFileChooser.APPROVE_OPTION) {
 					pathTextField.setText(chooser.getSelectedFile().getAbsolutePath());
-					settingsService.putProp(SettingsServiceImpl.PATH_TO_SAVE, chooser.getSelectedFile().getAbsolutePath());
+//					settingsService.putProp(SettingsServiceImpl.PATH_TO_SAVE, chooser.getSelectedFile().getAbsolutePath());
 				}
 			}
 
@@ -278,14 +271,14 @@ public class SettingsDialog extends JDialog implements ActionListener {
 		} catch (SocketException e) {
 			e.printStackTrace();
 		}
-		ipComboBox.setSelectedItem(settingsService.getProp(SettingsServiceImpl.HOST));
+		// ipComboBox.setSelectedItem(settingsService.getProp(SettingsServiceImpl.HOST));
 	}
 
 	private void getGeneralPrefs() {
-		_gerneralPrefs = settingsService.getGeneralPrefs();
-
-		jdfPath = new File(_gerneralPrefs.get("alces.context.jdf.path").toString());
-		jmfPath = new File(_gerneralPrefs.get("alces.context.jmf.path").toString());
+//		_gerneralPrefs = settingsService.getGeneralPrefs();
+//
+//		jdfPath = new File(_gerneralPrefs.get("alces.context.jdf.path").toString());
+//		jmfPath = new File(_gerneralPrefs.get("alces.context.jmf.path").toString());
 	}
 
 	/**
@@ -316,12 +309,12 @@ public class SettingsDialog extends JDialog implements ActionListener {
 		if (e.getSource() == cancelButton) {
 			this.dispose();
 		} else if (e.getSource() == saveButton) {
-			settingsService.setPreferences(adoptGeneralPrefs());
-
-			settingsService.putProp(SettingsServiceImpl.NO_CONTENT_TYPE, "" + noContentTypeCheckBox.isSelected());
-
-			settingsService.putProp(SettingsServiceImpl.USE_SPECIFIED_IP, "" + specificIpCheckBox.isSelected());
-			settingsService.putProp(SettingsServiceImpl.HOST, (String) ipComboBox.getSelectedItem());
+//			settingsService.setPreferences(adoptGeneralPrefs());
+//
+//			settingsService.putProp(SettingsServiceImpl.NO_CONTENT_TYPE, "" + noContentTypeCheckBox.isSelected());
+//
+//			settingsService.putProp(SettingsServiceImpl.USE_SPECIFIED_IP, "" + specificIpCheckBox.isSelected());
+//			settingsService.putProp(SettingsServiceImpl.HOST, (String) ipComboBox.getSelectedItem());
 
 			this.dispose();
 		} else if (e.getSource() == jdfPathButton) {

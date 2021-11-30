@@ -25,6 +25,8 @@ class FileServiceImpl implements FileService {
     private static final String JDF_SCHEMA_FOLDER = "jdf-schema"
     private static final String JDF_SCHEMA_FILENAME = "JDF.xsd"
 
+    private static final String SETTINGS_FILE_NAME = "alces.conf"
+
     private static final String CACHE_FOLDER = "cache"
 
     private static final String PUBLIC_FOLDER = "public"
@@ -69,6 +71,11 @@ class FileServiceImpl implements FileService {
      * Returns the path to the JDF Schema.
      * @return The path to JDF Schema as path object.
      */
+    @Override
+    Path getAlcesSettingsFile() {
+        return rootDir.resolve(SETTINGS_FILE_NAME)
+    }
+
     @Override
     Path getJdfSchema() {
         return getJdfSchemaDir().resolve(JDF_SCHEMA_FILENAME)

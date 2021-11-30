@@ -136,8 +136,65 @@ public class JmfMessageServiceImpl implements JmfMessageService {
         String filename = fileService.publishFile(file);
 
         // create and return message
-        return jmfBuilder.
-                buildSubmitQueueEntry(getAlcesJmfUrl(), getAlcesFileUrl(filename))
+        return jmfBuilder
+                .buildSubmitQueueEntry(getAlcesJmfUrl(), getAlcesFileUrl(filename))
+                .toXML();
+    }
+
+    @Override
+    public String createResubmitQueueEntry(File file, String queueEntryId) {
+
+        // publish given file
+        String filename = fileService.publishFile(file);
+
+        // create and return message
+        return jmfBuilder
+                .buildResubmitQueueEntry(queueEntryId, getAlcesFileUrl(filename))
+                .toXML();
+    }
+
+    @Override
+    public String createSuspendQueueEntry(String queueEntryId) {
+
+        // create and return message
+        return jmfBuilder
+                .buildSuspendQueueEntry(queueEntryId)
+                .toXML();
+    }
+
+    @Override
+    public String createResumeQueueEntry(String queueEntryId) {
+
+        // create and return message
+        return jmfBuilder
+                .buildResumeQueueEntry(queueEntryId)
+                .toXML();
+    }
+
+    @Override
+    public String createAbortQueueEntry(String queueEntryId) {
+
+        // create and return message
+        return jmfBuilder
+                .buildAbortQueueEntry(queueEntryId)
+                .toXML();
+    }
+
+    @Override
+    public String createHoldQueueEntry(String queueEntryId) {
+
+        // create and return message
+        return jmfBuilder
+                .buildHoldQueueEntry(queueEntryId)
+                .toXML();
+    }
+
+    @Override
+    public String createRemoveQueueEntry(String queueEntryId) {
+
+        // create and return message
+        return jmfBuilder
+                .buildRemoveQueueEntry(queueEntryId)
                 .toXML();
     }
 

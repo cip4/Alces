@@ -48,7 +48,6 @@ class JContentRenderer extends Component {
         } else {
             return createJTextArea();
         }
-
     }
 
     /**

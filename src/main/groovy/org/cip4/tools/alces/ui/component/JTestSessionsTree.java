@@ -27,7 +27,7 @@ import java.util.List;
  */
 public class JTestSessionsTree extends JTree implements TestSessionsListener {
 
-    private final static String RES_ROOT = "/org/cip4/tools/alces/icons/";
+    private final static String RES_ROOT = "/org/cip4/tools/alces/ui/";
 
     private final JTestSessionsTree testSuiteTree;
 

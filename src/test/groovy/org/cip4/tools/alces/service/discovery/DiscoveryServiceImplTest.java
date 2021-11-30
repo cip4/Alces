@@ -1,9 +1,7 @@
 package org.cip4.tools.alces.service.discovery;
 
 import org.cip4.jdflib.core.JDFConstants;
-import org.cip4.tools.alces.service.discovery.model.JdfController;
-import org.cip4.tools.alces.service.discovery.model.JdfDevice;
-import org.cip4.tools.alces.service.discovery.model.JdfMessageService;
+import org.cip4.tools.alces.service.discovery.model.*;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
@@ -96,15 +94,40 @@ public class DiscoveryServiceImplTest {
         doReturn(createJmfResponse(jmfKnownMessages)).when(testRunnerServiceMock).startTestSession("KNOWN_MESSAGES", "JMF_URL");
 
         // act
-        List<JdfMessageService> jdfMessageServices = ReflectionTestUtils.invokeMethod(discoveryService, "processKnownMessages", "JMF_URL");
+        List<MessageService> messageServices = ReflectionTestUtils.invokeMethod(discoveryService, "processKnownMessages", "JMF_URL");
 
         // assert
-        assertNotNull(jdfMessageServices, "JDF Devices are null.");
-        assertEquals(20, jdfMessageServices.size(), "Number of JDF Devices is wrong.");
+        assertNotNull(messageServices, "JDF Devices are null.");
+        assertEquals(20, messageServices.size(), "Number of JDF Devices is wrong.");
 
-        JdfMessageService jdfMessageService = jdfMessageServices.get(1);
-        assertEquals("HoldQueue", jdfMessageService.getType(), "Type is wrong.");
-        assertEquals("http", jdfMessageService.getUrlSchemes(), "URLSchemes is wrong.");
+        MessageService messageService = messageServices.get(1);
+        assertEquals("HoldQueue", messageService.getType(), "Type is wrong.");
+        assertEquals("http", messageService.getUrlSchemes(), "URLSchemes is wrong.");
+    }
+
+    @Test
+    public void processQueueStatus_1() throws Exception {
+
+        // arrange
+        doReturn("QUEUE_STATUS").when(jmfMessageServiceMock).createQueueStatusQuery();
+        byte[] jmfQueueStatus = DiscoveryServiceImplTest.class.getResourceAsStream(RES_ROOT + "bambi-response-queuestatus.jmf").readAllBytes();
+        doReturn(createJmfResponse(jmfQueueStatus)).when(testRunnerServiceMock).startTestSession("QUEUE_STATUS", "JMF_URL");
+
+        // act
+        Queue queue = ReflectionTestUtils.invokeMethod(discoveryService, "processQueueStatus", "JMF_URL");
+
+        // assert
+        assertNotNull(queue, "Queue is null.");
+        assertEquals("sim003", queue.getDeviceId(), "DeviceID si wrong.");
+        assertEquals("Held", queue.getStatus(), "Queue Status is wrong.");
+        assertEquals(2, queue.getQueueEntries().size(), "Number of Queue Entries is wrong.");
+
+        QueueEntry queueEntry = queue.getQueueEntries().get(1);
+        assertEquals("qe_211129_144457383_041440", queueEntry.getQueueEntryId(), "QueueEntryId is wrong.");
+        assertEquals("2893", queueEntry.getJobId(), "JobID is wrong.");
+        assertEquals("2", queueEntry.getJobPartId(), "JobPartID is wrong.");
+        assertEquals(1, queueEntry.getPriority(), "Priority is wrong.");
+        assertEquals("Running", queueEntry.getStatus(), "Status is wrong.");
     }
 
     /**

@@ -1,6 +1,8 @@
 package org.cip4.tools.alces.service.discovery;
 
 import org.cip4.tools.alces.service.discovery.model.JdfController;
+import org.cip4.tools.alces.service.discovery.model.JdfDevice;
+import org.cip4.tools.alces.service.discovery.model.Queue;
 
 /**
  * Business interface encapsulating connectivity functionality.
@@ -14,4 +16,10 @@ public interface DiscoveryService {
      */
     JdfController discover(String jmfEndpointUrl);
 
+    /**
+     * Load the queue of an JDF Device.
+     * @param jdfDevice The JDF Device.
+     * @return Te queue of the JDF device.
+     */
+    Queue loadQueue(JdfDevice jdfDevice);
 }

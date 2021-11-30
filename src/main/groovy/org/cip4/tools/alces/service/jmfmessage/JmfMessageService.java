@@ -81,6 +81,48 @@ public interface JmfMessageService {
     String createSubmitQueueEntry(File file);
 
     /**
+     * Create a resubmit queue entry JMF command.
+     * @param file The file to be resubmitted.
+     * @return The ResubmitQueueEntry JMF Message.
+     */
+    String createResubmitQueueEntry(File file, String queueEntryId);
+
+    /**
+     * Create a suspend queue entry JMF command.
+     * @param queueEntryId The queue entry id of the queue entry being suspended.
+     * @return The SuspendQueueEntry JMF Message.
+     */
+    String createSuspendQueueEntry(String queueEntryId);
+
+    /**
+     * Create a resume queue entry JMF command.
+     * @param queueEntryId The queue entry id of the queue entry being resumed.
+     * @return The ResumeQueueEntry JMF Message.
+     */
+    String createResumeQueueEntry(String queueEntryId);
+
+    /**
+     * Create a abort queue entry JMF command.
+     * @param queueEntryId The queue entry id of the queue entry being abort.
+     * @return The AbortQueueEntry JMF Message.
+     */
+    String createAbortQueueEntry(String queueEntryId);
+
+    /**
+     * Create a hold queue entry JMF command.
+     * @param queueEntryId The queue entry id of the queue entry being held.
+     * @return The HoldQueueEntry JMF Message.
+     */
+    String createHoldQueueEntry(String queueEntryId);
+
+    /**
+     * Create a remove queue entry JMF command.
+     * @param queueEntryId The queue entry id of the queue entry being removed.
+     * @return The RemoveQueueEntry JMF Message.
+     */
+    String createRemoveQueueEntry(String queueEntryId);
+
+    /**
      * Create a hold queue command.
      * @return The hold queue command.
      */

@@ -1,5 +1,8 @@
 package org.cip4.tools.alces.service.discovery.model;
 
+import java.util.List;
+import java.util.Queue;
+
 /**
  * Model object for a JDF Device.
  */
@@ -17,6 +20,7 @@ public class JdfDevice {
     private final String agentName;
     private final String agentVersion;
     private final String icsVerions;
+    private final List<QueueEntry> queueEntries;
 
     /**
      * Default constructor.
@@ -34,6 +38,7 @@ public class JdfDevice {
         this.agentName = builder.agentName;
         this.agentVersion = builder.agentVersion;
         this.icsVerions = builder.icsVerions;
+        this.queueEntries = builder.queueEntries;
     }
 
     public String getDeviceId() {
@@ -84,6 +89,10 @@ public class JdfDevice {
         return icsVerions;
     }
 
+    public List<QueueEntry> getQueueEntries() {
+        return queueEntries;
+    }
+
     /**
      * Device builder class
      */
@@ -101,6 +110,7 @@ public class JdfDevice {
         private String agentName;
         private String agentVersion;
         private String icsVerions;
+        private List<QueueEntry> queueEntries;
 
         /**
          * Default constructor.
@@ -165,6 +175,11 @@ public class JdfDevice {
 
         public Builder withIcsVerions(String icsVerions) {
             this.icsVerions = icsVerions;
+            return this;
+        }
+
+        public Builder withQueueEntries(List<QueueEntry> queueEntries) {
+            this.queueEntries = queueEntries;
             return this;
         }
 

@@ -2,18 +2,13 @@ package org.cip4.tools.alces.service.discovery;
 
 import org.cip4.jdflib.core.AttributeName;
 import org.cip4.jdflib.core.JDFDoc;
-import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessageService;
+import org.cip4.jdflib.jmf.JDFQueue;
 import org.cip4.jdflib.jmf.JDFResponse;
-import org.cip4.jdflib.resource.JDFDevice;
 import org.cip4.jdflib.resource.JDFDeviceList;
-import org.cip4.tools.alces.service.discovery.model.JdfController;
-import org.cip4.tools.alces.service.discovery.model.JdfDevice;
-import org.cip4.tools.alces.service.discovery.model.JdfMessageService;
+import org.cip4.tools.alces.service.discovery.model.*;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
-import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,7 +18,6 @@ import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -46,22 +40,24 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 
         // initiate JMF Handshake
         List<JdfDevice> jdfDevices = processKnownDevices(jmfEndpointUrl);
-        List<JdfMessageService> jdfMessageServices = processKnownMessages(jmfEndpointUrl);
-        // TODO: Queue Status
+        List<MessageService> messageServices = processKnownMessages(jmfEndpointUrl);
 
         // create and return controller object
-        return new JdfController(
-                Collections.unmodifiableList(jdfDevices),
-                Collections.unmodifiableList(jdfMessageServices)
-        );
+        return new JdfController(jdfDevices, messageServices);
+    }
+
+    @Override
+    public Queue loadQueue(JdfDevice jdfDevice) {
+        return processQueueStatus(jdfDevice.getJmfUrl());
     }
 
     /**
      * Process a known messages message.
+     *
      * @param jmfEndpointUrl The target url.
      * @return List of JDF Message Services.
      */
-    private List<JdfMessageService> processKnownMessages(String jmfEndpointUrl) {
+    private List<MessageService> processKnownMessages(String jmfEndpointUrl) {
 
         // query target url
         String jmfResponseKnownDevices = testRunnerService
@@ -73,15 +69,15 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         JDFDoc jdfDoc = JDFDoc.parseStream(new ByteArrayInputStream(jmfResponseKnownDevices.getBytes(StandardCharsets.UTF_8)));
         JDFResponse jdfResponse = jdfDoc.getJMFRoot().getResponse(0);
 
-        List<JdfMessageService> jdfMessageServices = new ArrayList<>();
+        List<MessageService> messageServices = new ArrayList<>();
 
         if (jdfResponse != null) {
             Arrays.stream(jdfResponse.getChildElementArray()).forEach(kElement -> {
 
                 JDFMessageService jdfMessageService = (JDFMessageService) kElement;
 
-                jdfMessageServices.add(
-                        new JdfMessageService(
+                messageServices.add(
+                        new MessageService(
                                 jdfMessageService.getType(),
                                 jdfMessageService.getAttribute(AttributeName.URLSCHEMES)
                         )
@@ -90,11 +86,12 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         }
 
         // return device list
-        return jdfMessageServices;
+        return messageServices;
     }
 
     /**
      * Process a known devices message.
+     *
      * @param jmfEndpointUrl The target url.
      * @return List of JDF Devices.
      */
@@ -138,5 +135,59 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 
         // return device list
         return jdfDevices;
+    }
+
+    /**
+     * Process a queue status message.
+     *
+     * @param jmfEndpointUrl The target url.
+     * @return List of QueueEntry objects.
+     */
+    private Queue processQueueStatus(String jmfEndpointUrl) {
+
+        // query target url
+        String jmfResponseQueueStatus = testRunnerService
+                .startTestSession(jmfMessageService.createQueueStatusQuery(), jmfEndpointUrl)
+                .getIncomingJmfMessages().get(0)
+                .getBody();
+
+        // analyze response
+        JDFDoc jdfDoc = JDFDoc.parseStream(new ByteArrayInputStream(jmfResponseQueueStatus.getBytes(StandardCharsets.UTF_8)));
+        JDFQueue jdfQueue = jdfDoc.getJMFRoot().getResponse(0).getQueue(0);
+
+        // extract queue entries
+        Queue queue;
+
+        if (jdfQueue != null) {
+            List<QueueEntry> queueEntries = new ArrayList<>();
+
+            jdfQueue.getAllQueueEntry().forEach(jdfQueueEntry -> {
+
+                // build queue entry
+                QueueEntry queueEntry = new QueueEntry(
+                        jdfQueueEntry.getQueueEntryID(),
+                        jdfQueueEntry.getJobID(),
+                        jdfQueueEntry.getJobPartID(),
+                        jdfQueueEntry.getPriority(),
+                        jdfQueueEntry.getQueueEntryStatus().getName()
+                );
+
+                // add queue entry to list
+                queueEntries.add(queueEntry);
+            });
+
+            // extract queue details
+            queue = new Queue(
+                    jdfQueue.getDeviceID(),
+                    jdfQueue.getQueueStatus().getName(),
+                    System.currentTimeMillis(),
+                    queueEntries
+            );
+        } else {
+            queue = null;
+        }
+
+        // return queue
+        return queue;
     }
 }

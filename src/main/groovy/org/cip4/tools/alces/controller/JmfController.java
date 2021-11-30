@@ -1,15 +1,16 @@
 package org.cip4.tools.alces.controller;
 
 import org.apache.commons.io.FilenameUtils;
+import org.cip4.jdflib.core.JDFComment;
 import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.tools.alces.jmf.JMFMessageBuilder;
+import org.cip4.jdflib.jmf.JDFResponse;
+import org.cip4.jdflib.resource.JDFNotification;
 import org.cip4.tools.alces.service.file.FileService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.util.AlcesPathUtil;
 import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
@@ -25,9 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Enumeration;
+import java.util.Iterator;
 
 @RestController
 public class JmfController {
@@ -46,18 +45,6 @@ public class JmfController {
 
     @Autowired
     private TestRunnerService testRunnerService;
-
-    private final String testDataDir = AlcesPathUtil.ALCES_TEST_DATA_DIR;
-
-    @RequestMapping(value = "/jdf/{filename}", method = RequestMethod.GET, produces = MediaType.TEXT_XML_VALUE)
-    @Deprecated
-    public byte[] loadJdfAsset(@PathVariable String filename) throws IOException {
-
-        Path jdfDir = Paths.get(testDataDir, "testdata", "jdf", filename);
-
-        log.info("New path: {}", jdfDir);
-        return Files.readAllBytes(jdfDir);
-    }
 
     @RequestMapping(value = "/alces/file/{filename}", method = RequestMethod.GET)
     public ResponseEntity<byte[]> loadFle(@PathVariable String filename) throws IOException {
@@ -126,17 +113,23 @@ public class JmfController {
                 responseEntity = ResponseEntity.ok().build();
 
             } else if (jmfIn.getMessageElement(JDFMessage.EnumFamily.Command, JDFMessage.EnumType.ReturnQueueEntry, 0) != null) {
-                log.debug("Receiving RetunQueueEntry message...");
+                log.debug("Receiving ReturnQueueEntry message...");
                 testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
-                JDFJMF jmfOut = JMFMessageBuilder.buildResponse(jmfIn);
-                responseEntity = ResponseEntity.ok(jmfOut.toXML());
+                responseEntity = ResponseEntity.ok(jmfIn.createResponse().toXML());
 
             } else {
                 log.debug("Receiving unhandled JMF message...");
                 testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
-                JDFJMF jmfOut = JMFMessageBuilder.buildNotImplementedResponse(jmfIn);
-                jmfOut.getResponse(0).setReturnCode(Integer.parseInt(settingsService.getProp(SettingsServiceImpl.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
-                responseEntity = ResponseEntity.ok(jmfOut.toXML());
+
+                JDFJMF jdfResponse = jmfIn.createResponse();
+                jdfResponse.getResponse(0).setReturnCode(5);
+
+                jdfResponse.getResponse(0)
+                        .appendNotification()
+                        .appendComment()
+                        .setText("Alces has received and logged your messages but does not know how to process the message.");
+
+                responseEntity = ResponseEntity.ok(jdfResponse.toXML());
             }
 
 

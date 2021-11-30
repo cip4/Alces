@@ -9,6 +9,12 @@ import java.nio.file.Path;
 public interface FileService {
 
     /**
+     * Returns the path to the Alces settings file.
+     * @return The path to the Alces settings file.
+     */
+    Path getAlcesSettingsFile();
+
+    /**
      * Returns the path to the JDF Schema.
      * @return The path to JDF Schema as path object.
      */
