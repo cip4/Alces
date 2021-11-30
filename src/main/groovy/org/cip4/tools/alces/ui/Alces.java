@@ -33,9 +33,6 @@ import org.cip4.tools.alces.ui.component.JTestSessionsTree;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
 import org.cip4.tools.alces.util.JDFFileFilter;
 import org.cip4.tools.alces.util.JmfUtil;
-import org.jdom.Attribute;
-import org.jdom.Namespace;
-import org.jdom.xpath.XPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -331,57 +328,10 @@ public class Alces extends JFrame {
         return sessionSplitPane;
     }
 
-
-    /**
-     * Finds the incoming message that the specified outgoing message is a response to.
-     *
-     * @param message the outgoing message
-     * @return the incoming message that the outgoing message is a response to
-     */
-    public IncomingJmfMessage getIncomingMessage(TestSession testSession, OutgoingJmfMessage message) {
-        String refID = null;
-        try {
-            // Configure JDF namespace
-            Namespace jdfNamespace = Namespace.getNamespace("jdf", "http://www.CIP4.org/JDFSchema_1_1");
-
-            // Configure XPath for refID
-            // XPath refidXPath = XPath.newInstance("jdf:JMF/child::node()/@refID");
-            XPath refidXPath = XPath.newInstance("jdf:JMF/child::node()/@ID"); // bug fixed: no @refID in OutMessage
-            refidXPath.addNamespace(jdfNamespace);
-
-            // Execute XPath query for refID
-            Attribute refIDAttr = (Attribute) refidXPath.selectSingleNode(JmfUtil.getBodyAsJDOM(message));
-            refID = refIDAttr.getValue();
-            log.info("Found: @refID / @ID = " + refID);
-
-            // Configure XPath for ID
-            // XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@ID='" + refID + "']");
-            XPath idXPath = XPath.newInstance("jdf:JMF/child::node()[@refID='" + refID + "']"); // bug fixed: no @ID in InMessage
-            idXPath.addNamespace(jdfNamespace);
-
-            synchronized (testSession.getIncomingJmfMessages()) {
-                // Go through all messages sent during a session
-                for (IncomingJmfMessage msgIn : testSession.getIncomingJmfMessages()) {
-                    // Execute XPath for ID
-                    if (idXPath.selectSingleNode(JmfUtil.getBodyAsJDOM(msgIn)) != null) {
-                        log.debug("Found ID matching refID: " + refID);
-                        return msgIn;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("An error occurred while getting InMessage.", e);
-        }
-        log.debug("No incoming message was found that matches the outgoing message with refID: " + refID);
-        return null;
-    }
-
-
     private void clearKnownDevices() {
         deviceListComboBox.setEnabled(false);
         deviceListComboBox.removeAllItems();
     }
-
 
     /**
      * Update jdf devices.
