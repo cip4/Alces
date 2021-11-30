@@ -4,6 +4,7 @@ import org.apache.commons.io.FileUtils;
 import org.cip4.tools.alces.service.file.FileService;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,6 +23,9 @@ import static org.mockito.Mockito.doReturn;
 @ExtendWith(MockitoExtension.class)
 class SettingsServiceImplTest {
 
+    @TempDir
+    private Path workDir;
+
     @Mock
     private FileService fileServiceMock;
 
@@ -32,8 +36,7 @@ class SettingsServiceImplTest {
     public void readDefaultValue() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-readDefaultValue-");
-        Path confFile = testDir.resolve("alces.conf");
+        Path confFile = workDir.resolve("alces.conf");
 
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
 
@@ -44,17 +47,13 @@ class SettingsServiceImplTest {
         // assert
         assertEquals("http://localhost:9090", baseUrl, "BaseUrl is wrong.");
         assertFalse(confFile.toFile().exists(), "Conf file does exist.");
-
-        FileUtils.forceDelete(testDir.toFile());
-        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
 
     @Test
     public void changeValue() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-changeValue-");
-        Path confFile = testDir.resolve("alces.conf");
+        Path confFile = workDir.resolve("alces.conf");
 
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
 
@@ -65,9 +64,6 @@ class SettingsServiceImplTest {
         // assert
         assertEquals("http://test.alces.example.com", settingsService.getBaseUrl(), "BaseUrl is wrong.");
         assertTrue(confFile.toFile().exists(), "Conf file does exist.");
-
-        FileUtils.forceDelete(testDir.toFile());
-        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
 
     @Test
@@ -126,8 +122,7 @@ class SettingsServiceImplTest {
     public void appendAddress_new_value() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-appendAddress_new_value-");
-        Path confFile = testDir.resolve("alces.conf");
+        Path confFile = workDir.resolve("alces.conf");
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
 
         Properties properties = new Properties();
@@ -146,17 +141,13 @@ class SettingsServiceImplTest {
         assertEquals("1", addressHistory[1], "Value is wrong.");
         assertEquals("2", addressHistory[2], "Value is wrong.");
         assertEquals("3", addressHistory[3], "Value is wrong.");
-
-        FileUtils.forceDelete(testDir.toFile());
-        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
 
     @Test
     public void appendAddress_existing_value() throws Exception {
 
         // arrange
-        Path testDir = Files.createTempDirectory("alces-test-appendAddress_existing_value-");
-        Path confFile = testDir.resolve("alces.conf");
+        Path confFile = workDir.resolve("alces.conf");
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
 
         Properties properties = new Properties();
@@ -174,8 +165,5 @@ class SettingsServiceImplTest {
         assertEquals("2", addressHistory[0], "Value is wrong.");
         assertEquals("1", addressHistory[1], "Value is wrong.");
         assertEquals("3", addressHistory[2], "Value is wrong.");
-
-        FileUtils.forceDelete(testDir.toFile());
-        assertFalse(testDir.toFile().exists(), "Test Dir does still exist.");
     }
 }
