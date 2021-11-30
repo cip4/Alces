@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<JMF xmlns="http://www.CIP4.org/JDFSchema_1_1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" Version="1.6" AgentVersion="2.1.7.22" xsi:type="JMFRootMessage" MaxVersion="1.6" AgentName="CIP4 JDF Writer Java" SenderID="sim003" TimeStamp="2021-11-29T14:45:25+01:00">
+    <Response Type="QueueStatus" Version="1.6" xsi:type="ResponseQueueStatus" refID="m_211129_144525620_000005" ID="m_211129_144525755_041947">
+        <Queue xmlns:bambi="www.cip4.org/Bambi" Status="Held" QueueSize="0" xmlns="http://www.CIP4.org/JDFSchema_1_1" DescriptiveName="Queue for Bambi Push Simulation Device 003" bambi:EnsureNS="Dummy" DeviceID="sim003">
+            <QueueEntry Status="Running" QueueEntryID="qe_211128_153208443_019129" DescriptiveName="4/4 Perfecting" JobPartID="1" DeviceID="sim003" SubmissionTime="2021-11-28T15:32:08+01:00" StartTime="2021-11-28T15:32:08+01:00" JobID="2893"/>
+            <QueueEntry Status="Running" QueueEntryID="qe_211129_144457383_041440" DescriptiveName="4/4 Perfecting" JobPartID="2" DeviceID="sim003" SubmissionTime="2021-11-29T14:44:57+01:00" StartTime="2021-11-29T14:44:58+01:00" JobID="2893"/>
+        </Queue>
+    </Response>
+</JMF>

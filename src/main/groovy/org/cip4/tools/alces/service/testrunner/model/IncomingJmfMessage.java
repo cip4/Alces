@@ -16,25 +16,20 @@ public class IncomingJmfMessage extends AbstractJmfMessage {
      * Custom constructor. Accepting multiple params for initializing.
      *
      * @param contentType The content type of the message.
-     * @param header The http header of the message.
-     * @param body The message body.
-     * @param isSessionInitiator flag if message is a session initiator.
+     * @param jmfBody The jmf message body.
      */
-    public IncomingJmfMessage(String contentType, String header, String body, boolean isSessionInitiator) {
-        super(contentType, header, body, isSessionInitiator);
+    public IncomingJmfMessage(String contentType, String jmfBody) {
+        super(contentType, jmfBody);
 
         this.outgoingJmfMessages = new ArrayList<>();
     }
 
     /**
      * Custom constructor. Accepting multiple params for initializing.
-     *
-     * @param header The http header of the message.
-     * @param body The message body.
-     * @param isSessionInitiator flag if message is a session initiator.
+     * @param jmfBody The jmf message body.
      */
-    public IncomingJmfMessage(String header, String body, boolean isSessionInitiator) {
-        this(JDFConstants.MIME_JMF, header, body, isSessionInitiator);
+    public IncomingJmfMessage(String jmfBody) {
+        this(JDFConstants.MIME_JMF, jmfBody);
     }
 
     public List<OutgoingJmfMessage> getOutgoingJmfMessages() {

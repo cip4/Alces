@@ -1,6 +1,5 @@
 package org.cip4.tools.alces.service.testrunner.model;
 
-
 import org.cip4.jdflib.core.JDFConstants;
 
 import java.util.ArrayList;
@@ -17,25 +16,12 @@ public class OutgoingJmfMessage extends AbstractJmfMessage {
      * Custom constructor. Accepting multiple params for initializing.
      *
      * @param contentType The content type of the message.
-     * @param header The http header of the message.
      * @param body The message body.
-     * @param isSessionInitiator flag if message is a session initiator.
      */
-    public OutgoingJmfMessage(String contentType, String header, String body, boolean isSessionInitiator) {
-        super(contentType, header, body, isSessionInitiator);
+    public OutgoingJmfMessage(String contentType, String body) {
+        super(contentType, body);
 
         this.incomingJmfMessages = new ArrayList<>();
-    }
-
-    /**
-     * Custom constructor. Accepting multiple params for initializing.
-     *
-     * @param header The http header of the message.
-     * @param body The message body.
-     * @param isSessionInitiator flag if message is a session initiator.
-     */
-    public OutgoingJmfMessage(String header, String body, boolean isSessionInitiator) {
-        this(JDFConstants.MIME_JMF, header, body, isSessionInitiator);
     }
 
     /**
@@ -43,7 +29,7 @@ public class OutgoingJmfMessage extends AbstractJmfMessage {
      * @param jmfBody The JMF message body.
      */
     public OutgoingJmfMessage(String jmfBody) {
-        this(JDFConstants.MIME_JMF, "Content-Type: " + JDFConstants.MIME_JMF, jmfBody, true);
+        this(JDFConstants.MIME_JMF, jmfBody);
     }
 
     public List<IncomingJmfMessage> getIncomingJmfMessages() {
