@@ -728,9 +728,7 @@ public class Alces extends JFrame {
      * Show the settings dialog.
      */
     private void showSettingsDialog() {
-
-        new SettingsDialog(this, "Settings");
-        setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion() + "  -  " + settingsService.getBaseUrl());
+        JOptionPane.showMessageDialog(this, "Settings do no longer exist. To change the base url, please click on the lower right corner of the window");
     }
 
     /**
