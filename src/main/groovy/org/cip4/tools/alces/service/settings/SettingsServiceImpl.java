@@ -6,7 +6,7 @@ import org.cip4.tools.alces.service.file.FileService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -29,6 +29,9 @@ public class SettingsServiceImpl implements SettingsService {
 
 	@Autowired
 	private FileService fileService;
+
+	@Value("${server.port}")
+	private String port;
 
 	private final static String KEY_BASEURL = "base-url";
 	private final static String KEY_LAST_SELECTED_DIR = "last-selected-dir";
@@ -78,7 +81,10 @@ public class SettingsServiceImpl implements SettingsService {
 	}
 
 	@Override
-	public void setBaseUrl(String baseUrl) {
+	public void updateBaseUrlIp(String ip) {
+
+		String baseUrl = String.format("http://%s:%s", ip, port);
+
 		properties.setProperty(KEY_BASEURL, baseUrl);
 		saveState();
 	}

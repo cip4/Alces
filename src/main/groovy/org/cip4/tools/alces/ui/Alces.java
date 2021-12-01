@@ -6,6 +6,8 @@ import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.*;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.util.Comparator;
 import java.util.List;
 
@@ -22,8 +24,6 @@ import org.cip4.tools.alces.service.discovery.model.JdfController;
 import org.cip4.tools.alces.service.discovery.model.JdfDevice;
 import org.cip4.tools.alces.service.discovery.model.MessageService;
 import org.cip4.tools.alces.service.discovery.model.Queue;
-import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
-import org.cip4.tools.alces.service.testrunner.model.OutgoingJmfMessage;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
@@ -92,6 +92,8 @@ public class Alces extends JFrame {
     private JTextArea deviceInfoTextArea;
     private JTree sessionTree;
 
+    private JButton baseUrlButton;
+
     private JQueuePanel queuePanel;
 
     private JdfController jdfController;
@@ -122,7 +124,7 @@ public class Alces extends JFrame {
 
         // window configurations
         setIconImage(Toolkit.getDefaultToolkit().getImage(Alces.class.getResource("/org/cip4/tools/alces/alces.png")));
-        this.setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion() + "  -  " + settingsService.getBaseUrl());
+        this.setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion());
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent we) {
@@ -153,16 +155,67 @@ public class Alces extends JFrame {
         statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
 
         JLabel statusLabel = new JLabel("JDF Library: CIP4 JDFLibJ " + JDFAudit.getStaticAgentVersion() + "  ");
-        // statusLabel.setHorizontalAlignment(SwingConstants.LEFT);
-        statusPanel.add(statusLabel, BorderLayout.WEST);
+        statusPanel.add(statusLabel);
 
-        JLabel baseUrlLabel = new JLabel("BaseUrl: " + settingsService.getBaseUrl());
-        // baseUrlLabel.setHorizontalAlignment(SwingConstants.RIGHT);
-        statusPanel.add(baseUrlLabel, BorderLayout.EAST);
+        statusPanel.add(Box.createHorizontalGlue());
+
+        JLabel baseUrlLabel = new JLabel("BaseUrl: ");
+        statusPanel.add(baseUrlLabel);
+
+        baseUrlButton = new JButton();
+        baseUrlButton.setFocusPainted(false);
+        baseUrlButton.setMargin(new Insets(0, 0, 0, 0));
+        baseUrlButton.setContentAreaFilled(false);
+        baseUrlButton.setBorderPainted(false);
+        baseUrlButton.setOpaque(false);
+        baseUrlButton.setText(settingsService.getBaseUrl());
+        baseUrlButton.addActionListener(e -> {
+            Component btn = (Component) e.getSource();
+            JPopupMenu baseUrlPopupMenu = createBaseUrlPopUp();
+            baseUrlPopupMenu.show(btn, 0, 0);
+        });
+        statusPanel.add(baseUrlButton);
 
         return statusPanel;
     }
 
+    private JPopupMenu createBaseUrlPopUp() {
+        final JPopupMenu baseUrlPopupMenu = new JPopupMenu("Base URL");
+
+        JMenuItem menuItemLocalhost = new JMenuItem("localhost");
+        menuItemLocalhost.addActionListener(e -> updateBaseUrlsIp(((JMenuItem) e.getSource()).getText()));
+        baseUrlPopupMenu.add(menuItemLocalhost);
+
+        try {
+            NetworkInterface.networkInterfaces().forEach(networkInterface -> {
+
+                networkInterface.getInterfaceAddresses().forEach(interfaceAddress -> {
+                    String hostAddress = interfaceAddress.getAddress().getHostAddress();
+
+                    if (hostAddress.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
+                        JMenuItem menuItem = new JMenuItem(interfaceAddress.getAddress().getHostAddress());
+                        menuItem.addActionListener(e -> updateBaseUrlsIp(((JMenuItem) e.getSource()).getText()));
+                        baseUrlPopupMenu.add(menuItem);
+                    }
+                });
+            });
+
+        } catch (SocketException e) {
+            log.error("Error readng network interfaces", e);
+        }
+
+        return baseUrlPopupMenu;
+    }
+
+    /**
+     * Update the IP adress of the base url.
+     * @param ip The new ip address.
+     */
+    private void updateBaseUrlsIp(String ip) {
+        settingsService.updateBaseUrlIp(ip);
+
+        baseUrlButton.setText(settingsService.getBaseUrl());
+    }
 
     /**
      * Initializes the address bar panel.
@@ -331,11 +384,6 @@ public class Alces extends JFrame {
         return sessionSplitPane;
     }
 
-    private void clearKnownDevices() {
-        deviceListComboBox.setEnabled(false);
-        deviceListComboBox.removeAllItems();
-    }
-
     /**
      * Update jdf devices.
      */
@@ -348,22 +396,20 @@ public class Alces extends JFrame {
 
         // refresh devices list
         this.jdfController.getJdfDevices().forEach(jdfDevice -> deviceListComboBox.addItem(jdfDevice.getDeviceId()));
-
         deviceListComboBox.setEnabled(true);
     }
 
+    /**
+     * Clear the active device.
+     */
     private void clearActiveDevice() {
-        clearDeviceStatus();
+        deviceStatusValue.setText("");
         deviceInfoTextArea.setText("");
     }
 
-    private void clearDeviceStatus() {
-        deviceStatusValue.setText("");
-    }
-
-
     /**
      * Updates the active device.
+     *
      * @param deviceId The device id of the new active device.
      */
     private void updateActiveDevice(String deviceId) {
@@ -412,7 +458,7 @@ public class Alces extends JFrame {
         deviceInfoTextArea.setCaretPosition(0);
 
         // update queue
-        if(StringUtils.isNotEmpty(jdfDevice.getDeviceId())) {
+        if (StringUtils.isNotEmpty(jdfDevice.getDeviceId())) {
             Queue queue = discoveryService.loadQueue(jdfDevice);
             queuePanel.refreshQueue(queue);
 
@@ -421,19 +467,13 @@ public class Alces extends JFrame {
         }
     }
 
-
-    /**
-     * Removes all messages buttons from the GUI
-     */
-    private void clearMessageButtons() {
-        log.debug("Clearing message buttons...");
-        messagesPanel.removeAll();
-    }
-
     /**
      * Update jdf message services.
      */
     private void updateJdfMessageServices() {
+
+        // clear old buttons
+        messagesPanel.removeAll();
 
         // get supported messages
         List<MessageService> messageServices = jdfController.getJdfMessageServices();
@@ -443,207 +483,208 @@ public class Alces extends JFrame {
                 .sorted(Comparator.comparing(MessageService::getType))
                 .forEach(messageService -> {
 
-            // make the button JMF type specific
-            switch (messageService.getType()) {
+                    // make the button JMF type specific
+                    switch (messageService.getType()) {
 
-                // queries
-                case "Status" -> {
-                    JButton button = createButton("Status");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createStatusQuery()));
-                    messagesPanel.add(button);
+                        // queries
+                        case "Status" -> {
+                            JButton button = createButton("Status");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createStatusQuery()));
+                            messagesPanel.add(button);
 
-                    button = createButton("StatusSubscription");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createStatusSubscription()));
-                    messagesPanel.add(button);
-                }
-                case "QueueStatus" -> {
-                    JButton button = createButton("QueueStatus");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createQueueStatusQuery()));
-                    messagesPanel.add(button);
-
-                    button = createButton("QueueStatusSubscription");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createQueueStatusSubscription()));
-                    messagesPanel.add(button);
-                }
-                case "Resource" -> {
-                    JButton button = createButton("Resource");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createResourceQuery()));
-                    messagesPanel.add(button);
-
-                    button = createButton("ResourceSubscription");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createResourceSubscription()));
-                    messagesPanel.add(button);
-                }
-                case "Notification" -> {
-                    JButton button = createButton("NotificationSubscription");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createNotificationSubscription()));
-                    messagesPanel.add(button);
-                }
-                // discovery queries
-                case "KnownMessages" -> {
-                    JButton button = createButton("KnownMessages");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createKnownMessagesQuery()));
-                    messagesPanel.add(button);
-                }
-                case "KnownDevices" -> {
-                    JButton button = createButton("KnownDevices");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createKnownDevicesQuery()));
-                    messagesPanel.add(button);
-                }
-                case "KnownSubscriptions" -> {
-                    JButton button = createButton("KnownSubscriptions");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createKnownSubscriptionsQuery()));
-                    messagesPanel.add(button);
-                }
-
-                // queue entry commands
-                case "SubmitQueueEntry" -> {
-                    JButton button = createButton("SubmitQueueEntry");
-                    button.addActionListener(e -> {
-                        JFileChooser fileChooser = new JFileChooser(settingsService.getLastSelectedDir());
-                        fileChooser.addChoosableFileFilter(new JDFFileFilter());
-                        fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
-                        int returnValue = fileChooser.showOpenDialog(this);
-                        settingsService.setLastSelectedDir(fileChooser.getCurrentDirectory().getAbsolutePath());
-                        if (returnValue == JFileChooser.APPROVE_OPTION) {
-                            startTestSession(jmfMessageService.createSubmitQueueEntry(fileChooser.getSelectedFile()));
+                            button = createButton("StatusSubscription");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createStatusSubscription()));
+                            messagesPanel.add(button);
                         }
-                    });
-                    messagesPanel.add(button);
-                }
-                case "ResubmitQueueEntry" -> {
-                    JButton button = createButton("ResubmitQueueEntry");
-                    button.addActionListener(e -> {
+                        case "QueueStatus" -> {
+                            JButton button = createButton("QueueStatus");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createQueueStatusQuery()));
+                            messagesPanel.add(button);
 
-                        // check queue entry id
-                        String queueEntryId = queuePanel.getSelectedQueueEntryId();
-
-                        if(StringUtils.isEmpty(queueEntryId)) {
-                            JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
-
-                        } else {
-                            // select file
-                            JFileChooser fileChooser = new JFileChooser(settingsService.getLastSelectedDir());
-                            fileChooser.addChoosableFileFilter(new JDFFileFilter());
-                            fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
-                            int returnValue = fileChooser.showOpenDialog(this);
-                            settingsService.setLastSelectedDir(fileChooser.getCurrentDirectory().getAbsolutePath());
-
-                            if (returnValue == JFileChooser.APPROVE_OPTION) {
-                                startTestSession(jmfMessageService.createResubmitQueueEntry(fileChooser.getSelectedFile(), queueEntryId));
-                            }
+                            button = createButton("QueueStatusSubscription");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createQueueStatusSubscription()));
+                            messagesPanel.add(button);
                         }
-                    });
-                    messagesPanel.add(button);
-                }
-                case "SuspendQueueEntry" -> {
-                    JButton button = createButton("SuspendQueueEntry");
-                    button.addActionListener(e -> {
-                        String queueEntryId = queuePanel.getSelectedQueueEntryId();
+                        case "Resource" -> {
+                            JButton button = createButton("Resource");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createResourceQuery()));
+                            messagesPanel.add(button);
 
-                        if(StringUtils.isEmpty(queueEntryId)) {
-                            JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
-                        } else {
-                            startTestSession(jmfMessageService.createSuspendQueueEntry(queueEntryId));
+                            button = createButton("ResourceSubscription");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createResourceSubscription()));
+                            messagesPanel.add(button);
                         }
-                    });
-                    messagesPanel.add(button);
-                }
-                case "ResumeQueueEntry" -> {
-                    JButton button = createButton("ResumeQueueEntry");
-                    button.addActionListener(e -> {
-                        String queueEntryId = queuePanel.getSelectedQueueEntryId();
-
-                        if(StringUtils.isEmpty(queueEntryId)) {
-                            JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
-                        } else {
-                            startTestSession(jmfMessageService.createResumeQueueEntry(queueEntryId));
+                        case "Notification" -> {
+                            JButton button = createButton("NotificationSubscription");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createNotificationSubscription()));
+                            messagesPanel.add(button);
                         }
-                    });
-                    messagesPanel.add(button);
-                }
-                case "AbortQueueEntry" -> {
-                    JButton button = createButton("AbortQueueEntry");
-                    button.addActionListener(e -> {
-                        String queueEntryId = queuePanel.getSelectedQueueEntryId();
-
-                        if(StringUtils.isEmpty(queueEntryId)) {
-                            JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
-                        } else {
-                            startTestSession(jmfMessageService.createAbortQueueEntry(queueEntryId));
+                        // discovery queries
+                        case "KnownMessages" -> {
+                            JButton button = createButton("KnownMessages");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createKnownMessagesQuery()));
+                            messagesPanel.add(button);
                         }
-                    });
-                    messagesPanel.add(button);
-                }
-                case "HoldQueueEntry" -> {
-                    JButton button = createButton("HoldQueueEntry");
-                    button.addActionListener(e -> {
-                        String queueEntryId = queuePanel.getSelectedQueueEntryId();
-
-                        if(StringUtils.isEmpty(queueEntryId)) {
-                            JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
-                        } else {
-                            startTestSession(jmfMessageService.createHoldQueueEntry(queueEntryId));
+                        case "KnownDevices" -> {
+                            JButton button = createButton("KnownDevices");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createKnownDevicesQuery()));
+                            messagesPanel.add(button);
                         }
-                    });
-                    messagesPanel.add(button);
-                }
-                case "RemoveQueueEntry" -> {
-                    JButton button = createButton("RemoveQueueEntry");
-                    button.addActionListener(e -> {
-                        String queueEntryId = queuePanel.getSelectedQueueEntryId();
-
-                        if(StringUtils.isEmpty(queueEntryId)) {
-                            JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
-                        } else {
-                            startTestSession(jmfMessageService.createRemoveQueueEntry(queueEntryId));
+                        case "KnownSubscriptions" -> {
+                            JButton button = createButton("KnownSubscriptions");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createKnownSubscriptionsQuery()));
+                            messagesPanel.add(button);
                         }
-                    });
-                    messagesPanel.add(button);
-                }
 
-                // persistent channel
-                case "StopPersistentChannel" -> {
-                    JButton button = createButton("StopPersistentChannel");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createStopPersistentChannelCommand()));
-                    messagesPanel.add(button);
-                }
+                        // queue entry commands
+                        case "SubmitQueueEntry" -> {
+                            JButton button = createButton("SubmitQueueEntry");
+                            button.addActionListener(e -> {
+                                JFileChooser fileChooser = new JFileChooser(settingsService.getLastSelectedDir());
+                                fileChooser.addChoosableFileFilter(new JDFFileFilter());
+                                fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
+                                int returnValue = fileChooser.showOpenDialog(this);
+                                settingsService.setLastSelectedDir(fileChooser.getCurrentDirectory().getAbsolutePath());
+                                if (returnValue == JFileChooser.APPROVE_OPTION) {
+                                    startTestSession(jmfMessageService.createSubmitQueueEntry(fileChooser.getSelectedFile()));
+                                }
+                            });
+                            messagesPanel.add(button);
+                        }
+                        case "ResubmitQueueEntry" -> {
+                            JButton button = createButton("ResubmitQueueEntry");
+                            button.addActionListener(e -> {
 
-                // queue commands
-                case "HoldQueue" -> {
-                    JButton button = createButton("HoldQueue");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createHoldQueue()));
-                    messagesPanel.add(button);
-                }
-                case "ResumeQueue" -> {
-                    JButton button = createButton("ResumeQueue");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createResumeQueue()));
-                    messagesPanel.add(button);
-                }
-                case "OpenQueue" -> {
-                    JButton button = createButton("OpenQueue");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createOpenQueue()));
-                    messagesPanel.add(button);
-                }
-                case "CloseQueue" -> {
-                    JButton button = createButton("CloseQueue");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createCloseQueue()));
-                    messagesPanel.add(button);
-                }
-                case "FlushQueue" -> {
-                    JButton button = createButton("FlushQueue");
-                    button.addActionListener(e -> startTestSession(jmfMessageService.createFlushQueue()));
-                    messagesPanel.add(button);
-                }
-                default -> {
-                }
-            }
+                                // check queue entry id
+                                String queueEntryId = queuePanel.getSelectedQueueEntryId();
 
-        });
+                                if (StringUtils.isEmpty(queueEntryId)) {
+                                    JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
+
+                                } else {
+                                    // select file
+                                    JFileChooser fileChooser = new JFileChooser(settingsService.getLastSelectedDir());
+                                    fileChooser.addChoosableFileFilter(new JDFFileFilter());
+                                    fileChooser.setDialogTitle("Select a JDF Job Ticket to Submit");
+                                    int returnValue = fileChooser.showOpenDialog(this);
+                                    settingsService.setLastSelectedDir(fileChooser.getCurrentDirectory().getAbsolutePath());
+
+                                    if (returnValue == JFileChooser.APPROVE_OPTION) {
+                                        startTestSession(jmfMessageService.createResubmitQueueEntry(fileChooser.getSelectedFile(), queueEntryId));
+                                    }
+                                }
+                            });
+                            messagesPanel.add(button);
+                        }
+                        case "SuspendQueueEntry" -> {
+                            JButton button = createButton("SuspendQueueEntry");
+                            button.addActionListener(e -> {
+                                String queueEntryId = queuePanel.getSelectedQueueEntryId();
+
+                                if (StringUtils.isEmpty(queueEntryId)) {
+                                    JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
+                                } else {
+                                    startTestSession(jmfMessageService.createSuspendQueueEntry(queueEntryId));
+                                }
+                            });
+                            messagesPanel.add(button);
+                        }
+                        case "ResumeQueueEntry" -> {
+                            JButton button = createButton("ResumeQueueEntry");
+                            button.addActionListener(e -> {
+                                String queueEntryId = queuePanel.getSelectedQueueEntryId();
+
+                                if (StringUtils.isEmpty(queueEntryId)) {
+                                    JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
+                                } else {
+                                    startTestSession(jmfMessageService.createResumeQueueEntry(queueEntryId));
+                                }
+                            });
+                            messagesPanel.add(button);
+                        }
+                        case "AbortQueueEntry" -> {
+                            JButton button = createButton("AbortQueueEntry");
+                            button.addActionListener(e -> {
+                                String queueEntryId = queuePanel.getSelectedQueueEntryId();
+
+                                if (StringUtils.isEmpty(queueEntryId)) {
+                                    JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
+                                } else {
+                                    startTestSession(jmfMessageService.createAbortQueueEntry(queueEntryId));
+                                }
+                            });
+                            messagesPanel.add(button);
+                        }
+                        case "HoldQueueEntry" -> {
+                            JButton button = createButton("HoldQueueEntry");
+                            button.addActionListener(e -> {
+                                String queueEntryId = queuePanel.getSelectedQueueEntryId();
+
+                                if (StringUtils.isEmpty(queueEntryId)) {
+                                    JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
+                                } else {
+                                    startTestSession(jmfMessageService.createHoldQueueEntry(queueEntryId));
+                                }
+                            });
+                            messagesPanel.add(button);
+                        }
+                        case "RemoveQueueEntry" -> {
+                            JButton button = createButton("RemoveQueueEntry");
+                            button.addActionListener(e -> {
+                                String queueEntryId = queuePanel.getSelectedQueueEntryId();
+
+                                if (StringUtils.isEmpty(queueEntryId)) {
+                                    JOptionPane.showMessageDialog(this, "No QueueEntry is selected in the queue list.", "Warning", JOptionPane.WARNING_MESSAGE);
+                                } else {
+                                    startTestSession(jmfMessageService.createRemoveQueueEntry(queueEntryId));
+                                }
+                            });
+                            messagesPanel.add(button);
+                        }
+
+                        // persistent channel
+                        case "StopPersistentChannel" -> {
+                            JButton button = createButton("StopPersistentChannel");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createStopPersistentChannelCommand()));
+                            messagesPanel.add(button);
+                        }
+
+                        // queue commands
+                        case "HoldQueue" -> {
+                            JButton button = createButton("HoldQueue");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createHoldQueue()));
+                            messagesPanel.add(button);
+                        }
+                        case "ResumeQueue" -> {
+                            JButton button = createButton("ResumeQueue");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createResumeQueue()));
+                            messagesPanel.add(button);
+                        }
+                        case "OpenQueue" -> {
+                            JButton button = createButton("OpenQueue");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createOpenQueue()));
+                            messagesPanel.add(button);
+                        }
+                        case "CloseQueue" -> {
+                            JButton button = createButton("CloseQueue");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createCloseQueue()));
+                            messagesPanel.add(button);
+                        }
+                        case "FlushQueue" -> {
+                            JButton button = createButton("FlushQueue");
+                            button.addActionListener(e -> startTestSession(jmfMessageService.createFlushQueue()));
+                            messagesPanel.add(button);
+                        }
+                        default -> {
+                        }
+                    }
+
+                });
     }
 
     /**
      * Helper method for starting a test session.
+     *
      * @param jmf The JMF Message initializing the test session.
      */
     private void startTestSession(String jmf) {
@@ -669,8 +710,6 @@ public class Alces extends JFrame {
     private void discover() {
 
         // clean up
-        clearMessageButtons();
-        clearKnownDevices();
         clearActiveDevice();
 
         queuePanel.clearQueue();
@@ -689,9 +728,7 @@ public class Alces extends JFrame {
      * Show the settings dialog.
      */
     private void showSettingsDialog() {
-
-        new SettingsDialog(this, "Settings");
-        setTitle(aboutService.getAppName() + " " + aboutService.getAppVersion() + "  -  " + settingsService.getBaseUrl());
+        JOptionPane.showMessageDialog(this, "Settings do no longer exist. To change the base url, please click on the lower right corner of the window");
     }
 
     /**
