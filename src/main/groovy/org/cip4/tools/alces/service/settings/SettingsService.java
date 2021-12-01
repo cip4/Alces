@@ -1,7 +1,5 @@
 package org.cip4.tools.alces.service.settings;
 
-import java.util.List;
-
 /**
  * Business interface for applications settings.
  */
@@ -14,10 +12,10 @@ public interface SettingsService {
     String getBaseUrl();
 
     /**
-     * Setter for Alces's base url.
-     * @param baseUrl The new base url
+     * Updates the base url's ip address.
+     * @param ip The new ip address
      */
-    void setBaseUrl(String baseUrl);
+    void updateBaseUrlIp(String ip);
 
     /**
      * Returns the current address history.

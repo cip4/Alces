@@ -57,10 +57,10 @@ class SettingsServiceImplTest {
 
         // act
         settingsService.init();
-        settingsService.setBaseUrl("http://test.alces.example.com");
+        settingsService.setDevicePaneWidth(42);
 
         // assert
-        assertEquals("http://test.alces.example.com", settingsService.getBaseUrl(), "BaseUrl is wrong.");
+        assertEquals(42, settingsService.getDevicePaneWidth(), "DevicePaneWidth is wrong.");
         assertTrue(confFile.toFile().exists(), "Conf file does exist.");
     }
 
@@ -163,5 +163,47 @@ class SettingsServiceImplTest {
         assertEquals("2", addressHistory[0], "Value is wrong.");
         assertEquals("1", addressHistory[1], "Value is wrong.");
         assertEquals("3", addressHistory[2], "Value is wrong.");
+    }
+
+    @Test
+    public void updateBaseUrlIp_1() throws Exception {
+
+        // arrange
+        Path confFile = workDir.resolve("alces.conf");
+        doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
+
+        Properties properties = new Properties();
+
+        ReflectionTestUtils.setField(settingsService, "properties", properties);
+        ReflectionTestUtils.setField(settingsService, "port", "9192");
+
+        // act
+        settingsService.updateBaseUrlIp("127.0.0.1");
+
+        // assert
+        String baseUrl = properties.getProperty("base-url");
+
+        assertEquals("http://127.0.0.1:9192", baseUrl, "BaseUrl is wrong.");
+    }
+
+    @Test
+    public void updateBaseUrlIp_2() throws Exception {
+
+        // arrange
+        Path confFile = workDir.resolve("alces.conf");
+        doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
+
+        Properties properties = new Properties();
+
+        ReflectionTestUtils.setField(settingsService, "properties", properties);
+        ReflectionTestUtils.setField(settingsService, "port", "9090");
+
+        // act
+        settingsService.updateBaseUrlIp("localhost");
+
+        // assert
+        String baseUrl = properties.getProperty("base-url");
+
+        assertEquals("http://localhost:9090", baseUrl, "BaseUrl is wrong.");
     }
 }

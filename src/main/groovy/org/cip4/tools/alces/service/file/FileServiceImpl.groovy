@@ -113,30 +113,46 @@ class FileServiceImpl implements FileService {
      */
     @EventListener(ApplicationReadyEvent.class)
     private void reloadJdfSchema() {
-        log.info("Download JDF Schema...")
+        log.info("Check JDF Schema version...")
 
-        // create folder structure
-        getJdfSchemaDir().toFile().mkdirs()
+        // get current version n ca
+        String localSchemaVersion
 
-        // download JDF.xsd xsd
+        if(getJdfSchema().toFile().exists()) {
+            localSchemaVersion = new XmlSlurper().parse(getJdfSchema().toFile()).@version.toString()
+        } else {
+            localSchemaVersion = "n. a."
+        }
+
+        // download JDF.xsd
         byte[] jdfXsdBytes = restTemplate.getForEntity(JDF_SCHEMA_URL + JDF_SCHEMA_FILENAME, byte[].class).getBody()
-        Files.write(getJdfSchemaDir().resolve(JDF_SCHEMA_FILENAME), jdfXsdBytes)
 
-        // download referenced files
-        def jdfXsd = new XmlSlurper().parse(new ByteArrayInputStream(jdfXsdBytes))
+        // check if version is current
+        String remoteSchemaVersion = new XmlSlurper().parseText(new String(jdfXsdBytes)).@version.toString()
 
-        jdfXsd.include.each{ it ->
-            String fileName = it.@schemaLocation.toString()
-            byte[] xsdBytes = restTemplate.getForEntity(JDF_SCHEMA_URL + fileName, byte[].class).getBody()
-            Files.write(getJdfSchemaDir().resolve(fileName), xsdBytes)
+        if(!Objects.equals(localSchemaVersion, remoteSchemaVersion)) {
+
+            getJdfSchemaDir().toFile().mkdirs()
+            Files.write(getJdfSchemaDir().resolve(JDF_SCHEMA_FILENAME), jdfXsdBytes)
+
+            // download referenced files
+            def jdfXsd = new XmlSlurper().parse(new ByteArrayInputStream(jdfXsdBytes))
+
+            jdfXsd.include.each { it ->
+                String fileName = it.@schemaLocation.toString()
+                byte[] xsdBytes = restTemplate.getForEntity(JDF_SCHEMA_URL + fileName, byte[].class).getBody()
+                Files.write(getJdfSchemaDir().resolve(fileName), xsdBytes)
+            }
+
+            jdfXsd.import.each { it ->
+                String fileName = it.@schemaLocation.toString()
+                byte[] xsdBytes = restTemplate.getForEntity(JDF_SCHEMA_URL + fileName, byte[].class).getBody()
+                Files.write(getJdfSchemaDir().resolve(fileName), xsdBytes)
+            }
+
+            log.info("JDF Schema has been updated.")
+        } else {
+            log.info("JDF Schema is up to date.")
         }
-
-        jdfXsd.import.each{ it ->
-            String fileName = it.@schemaLocation.toString()
-            byte[] xsdBytes = restTemplate.getForEntity(JDF_SCHEMA_URL + fileName, byte[].class).getBody()
-            Files.write(getJdfSchemaDir().resolve(fileName), xsdBytes)
-        }
-
-        log.info("JDF Schema has been updated.")
     }
 }
