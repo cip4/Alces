@@ -31,9 +31,6 @@ import org.slf4j.LoggerFactory;
 
 /**
  * A class that reads JMF/JDF MIME packages and extracts their contents.
- * @see <a href="http://www.cip4.org/documents/jdf_specifications/JDF1.2.pdf">JDF Specification Release 1.2, 8.3 JDF Packaging</a>
- * @author Claes Buckwalter (clabu@itn.liu.se)
- * @version $Id$
  */
 public class MimeUtil {
 
@@ -44,40 +41,14 @@ public class MimeUtil {
     public static final String MIME_CONTENT_TYPE = "multipart/related";
     public static final String JDF_EXTENSION = ".jdf";
     public static final String JMF_EXTENSION = ".jmf";
-    public static final String JDF_MIME_EXTENSION = ".mjd";
-    public static final String JMF_MIME_EXTENSION = ".mjm";
 
     public static final String CONTENT_ID_HEADER = "Content-ID";
-    public static final String CONTENT_TYPE_HEADER = "Content-Type";
     private static final String FIRST_PART = "FIRST PART";
     private static Session mailSession = Session.getDefaultInstance(new Properties());
 
     /**
      * Extracts the contents of a MIME package from an input stream to the specified output directory. Returns an array of strings where each file extracted
      * from the MIME package has an element in the array that is the absolute URL to where the file was extracted.
-     * <p>
-     * All files extracted from the MIME package will be given file names that start with the same sequence of 12 characters according to the following pattern:
-     * </p>
-     * <p>
-     * <code>ELK_{8 random letters}</code> - base file name (12 characters)<br/>
-     * <code>{base file name}.jmf</code> - if first part has Content-Type <code>application/vnd.cip4-jmf+xml</code><br/>
-     * <code>{base file name}.jdf</code> - if first part has Content-Type <code>application/vnd.cip4-jdf+xml</code><br/>
-     * <code>{base file name}_{part file name}</code> - for file part with a file name specified in the MIME package<br/>
-     * <code>{base file name}_{5 random letters}.dat</code> - for file part without a file name specified in the MIME package<br/>
-     * </p>
-     * <p>
-     * All <code>cid</code> URLs in all JMF and JDF files in the MIME package will be replaced with URLs that point to the corresponding extracted files.
-     * </p>
-     * <p>
-     * According to the JDF specification a MIME package's Content-Type should be <code>multipart/related</code> and the first part should have Content-Type
-     * <code>application/vnd.cip4-jmf+xml</code> (JMF) or <code>application/vnd.cip4-jdf+xml</code> (JDF). A MimePackageException will be thrown if the MIME
-     * package does not comply with the JDF specification.
-     * </p>
-     * @param mimeInputStream an input stream containing a MIME package
-     * @param outputDirUrl the directory where files extracted from the MIME package will be written
-     * @return An array of <code>String</code>s that are absolute URLs to where each file in the MIME package was extracted. The order of the file URLs in the
-     * array is unspecified.
-     * @throws IOException if there is an IO error occurs
      */
     public static String[] extractMimePackage(InputStream mimeInputStream, String outputDirUrl) throws IOException, URISyntaxException {
         String[] fileUrls = null;
@@ -104,12 +75,6 @@ public class MimeUtil {
 
     /**
      * Extracts each part of the MIME multipart package to the specified output directory.
-     * @param multipart
-     * @param outputDirUrl
-     * @return a map containing each extracted part's new URL (that points to the part's extracted file in the output directory) as key, and the corresponding
-     * CID as value
-     * @throws IOException
-     * @throws MessagingException
      */
     private static Map extractParts(Multipart multipart, String outputDirUrl) throws MessagingException, IOException, URISyntaxException {
 
@@ -141,11 +106,6 @@ public class MimeUtil {
     /**
      * Extracts the first part of a MIME package and writes it to the specified output directory. According to the JDF specification a MIME package's first part
      * should have Content-Type <code>application/vnd.cip4-jmf+xml</code> (JMF) or <code>application/vnd.cip4-jdf+xml</code> (JDF).
-     * @param firstPart this should be the first part in a MIME package
-     * @param outputDirUrl the directory to write the extracted part to
-     * @return the complete URL to where the extracted part was written and the part's CID
-     * @throws IOException
-     * @throws MessagingException
      */
     private static UrlCidPair extractFirstPart(Part firstPart, String outputDirUrl) throws MessagingException, IOException, URISyntaxException {
 
@@ -172,15 +132,6 @@ public class MimeUtil {
 
     /**
      * Extracts the specified MIME package part to the directory specified by the base URL. The extracted part's file name will be:
-     * <p>
-     * <code>{base file name}_{part file name}</code> - if the part has a file name in the MIME package<br/>
-     * <code>{base file name}_{5 random letters}.dat</code> - if the part does not have a file name in the MIME package<br/>
-     * </p>
-     * @param part the part to extract
-     * @param baseFileUrl the base URL used for building the part's file name
-     * @return the complete URL to where the extracted part was written and the part's CID
-     * @throws MessagingException
-     * @throws IOException
      */
     private static UrlCidPair extractPart(Part part, String baseFileUrl) throws MessagingException, IOException, URISyntaxException {
 
@@ -211,15 +162,6 @@ public class MimeUtil {
 
     /**
      * Replaces the <code>cid</code> URLs in JMF and JDF files with the new URLs. This method does the following:
-     *
-     * <pre>
-     * For each new URL
-     *    If the new URL ends with .jmf or .jdf read the file and
-     *       For each CID
-     *          Replace cid URL with corresponding new URL
-     * </pre>
-     * @todo Optimize. Each JMF/JDF is currently read to memory, strings replaced, and then written to disk again. An input/ouput stream that replaces value on
-     * the fly would use less memory.
      */
     private static void replaceAllCidUrls(Map fileToCidMap) throws IOException, URISyntaxException {
         // For each file URL

@@ -11,6 +11,7 @@ import java.net.SocketException;
 import java.util.Comparator;
 import java.util.List;
 
+import javax.annotation.PostConstruct;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -20,10 +21,7 @@ import org.cip4.jdflib.core.JDFAudit;
 import org.cip4.tools.alces.Application;
 import org.cip4.tools.alces.service.about.AboutService;
 import org.cip4.tools.alces.service.discovery.DiscoveryService;
-import org.cip4.tools.alces.service.discovery.model.JdfController;
-import org.cip4.tools.alces.service.discovery.model.JdfDevice;
-import org.cip4.tools.alces.service.discovery.model.MessageService;
-import org.cip4.tools.alces.service.discovery.model.Queue;
+import org.cip4.tools.alces.service.discovery.model.*;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
@@ -85,6 +83,8 @@ public class Alces extends JFrame {
     private JScrollPane sessionInfoScrollPane;
     private JSplitPane infoQueueSplitPane;
 
+    private JTestSessionsTree jTestSessionsTree;
+
     private JPanel messagesPanel;
     private JComboBox<String> addressComboBox;
     private JComboBox<String> deviceListComboBox;
@@ -106,8 +106,25 @@ public class Alces extends JFrame {
         super();
     }
 
+    @PostConstruct
+    public void postConstruct() {
+
+        // listen to jdf controller updates
+        discoveryService.registerJdfControllerListener(jdfController -> {
+            this.jdfController = jdfController;
+
+            SwingUtilities.invokeLater(() -> {
+                updateJdfDevices(jdfController);
+                updateJdfMessageServices(jdfController);
+            });
+        });
+
+        // listen to queue updates
+        discoveryService.registerQueueListener(queue -> queuePanel.refreshQueue(queue));
+    }
+
     @EventListener(ApplicationReadyEvent.class)
-    public void init() throws IOException {
+    public void applicationReady() throws IOException {
 
         // initialize window (main panel)
         Container mainPanel = getContentPane();
@@ -179,6 +196,10 @@ public class Alces extends JFrame {
         return statusPanel;
     }
 
+    /**
+     * Creation of a BaseUrl PopUp Menu showing all network interfaces.
+     * @return A PopUpMenu showing all network interfaces.
+     */
     private JPopupMenu createBaseUrlPopUp() {
         final JPopupMenu baseUrlPopupMenu = new JPopupMenu("Base URL");
 
@@ -213,13 +234,11 @@ public class Alces extends JFrame {
      */
     private void updateBaseUrlsIp(String ip) {
         settingsService.updateBaseUrlIp(ip);
-
         baseUrlButton.setText(settingsService.getBaseUrl());
     }
 
     /**
      * Initializes the address bar panel.
-     *
      * @return The initialized address bar panel
      */
     private JPanel initAddressBarPanel() {
@@ -243,8 +262,7 @@ public class Alces extends JFrame {
         addressComboBox = new JComboBox<>(settingsService.getAddressHistory());
         addressComboBox.setEditable(true);
         addressComboBox.addActionListener(e -> {
-            JComboBox<String> obj = (JComboBox<String>) e.getSource();
-            obj.insertItemAt(obj.getSelectedItem().toString(), 0);
+            JComboBox obj = (JComboBox) e.getSource();
             this.deviceUrl = obj.getSelectedItem().toString();
         });
         addressBarPanel.add(addressComboBox);
@@ -258,7 +276,7 @@ public class Alces extends JFrame {
             }
         });
 
-        // connect button
+        // discover button
         JButton discoverButton = new JButton("Discover");
         discoverButton.addActionListener(e -> discover());
         addressBarPanel.add(discoverButton);
@@ -269,11 +287,9 @@ public class Alces extends JFrame {
 
     /**
      * Initialize the left side control panel.
-     *
      * @return The initialized control panel.
      */
     private JScrollPane initControlPanel() {
-
         JScrollPane controlPanel = new JScrollPane();
 
         // known devices
@@ -337,7 +353,7 @@ public class Alces extends JFrame {
         JScrollPane sessionTreeScrollPane = new JScrollPane();
 
         // init test suite tree
-        JTestSessionsTree jTestSessionsTree = JTestSessionsTree.newInstance(testRunnerService.getTestSessions());
+        jTestSessionsTree = JTestSessionsTree.newInstance(testRunnerService.getTestSessions());
         testRunnerService.registerTestSuiteListener(jTestSessionsTree);
         jTestSessionsTree.addTreeSelectionListener(e -> {
             DefaultMutableTreeNode treeNode = (DefaultMutableTreeNode) e.getPath().getLastPathComponent();
@@ -351,7 +367,13 @@ public class Alces extends JFrame {
         JPanel sessionButtonPanel = new JPanel();
         sessionPanel.add(sessionButtonPanel, BorderLayout.SOUTH);
 
-        // clear all test sessions
+        // add test sessions button
+        JButton refreshButton = new JButton("Refresh");
+        sessionButtonPanel.add(refreshButton);
+        refreshButton.addActionListener(e -> {
+            jTestSessionsTree.handleTestSessionsUpdate(this.testRunnerService.getTestSessions());
+        });
+
         JButton clearButton = new JButton("Clear All");
         sessionButtonPanel.add(clearButton);
         clearButton.addActionListener(e -> {
@@ -384,28 +406,28 @@ public class Alces extends JFrame {
         return sessionSplitPane;
     }
 
-    /**
-     * Update jdf devices.
-     */
-    private void updateJdfDevices() {
+    private void clear() {
 
-        // clean up
-        clearActiveDevice();
+        // clear queue
+        queuePanel.clearQueue();
+
+        // clear message buttons
+        messagesPanel.removeAll();
+        messagesPanel.repaint();
+
+        // clear test sessions
+        testRunnerService.clearTestSessions();
+
+        // remove jdf devices
         deviceListComboBox.removeAllItems();
         deviceListComboBox.setEnabled(false);
 
-        // refresh devices list
-        this.jdfController.getJdfDevices().forEach(jdfDevice -> deviceListComboBox.addItem(jdfDevice.getDeviceId()));
-        deviceListComboBox.setEnabled(true);
-    }
-
-    /**
-     * Clear the active device.
-     */
-    private void clearActiveDevice() {
+        // clear active device
         deviceStatusValue.setText("");
         deviceInfoTextArea.setText("");
     }
+
+
 
     /**
      * Updates the active device.
@@ -459,18 +481,16 @@ public class Alces extends JFrame {
 
         // update queue
         if (StringUtils.isNotEmpty(jdfDevice.getDeviceId())) {
-            Queue queue = discoveryService.loadQueue(jdfDevice);
-            queuePanel.refreshQueue(queue);
-
-        } else {
-            queuePanel.clearQueue();
+            discoveryService.loadQueue(jdfDevice);
         }
+
+        queuePanel.clearQueue();
     }
 
     /**
      * Update jdf message services.
      */
-    private void updateJdfMessageServices() {
+    private void updateJdfMessageServices(JdfController jdfController) {
 
         // clear old buttons
         messagesPanel.removeAll();
@@ -710,18 +730,15 @@ public class Alces extends JFrame {
     private void discover() {
 
         // clean up
-        clearActiveDevice();
-
-        queuePanel.clearQueue();
-
-        testRunnerService.clearTestSessions();
+        clear();
 
         // discover target url (controller)
-        this.jdfController = discoveryService.discover(this.deviceUrl);
+        discoveryService.discover(this.deviceUrl);
         settingsService.appendAddress(this.deviceUrl);
 
-        updateJdfDevices();
-        updateJdfMessageServices();
+
+
+        addressComboBox.setModel(new DefaultComboBoxModel<>(settingsService.getAddressHistory()));
     }
 
     /**
@@ -746,5 +763,20 @@ public class Alces extends JFrame {
 
         // quite alces
         Application.initiateShutdown();
+    }
+
+    /**
+     * Update jdf devices.
+     * @param jdfController The controller containing the new devices information.
+     */
+    private void updateJdfDevices(JdfController jdfController) {
+
+        // clean up
+        deviceListComboBox.removeAllItems();
+        deviceListComboBox.setEnabled(false);
+
+        // refresh devices list
+        jdfController.getJdfDevices().forEach(jdfDevice -> deviceListComboBox.addItem(jdfDevice.getDeviceId()));
+        deviceListComboBox.setEnabled(true);
     }
 }

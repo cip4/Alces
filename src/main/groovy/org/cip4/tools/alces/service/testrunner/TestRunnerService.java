@@ -2,9 +2,8 @@ package org.cip4.tools.alces.service.testrunner;
 
 import org.cip4.tools.alces.service.testrunner.model.*;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.Future;
 
 /**
  * Business interface for a test-runner.
@@ -49,6 +48,7 @@ public interface TestRunnerService {
      * @param targetUrl  The target URL the JMF needs to be sent to.
      * @return The created test session.
      */
-    TestSession startTestSession(String jmfMessage, String targetUrl);
+    Future<TestSession> startTestSession(String jmfMessage, String targetUrl);
+
 
 }

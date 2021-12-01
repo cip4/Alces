@@ -12,6 +12,7 @@ import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -19,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Implementation of the DiscoveryService interface.
@@ -28,6 +30,9 @@ public class DiscoveryServiceImpl implements DiscoveryService {
 
     private static Logger log = LoggerFactory.getLogger(DiscoveryServiceImpl.class);
 
+    private List<JdfControllerListener> jdfControllerListeners = new ArrayList<>();
+    private List<QueueListener> queueListeners = new ArrayList<>();
+
     @Autowired
     private JmfMessageService jmfMessageService;
 
@@ -35,20 +40,61 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private TestRunnerService testRunnerService;
 
     @Override
-    public JdfController discover(String jmfEndpointUrl) {
-        log.info("Discover JMF Endpoint '{}'", jmfEndpointUrl);
-
-        // initiate JMF Handshake
-        List<JdfDevice> jdfDevices = processKnownDevices(jmfEndpointUrl);
-        List<MessageService> messageServices = processKnownMessages(jmfEndpointUrl);
-
-        // create and return controller object
-        return new JdfController(jdfDevices, messageServices);
+    public void registerJdfControllerListener(JdfControllerListener jdfControllerListener) {
+        jdfControllerListeners.add(jdfControllerListener);
     }
 
     @Override
-    public Queue loadQueue(JdfDevice jdfDevice) {
-        return processQueueStatus(jdfDevice.getJmfUrl());
+    public void registerQueueListener(QueueListener queueListener) {
+        queueListeners.add(queueListener);
+    }
+
+    @Override
+    @Async
+    public void discover(String jmfEndpointUrl) {
+        log.info("Discover JMF Endpoint '{}'", jmfEndpointUrl);
+
+        // initiate JMF Handshake
+        List<JdfDevice> jdfDevices;
+
+        try {
+            jdfDevices = processKnownDevices(jmfEndpointUrl);
+        } catch (Exception e) {
+            log.error("Error reading JDF Devices.", e);
+            jdfDevices = null;
+        }
+
+        List<MessageService> messageServices;
+
+        try {
+            messageServices = processKnownMessages(jmfEndpointUrl);
+        } catch (Exception e) {
+            log.error("Error reading JDF Message Services.", e);
+            messageServices = null;
+        }
+
+        JdfController jdfController = new JdfController(jdfDevices, messageServices);
+
+        // notify listener
+        jdfControllerListeners.forEach(jdfControllerListener -> jdfControllerListener.handleJdfControllerUpdate(jdfController));
+    }
+
+    @Override
+    @Async
+    public void loadQueue(JdfDevice jdfDevice) {
+        final Queue queue;
+        Queue queue1;
+
+        try {
+            queue1 = processQueueStatus(jdfDevice.getJmfUrl());
+        } catch (Exception e) {
+            log.error("Error reading Queue Status.", e);
+            queue1 = null;
+        }
+
+        // notify listeners
+        queue = queue1;
+        queueListeners.forEach(queueListener -> queueListener.handleQueueUpdate(queue));
     }
 
     /**
@@ -57,11 +103,11 @@ public class DiscoveryServiceImpl implements DiscoveryService {
      * @param jmfEndpointUrl The target url.
      * @return List of JDF Message Services.
      */
-    private List<MessageService> processKnownMessages(String jmfEndpointUrl) {
+    private List<MessageService> processKnownMessages(String jmfEndpointUrl) throws ExecutionException, InterruptedException {
 
         // query target url
         String jmfResponseKnownDevices = testRunnerService
-                .startTestSession(jmfMessageService.createKnownMessagesQuery(), jmfEndpointUrl)
+                .startTestSession(jmfMessageService.createKnownMessagesQuery(), jmfEndpointUrl).get()
                 .getIncomingJmfMessages().get(0)
                 .getBody();
 
@@ -95,11 +141,11 @@ public class DiscoveryServiceImpl implements DiscoveryService {
      * @param jmfEndpointUrl The target url.
      * @return List of JDF Devices.
      */
-    private List<JdfDevice> processKnownDevices(String jmfEndpointUrl) {
+    private List<JdfDevice> processKnownDevices(String jmfEndpointUrl) throws ExecutionException, InterruptedException {
 
         // query target url
         String jmfResponseKnownDevices = testRunnerService
-                .startTestSession(jmfMessageService.createKnownDevicesQuery(), jmfEndpointUrl)
+                .startTestSession(jmfMessageService.createKnownDevicesQuery(), jmfEndpointUrl).get()
                 .getIncomingJmfMessages().get(0)
                 .getBody();
 
@@ -143,11 +189,11 @@ public class DiscoveryServiceImpl implements DiscoveryService {
      * @param jmfEndpointUrl The target url.
      * @return List of QueueEntry objects.
      */
-    private Queue processQueueStatus(String jmfEndpointUrl) {
+    private Queue processQueueStatus(String jmfEndpointUrl) throws ExecutionException, InterruptedException {
 
         // query target url
         String jmfResponseQueueStatus = testRunnerService
-                .startTestSession(jmfMessageService.createQueueStatusQuery(), jmfEndpointUrl)
+                .startTestSession(jmfMessageService.createQueueStatusQuery(), jmfEndpointUrl).get()
                 .getIncomingJmfMessages().get(0)
                 .getBody();
 
