@@ -6,6 +6,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -23,6 +24,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -72,7 +75,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         testSessions.clear();
 
         // notify listeners
-        notifyTestSessionsListeners(testSessions);
+        notifyTestSessionsListeners();
     }
 
     @Override
@@ -82,7 +85,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         testSessions.remove(testSession);
 
         // notify listeners
-        notifyTestSessionsListeners(testSessions);
+        notifyTestSessionsListeners();
     }
 
     @Override
@@ -99,6 +102,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
         // run outgoing tests on message and log results
         runTests(outgoingJmfMessage);
+        notifyTestSessionsListeners();
 
         // send message
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -224,10 +228,8 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
     /**
      * Notify all listener about the updated test sessions.
-     *
-     * @param testSessions The updated list of test sessions.
      */
-    private void notifyTestSessionsListeners(List<TestSession> testSessions) {
+    private void notifyTestSessionsListeners() {
         this.testSessionsListeners.forEach(testSessionsListener -> testSessionsListener.handleTestSessionsUpdate(
                 Collections.unmodifiableList(testSessions)
         ));
@@ -259,7 +261,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
             receiveMessage(testSession, incomingJmfMessage);
         }
 
-        notifyTestSessionsListeners(testSessions);
+        notifyTestSessionsListeners();
     }
 
     /**
@@ -275,7 +277,8 @@ public class TestRunnerServiceImpl implements TestRunnerService {
     }
 
     @Override
-    public TestSession startTestSession(String jmfMessage, String targetUrl) {
+    @Async
+    public Future<TestSession> startTestSession(String jmfMessage, String targetUrl) {
 
         // create an outgoing message object from jmf string
         OutgoingJmfMessage outgoingJmfMessage = new OutgoingJmfMessage(jmfMessage);
@@ -284,16 +287,16 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         testSessions.add(testSession);
 
         // notify listeners
-        notifyTestSessionsListeners(testSessions);
+        notifyTestSessionsListeners();
 
         // send message
         sendMessage(testSession, outgoingJmfMessage);
 
         // notify listeners
-        notifyTestSessionsListeners(testSessions);
+        notifyTestSessionsListeners();
 
         // return test session
-        return testSession;
+        return new AsyncResult<>(testSession);
     }
 
 
