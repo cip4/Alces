@@ -7,7 +7,7 @@ on:
 jobs:
   call-tool-snapshot:
     name: 🏭
-    uses: cip4/.github/.github/workflows/tool-snapshot.yml@sign-windows
+    uses: cip4/.github/.github/workflows/tool-snapshot.yml@v2
     with:
       java-version: 16
       confluence-label: alces
