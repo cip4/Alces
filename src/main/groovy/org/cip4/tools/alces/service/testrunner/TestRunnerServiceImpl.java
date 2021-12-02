@@ -36,7 +36,7 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class TestRunnerServiceImpl implements TestRunnerService {
 
-    private static Logger log = LoggerFactory.getLogger(TestRunnerServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(TestRunnerServiceImpl.class);
 
     @Autowired
     private SettingsService settingsService;
@@ -47,7 +47,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
     @Autowired
     private List<JmfTest> jmfTests;
 
-    private List<TestSessionsListener> testSessionsListeners;
+    private final List<TestSessionsListener> testSessionsListeners;
 
     private final List<TestSession> testSessions;
 
@@ -114,6 +114,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
         List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");
 
+        assert responseHeaders != null;
         IncomingJmfMessage responseMessage = new IncomingJmfMessage(responseHeaders.get(0), responseEntity.getBody());
 
         receiveMessage(testSession, responseMessage, outgoingJmfMessage);
@@ -160,7 +161,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
      */
     private void runTests(AbstractJmfMessage jmfMessage) {
 
-        // filter tets
+        // filter test
         List<JmfTest> jmfTests;
 
         if(jmfMessage instanceof IncomingJmfMessage) {
@@ -189,27 +190,29 @@ public class TestRunnerServiceImpl implements TestRunnerService {
      * @return a Message containing the JMF message found in the JMF MIME package
      */
     private static AbstractJmfMessage getJMFFromMime(AbstractJmfMessage message) {
-        log.debug("Extracting JMF from JMF MIME package...");
+
         try {
             // Read message body as input stream
             InputStream mimeStream = new ByteArrayInputStream(message.getBody().getBytes());
+
             // Extract MIME package
             File outputDir = new File(System.getProperty("java.io.tmpdir"));
             String[] fileUrls = org.cip4.tools.alces.util.MimeUtil.extractMimePackage(mimeStream, outputDir.toURI().toURL().toExternalForm());
+
             // Load first file, JMF is always at first position
-            for (int i = 0; i < fileUrls.length; i++) {
-                if (fileUrls[i].endsWith(".jmf")) {
-                    String body = IOUtils.toString(new FileInputStream(new File(new URI(fileUrls[i]))));
+            for (String fileUrl : fileUrls) {
+                if (fileUrl.endsWith(".jmf")) {
+                    String body = IOUtils.toString(new FileInputStream(new File(new URI(fileUrl))));
                     OutgoingJmfMessage tempMsgOut = new OutgoingJmfMessage(JDFConstants.MIME_JMF, body);
                     log.debug("Extracted JMF from JMF MIME package: " + tempMsgOut);
                     return tempMsgOut;
                 }
             }
-        } catch (IOException ioe) {
+
+        } catch (IOException | URISyntaxException ioe) {
             log.error("Could not extract JMF from outgoing message's MIME package.", ioe);
-        } catch (URISyntaxException use) {
-            log.error("Could not extract JMF from outgoing message's MIME package.", use);
         }
+
         return null;
     }
 
@@ -302,8 +305,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
 
     /**
      * Finds the TestSession that the messages belongs to.
-     * @param message
-     * @return
      */
     private synchronized TestSession findTestSession(AbstractJmfMessage message) {
         final JDFJMF jmf = JmfUtil.getBodyAsJMF(message);

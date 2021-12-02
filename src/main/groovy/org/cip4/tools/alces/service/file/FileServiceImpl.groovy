@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 
 import java.nio.file.Files
-import java.nio.file.Path;
+import java.nio.file.Path
 
 @Service
 class FileServiceImpl implements FileService {
@@ -115,7 +115,7 @@ class FileServiceImpl implements FileService {
     private void reloadJdfSchema() {
         log.info("Check JDF Schema version...")
 
-        // get current version n ca
+        // get local schema version
         String localSchemaVersion
 
         if(getJdfSchema().toFile().exists()) {

@@ -1,7 +1,5 @@
 package org.cip4.tools.alces.service.testrunner.model;
 
-import org.cip4.tools.alces.service.testrunner.model.TestResult;
-
 import java.util.ArrayList;
 import java.util.List;
 
