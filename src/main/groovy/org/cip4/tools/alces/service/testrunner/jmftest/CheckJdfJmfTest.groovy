@@ -4,8 +4,10 @@ import groovy.xml.XmlSlurper
 import org.cip4.jdflib.core.JDFElement
 import org.cip4.jdflib.core.XMLDoc
 import org.cip4.jdflib.validate.JDFValidator
+import org.cip4.tools.alces.service.file.FileService
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage
 import org.cip4.tools.alces.service.testrunner.model.TestResult
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 import javax.xml.transform.Source
@@ -22,7 +24,8 @@ class CheckJdfJmfTest implements JmfTest {
 
     private final static String RES_CHECK_JDF_XSL = "/org/cip4/tools/alces/service/testrunner/checkjdf.xsl";
 
-    private final JDFValidator jdfValidator
+    @Autowired
+    private FileService fileService
 
     /**
      * Default constructor.
@@ -52,7 +55,7 @@ class CheckJdfJmfTest implements JmfTest {
         jdfValidator.setIgnorePrivate(false)
         jdfValidator.level = JDFElement.EnumValidationLevel.Complete
         jdfValidator.bValidate = true
-        jdfValidator.setJDFSchemaLocation("https://schema.cip4.org/jdfschema_1_7/JDF.xsd")
+        jdfValidator.setJDFSchemaLocation(fileService.getJdfSchemaDir().resolve("JDF.xsd").toString())
 
         // run check jdf
         XMLDoc xmlDoc = jdfValidator.processSingleStream(

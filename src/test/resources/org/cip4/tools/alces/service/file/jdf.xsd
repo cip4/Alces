@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    A over-simplified JDF xsd.
+-->
+<xs:schema xmlns:jdftyp="http://www.CIP4.org/JDFSchema_1_7_Types" xmlns:jdf="http://www.CIP4.org/JDFSchema_1_1" xmlns:xs="http://www.w3.org/2001/XMLSchema" targetNamespace="http://www.CIP4.org/JDFSchema_1_1" elementFormDefault="qualified" attributeFormDefault="unqualified" version="1.7.44-f861d1a">
+    <xs:import namespace="http://www.CIP4.org/JDFSchema_1_7_Types" schemaLocation="JDFTypes.xsd"/>
+    <xs:include schemaLocation="JDFCore.xsd"/>
+    <xs:include schemaLocation="JDFCapability.xsd"/>
+</xs:schema>

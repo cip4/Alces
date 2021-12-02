@@ -1,83 +1,104 @@
 package org.cip4.tools.alces.service.settings;
 
-import org.cip4.tools.alces.preprocessor.jdf.JDFPreprocessor;
-import org.cip4.tools.alces.preprocessor.jmf.Preprocessor;
-import org.cip4.tools.alces.service.testrunner.model.TestSession;
-
-import javax.swing.*;
-import java.util.Map;
-import java.util.Properties;
-
 /**
  * Business interface for applications settings.
  */
 public interface SettingsService {
 
     /**
-     * Returns the property value for a specific key.
-     * In case no property is set, a default value will be return.
-     *
-     * @param key The properties key.
-     * @return The properties value.
+     * Returns Alces configured base url.
+     * @return Alces' base URL a String.
      */
-    String getProp(String key);
+    String getBaseUrl();
 
     /**
-     * Returns the URL used for receiving JMF messages. The URL is built from the hostname, port, and context properties.
-     *
-     * @return the server URL, for example http://localhost:9090/alces/jmf
+     * Updates the base url's ip address.
+     * @param ip The new ip address
      */
-    String getServerJmfUrl();
+    void updateBaseUrlIp(String ip);
 
     /**
-     * Returns an array of the currently enabled <code>Preprocessor</code>s.
-     *
-     * @return A array of <code>Preprocessor</code>s
+     * Returns the current address history.
+     * @return The address history as a list of strings.
      */
-    Preprocessor[] getJMFPreprocessors();
+    String[] getAddressHistory();
 
     /**
-     * Returns an array of the currently enabled <code>JDFPreprocessor</code>s.
-     *
-     * @return a map of <code>Preprocessor</code>s
+     * Append an address to history.
+     * @param address The address to be added.
      */
-    JDFPreprocessor[] getJDFPreprocessors();
+    void appendAddress(String address);
 
     /**
-     * Is used to get automated alces started
-     *
-     * @return The properties.
+     * Returns the last selected directory.
+     * @return The last selected directory.
      */
-    Properties getPropFile();
+    String getLastSelectedDir();
 
     /**
-     * Storing of altered properties
-     *
-     * @param key
-     * @param value
+     * Sets the last selected dir.
+     * @param lastSelectedDir The last selected dir.
      */
-    void putProp(String key, String value);
+    void setLastSelectedDir(String lastSelectedDir);
 
     /**
-     * Returns the General Preferences
-     *
-     * @return
+     * Returns the Alces' dialog's height.
+     * @return The Alces' dialog's height.
      */
-    Map<String, String> getGeneralPrefs();
-
-    void setPreferences(Map<String, String> generalPrefs);
+    int getAlcesDialogHeight();
 
     /**
-     * Saves the address history and finds duplicate HTTP-Adresses and remove them before saving
+     * Sets the Alces' dialog's height.
+     * @param alcesDialogHeight  The Alces' dialog's height.
      */
-    void saveHistory(ComboBoxModel adresses);
-
-    void saveConfiguration(int windowWidth, int windowHeight, int devicePaneWidth, int testPaneWidth, int mainPaneHeight);
+    void setAlcesDialogHeight(int alcesDialogHeight);
 
     /**
-     * Loads the already used addresses from the properties
-     *
-     * @return
+     * Returns the Alces' dialog's width.
+     * @return The Alces' dialog's width.
      */
-    String[] loadHistory();
+    int getAlcesDialogWidth();
+
+    /**
+     * Sets the Alces' dialog's width.
+     * @param alcesDialogWidth The Alces' dialog's width.
+     */
+    void setAlcesDialogWidth(int alcesDialogWidth);
+
+    /**
+     * Returns the main pane height.
+     * @return The main pane height
+     */
+    int getMainPaneHeight();
+
+    /**
+     * Sets the main pane height.
+     * @param mainPaneHeight The main pane height
+     */
+    void setMainPaneHeight(int mainPaneHeight);
+
+
+    /**
+     * Returns the test pane width.
+     * @return The test pane width
+     */
+    int getTestPaneWidth();
+
+    /**
+     * Sets the test pane width.
+     * @param testPaneWidth The test pane width
+     */
+    void setTestPaneWidth(int testPaneWidth);
+
+    /**
+     * Returns the device pane width.
+     * @return The device pane width
+     */
+    int getDevicePaneWidth();
+
+    /**
+     * Sets the device pane width.
+     * @param devicePaneWidth The device pane width.
+     */
+    void setDevicePaneWidth(int devicePaneWidth);
 }

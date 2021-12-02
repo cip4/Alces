@@ -1,5 +1,6 @@
 package org.cip4.tools.alces.service.discovery.model;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -7,20 +8,23 @@ import java.util.List;
  */
 public class JdfController {
 
-    List<JdfDevice> jdfDevices;
+    final List<JdfDevice> jdfDevices;
+
+    final List<MessageService> messageServices;
 
     /**
-     * Default constructor.
+     * Custom constructor.
      */
-    public JdfController() {
-
+    public JdfController(List<JdfDevice> jdfDevices, List<MessageService> messageServices) {
+        this.jdfDevices = Collections.unmodifiableList(jdfDevices);
+        this.messageServices = Collections.unmodifiableList(messageServices);
     }
 
     public List<JdfDevice> getJdfDevices() {
         return jdfDevices;
     }
 
-    public void setJdfDevices(List<JdfDevice> jdfDevices) {
-        this.jdfDevices = jdfDevices;
+    public List<MessageService> getJdfMessageServices() {
+        return messageServices;
     }
 }

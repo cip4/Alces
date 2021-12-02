@@ -2,12 +2,12 @@ package org.cip4.tools.alces.service.testrunner.jmftest;
 
 import java.util.List;
 
+import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
 import org.cip4.tools.alces.service.testrunner.model.AbstractJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestResult;
 import org.cip4.tools.alces.service.testrunner.model.TestResult.Result;
-import org.cip4.tools.alces.util.JDFConstants;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +33,7 @@ public class ReturnCodeJmfTest implements JmfTest {
 	public TestResult runTest(AbstractJmfMessage message) {
         final TestResult result;
 
-        if (!message.getContentType().startsWith(JDFConstants.JMF_CONTENT_TYPE)) {
+        if (!message.getContentType().startsWith(JDFConstants.MIME_JMF)) {
         	result = new TestResult(this, message, Result.IGNORED,
         			"Test ignored because message did not contain JMF. Message content-type was: " 
         			+ message.getContentType());

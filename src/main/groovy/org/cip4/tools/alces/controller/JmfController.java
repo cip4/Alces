@@ -1,28 +1,27 @@
 package org.cip4.tools.alces.controller;
 
+import org.apache.commons.io.FilenameUtils;
+import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.jdflib.jmf.JDFJMF;
 import org.cip4.jdflib.jmf.JDFMessage;
-import org.cip4.tools.alces.jmf.JMFMessageBuilder;
+import org.cip4.tools.alces.service.file.FileService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
-import org.cip4.tools.alces.service.testrunner.model.TestSession;
-import org.cip4.tools.alces.util.AlcesPathUtil;
-import org.cip4.tools.alces.service.settings.SettingsServiceImpl;
 import org.cip4.tools.alces.util.JmfUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Enumeration;
 
 @RestController
 public class JmfController {
@@ -37,17 +36,46 @@ public class JmfController {
     private SettingsService settingsService;
 
     @Autowired
+    private FileService fileService;
+
+    @Autowired
     private TestRunnerService testRunnerService;
 
-    private final String testDataDir = AlcesPathUtil.ALCES_TEST_DATA_DIR;
+    @RequestMapping(value = "/alces/file/{filename}", method = RequestMethod.GET)
+    public ResponseEntity<byte[]> loadFle(@PathVariable String filename) throws IOException {
+        log.info("Load file '{}'", filename);
 
-    @RequestMapping(value = "/jdf/{filename}", method = RequestMethod.GET, produces = MediaType.TEXT_XML_VALUE)
-    public byte[] loadJdfAsset(@PathVariable String filename) throws IOException {
+        File file = fileService.getPublishedFile(filename);
 
-        Path jdfDir = Paths.get(testDataDir, "testdata", "jdf", filename);
+        // check if file exists
+        if(file.exists()) {
 
-        log.info("New path: {}", jdfDir);
-        return Files.readAllBytes(jdfDir);
+            // extract extension
+            String extension = FilenameUtils.getExtension(file.getName()).toLowerCase();
+
+            // define content type
+            String contentType = switch (extension) {
+                case "jdf" -> JDFConstants.MIME_JDF;
+                case "ppf" -> JDFConstants.MIME_CIP3;
+                default -> MediaType.APPLICATION_OCTET_STREAM_VALUE;
+            };
+
+            // return file
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("Content-Type", contentType);
+            headers.add("Content-Disposition", "attachment; filename=\"" + file.getName() + "\"");
+
+            return new ResponseEntity<>(
+                    Files.readAllBytes(file.toPath()),
+                    headers,
+                    HttpStatus.OK
+            );
+
+        } else {
+
+            // return 404 error
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
     }
 
     @RequestMapping(value = "/alces/jmf", method = RequestMethod.POST, consumes = {JMF_CONTENT_TYPE, MIME_CONTENT_TYPE}, produces = JMF_CONTENT_TYPE)
@@ -61,76 +89,61 @@ public class JmfController {
         log.info("Receiving message from {} @ {} ({})...", userAgent, request.getRemoteHost(), request.getRemoteAddr());
 
         String remoteAddr = request.getRemoteAddr();
-        String header = convertHttpHeadersToString(request);
 
-
-        final IncomingJmfMessage inMessage = new IncomingJmfMessage(contentType, header, messageBody, false);
+        final IncomingJmfMessage incomingJmfMessage = new IncomingJmfMessage(contentType, messageBody);
 
         // create and send response
-        final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(inMessage);
+        final JDFJMF jmfIn = JmfUtil.getBodyAsJMF(incomingJmfMessage);
         ResponseEntity<String> responseEntity;
 
         if (jmfIn != null) {
             if (jmfIn.getAcknowledge(0) != null) {
                 log.debug("Receiving Acknowledge message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
                 responseEntity = ResponseEntity.ok().build();
 
             } else if (jmfIn.getSignal(0) != null) {
                 log.debug("Receiving Signal message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
                 responseEntity = ResponseEntity.ok().build();
 
             } else if (jmfIn.getMessageElement(JDFMessage.EnumFamily.Command, JDFMessage.EnumType.ReturnQueueEntry, 0) != null) {
-                log.debug("Receiving RetunQueueEntry message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
-                JDFJMF jmfOut = JMFMessageBuilder.buildResponse(jmfIn);
-                responseEntity = ResponseEntity.ok(jmfOut.toXML());
+                log.debug("Receiving ReturnQueueEntry message...");
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
+                responseEntity = ResponseEntity.ok(jmfIn.createResponse().toXML());
 
             } else {
                 log.debug("Receiving unhandled JMF message...");
-                testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
-                JDFJMF jmfOut = JMFMessageBuilder.buildNotImplementedResponse(jmfIn);
-                jmfOut.getResponse(0).setReturnCode(Integer.parseInt(settingsService.getProp(SettingsServiceImpl.JMF_NOT_IMPLEMENTED_RETURN_CODE)));
-                responseEntity = ResponseEntity.ok(jmfOut.toXML());
+                testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
+
+                JDFJMF jdfResponse = jmfIn.createResponse();
+                jdfResponse.getResponse(0).setReturnCode(5);
+
+                jdfResponse.getResponse(0)
+                        .appendNotification()
+                        .appendComment()
+                        .setText("Alces has received and logged your messages but does not know how to process the message.");
+
+                responseEntity = ResponseEntity.ok(jdfResponse.toXML());
             }
 
 
         } else if (contentType.equals(MIME_CONTENT_TYPE)) {
             log.debug("Receiving MIME package...");
-            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
             responseEntity = ResponseEntity.ok().build();
 
         } else if (contentType.startsWith(JDF_CONTENT_TYPE)) {
             log.debug("Receiving JDF file...");
-            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
             responseEntity = ResponseEntity.ok().build();
 
         } else {
             log.debug("Unknown content-type '" + contentType + "'...");
-            testRunnerService.processIncomingJmfMessage(inMessage, remoteAddr);
+            testRunnerService.processIncomingJmfMessage(incomingJmfMessage, remoteAddr);
             responseEntity = ResponseEntity.badRequest().build();
         }
 
         return responseEntity;
-    }
-
-    /**
-     * Converts the headers in a <code>HttpServletRequest</code> to a
-     * <code>String</code>.
-     *
-     * @param request
-     * @return
-     */
-    private static String convertHttpHeadersToString(HttpServletRequest request) {
-        StringBuffer header = new StringBuffer();
-        for (Enumeration e = request.getHeaderNames(); e.hasMoreElements();) {
-            String headerName = (String) e.nextElement();
-            header.append(headerName);
-            header.append(": ");
-            header.append(request.getHeader(headerName));
-            header.append("\n");
-        }
-        return header.toString();
     }
 }
