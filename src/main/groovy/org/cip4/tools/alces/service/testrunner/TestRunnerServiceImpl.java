@@ -109,7 +109,6 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         httpHeaders.set("Content-Type", outgoingJmfMessage.getContentType());
         HttpEntity<String> request = new HttpEntity<>(outgoingJmfMessage.getBody(), httpHeaders);
 
-        RestTemplate restTemplate = ApplicationContextUtil.getBean(RestTemplate.class);
         ResponseEntity<String> responseEntity = restTemplate.postForEntity(testSession.getTargetUrl(), request, String.class);
 
         List<String> responseHeaders = responseEntity.getHeaders().get("Content-Type");
@@ -118,9 +117,7 @@ public class TestRunnerServiceImpl implements TestRunnerService {
         IncomingJmfMessage responseMessage = new IncomingJmfMessage(responseHeaders.get(0), responseEntity.getBody());
 
         receiveMessage(testSession, responseMessage, outgoingJmfMessage);
-
     }
-
 
     private synchronized OutgoingJmfMessage getOutgoingMessage(TestSession testSession, IncomingJmfMessage message) {
         final JDFJMF jmf = JmfUtil.getBodyAsJMF(message);

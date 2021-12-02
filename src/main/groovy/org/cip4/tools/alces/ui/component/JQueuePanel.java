@@ -14,12 +14,12 @@ import java.awt.event.KeyEvent;
  */
 public class JQueuePanel extends JPanel {
 
-    private JLabel queueStatusLabel;
-    private JLabel queueSizeLabel;
-    private JLabel queueDeviceLabel;
+    private final JLabel queueStatusLabel;
+    private final JLabel queueSizeLabel;
+    private final JLabel queueDeviceLabel;
 
-    private JTable queueTable;
-    private QueueTableModel queueTableModel;
+    private final JTable queueTable;
+    private final QueueTableModel queueTableModel;
 
     /**
      * Default constructor. Creates the Queue Panels appearance.
@@ -95,15 +95,13 @@ public class JQueuePanel extends JPanel {
             // update queue entries
             queueTableModel.setRowCount(0);
 
-            queue.getQueueEntries().forEach(queueEntry -> {
-                queueTableModel.addRow(new Object[]{
-                        queueEntry.getQueueEntryId(),
-                        queueEntry.getJobId(),
-                        queueEntry.getJobPartId(),
-                        queueEntry.getPriority(),
-                        queueEntry.getStatus()
-                });
-            });
+            queue.getQueueEntries().forEach(queueEntry -> queueTableModel.addRow(new Object[]{
+                    queueEntry.getQueueEntryId(),
+                    queueEntry.getJobId(),
+                    queueEntry.getJobPartId(),
+                    queueEntry.getPriority(),
+                    queueEntry.getStatus()
+            }));
         }
     }
 
@@ -127,14 +125,6 @@ public class JQueuePanel extends JPanel {
      */
     public String getSelectedQueueEntryId() {
         return queueTable.getSelectedRow() >= 0 ? (String) queueTableModel.getValueAt(queueTable.getSelectedRow(), 0) : null;
-    }
-
-    /**
-     * Getter for the selected job id.
-     * @return  Returns the selected jobId. Null in case nothing is selected.
-     */
-    public String getSelectedJobId() {
-        return queueTable.getSelectedRow() >= 0 ? (String) queueTableModel.getValueAt(queueTable.getSelectedRow(), 1) : null;
     }
 
     /**

@@ -29,7 +29,7 @@ import org.cip4.tools.alces.ui.component.JContentRenderer;
 import org.cip4.tools.alces.ui.component.JQueuePanel;
 import org.cip4.tools.alces.ui.component.JTestSessionsTree;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
-import org.cip4.tools.alces.util.JDFFileFilter;
+import org.cip4.tools.alces.ui.filefilter.JDFFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -207,18 +207,15 @@ public class Alces extends JFrame {
         baseUrlPopupMenu.add(menuItemLocalhost);
 
         try {
-            NetworkInterface.networkInterfaces().forEach(networkInterface -> {
+            NetworkInterface.networkInterfaces().forEach(networkInterface -> networkInterface.getInterfaceAddresses().forEach(interfaceAddress -> {
+                String hostAddress = interfaceAddress.getAddress().getHostAddress();
 
-                networkInterface.getInterfaceAddresses().forEach(interfaceAddress -> {
-                    String hostAddress = interfaceAddress.getAddress().getHostAddress();
-
-                    if (hostAddress.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
-                        JMenuItem menuItem = new JMenuItem(interfaceAddress.getAddress().getHostAddress());
-                        menuItem.addActionListener(e -> updateBaseUrlsIp(((JMenuItem) e.getSource()).getText()));
-                        baseUrlPopupMenu.add(menuItem);
-                    }
-                });
-            });
+                if (hostAddress.matches("^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$")) {
+                    JMenuItem menuItem = new JMenuItem(interfaceAddress.getAddress().getHostAddress());
+                    menuItem.addActionListener(e -> updateBaseUrlsIp(((JMenuItem) e.getSource()).getText()));
+                    baseUrlPopupMenu.add(menuItem);
+                }
+            }));
 
         } catch (SocketException e) {
             log.error("Error readng network interfaces", e);
