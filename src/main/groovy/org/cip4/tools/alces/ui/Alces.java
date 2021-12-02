@@ -161,7 +161,6 @@ public class Alces extends JFrame {
 
     /**
      * Initializes the status bar panel.
-     *
      * @return The initialized status bar panel
      */
     private JPanel initStatusPanel() {
@@ -229,7 +228,7 @@ public class Alces extends JFrame {
     }
 
     /**
-     * Update the IP adress of the base url.
+     * Update the IP address of the base url.
      * @param ip The new ip address.
      */
     private void updateBaseUrlsIp(String ip) {
@@ -370,9 +369,7 @@ public class Alces extends JFrame {
         // add test sessions button
         JButton refreshButton = new JButton("Refresh");
         sessionButtonPanel.add(refreshButton);
-        refreshButton.addActionListener(e -> {
-            jTestSessionsTree.handleTestSessionsUpdate(this.testRunnerService.getTestSessions());
-        });
+        refreshButton.addActionListener(e -> jTestSessionsTree.handleTestSessionsUpdate(this.testRunnerService.getTestSessions()));
 
         JButton clearButton = new JButton("Clear All");
         sessionButtonPanel.add(clearButton);

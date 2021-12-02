@@ -68,7 +68,11 @@ public class Application {
      */
     @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
-        return builder.build();
+
+        // add 'User-Agent' header
+        return builder
+                .defaultHeader("User-Agent", String.format("%s/%s", aboutService.getAppName(), aboutService.getAppVersion()))
+                .build();
     }
 
     /**
