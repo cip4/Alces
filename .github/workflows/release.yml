@@ -7,7 +7,7 @@ on:
 jobs:
   call-tool-release:
     name: 🏭
-    uses: cip4/.github/.github/workflows/tool-release.yml@v2
+    uses: cip4/.github/.github/workflows/tool-release.yml@master
     with:
       java-version: 16
       confluence-label: alces
