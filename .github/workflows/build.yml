@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build with Gradle
-        run: ./gradlew test jacocoTestReport
+        run: ./gradlew suggestModules test jacocoTestReport
 
       - name: Submit Code coverage
         uses: codecov/codecov-action@v2
