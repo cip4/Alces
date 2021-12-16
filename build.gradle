@@ -61,6 +61,8 @@ dependencies {
 
 runtime {
     jpackage {
+        modules = ['java.desktop', 'java.xml', 'java.sql', 'java.compiler', 'java.prefs', 'java.management',
+                   'jdk.xml.dom', 'javax.swing', 'java.datatransfer']
         imageOptions = [
                 "--copyright", "CIP4 Organization",
                 "--vendor", "CIP4 Organization"
