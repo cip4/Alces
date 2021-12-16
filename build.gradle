@@ -61,8 +61,22 @@ dependencies {
 
 runtime {
     jpackage {
-        modules = ['java.desktop', 'java.xml', 'java.sql', 'java.compiler', 'java.prefs', 'java.management',
-                   'jdk.xml.dom', 'javax.swing', 'java.datatransfer']
+        modules = [
+                'java.desktop',
+                'java.xml',
+                'java.sql',
+                'java.compiler',
+                'java.logging',
+                'java.prefs',
+                'java.management',
+                'jdk.xml.dom',
+                'java.datatransfer',
+                'java.naming',
+                'java.security.jgss',
+                'java.instrument',
+                'jdk.crypto.ec',
+                'jdk.unsupported'
+        ]
         imageOptions = [
                 "--copyright", "CIP4 Organization",
                 "--vendor", "CIP4 Organization"
