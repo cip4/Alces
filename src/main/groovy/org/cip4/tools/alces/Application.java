@@ -10,7 +10,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.event.EventListener;
@@ -50,7 +49,6 @@ public class Application {
 
         // start spring app
         applicationContext = new SpringApplicationBuilder(Application.class).headless(false).run(args);
-
     }
 
     /**
@@ -71,7 +69,14 @@ public class Application {
 
         // add 'User-Agent' header
         return builder
-                .defaultHeader("User-Agent", String.format("%s/%s", aboutService.getAppName(), aboutService.getAppVersion()))
+                .defaultHeader(
+                        "User-Agent",
+                        String.format(
+                                "%s %s",
+                                aboutService.getAppName().replace(" ", "-"),
+                                aboutService.getAppVersion()
+                        )
+                )
                 .build();
     }
 
