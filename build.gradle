@@ -105,7 +105,9 @@ runtime {
 }
 
 test {
+    dependsOn(jre)
     useJUnitPlatform()
+    executable = jre.getJreDir().dir("bin").file("java").getAsFile().getAbsolutePath()
 }
 
 jacocoTestReport {
