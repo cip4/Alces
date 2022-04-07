@@ -10,6 +10,7 @@ plugins {
 }
 
 mainClassName = 'org.cip4.tools.alces.Application'
+def simpleProjectName = "Alces"
 
 sourceCompatibility = 16
 targetCompatibility = 16
@@ -116,4 +117,11 @@ jacocoTestReport {
         xml.required = true
         html.required = false
     }
+}
+
+java {
+    archivesBaseName = simpleProjectName
+}
+startScripts {
+    applicationName = simpleProjectName
 }
