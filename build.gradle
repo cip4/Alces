@@ -98,7 +98,10 @@ runtime {
                     "--win-dir-chooser",
                     "--win-menu",
                     "--win-upgrade-uuid", "12abef0e-2d7f-4c51-9c8b-72ecb743bddc",
-                    "--vendor", "CIP4 Organization"
+                    "--vendor", "CIP4 Organization",
+            ]
+            imageOptions += [
+                    "--win-console"
             ]
         }
         imageOptions += ["--icon", icon]
