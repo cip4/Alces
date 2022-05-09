@@ -55,7 +55,7 @@ class CheckJdfJmfTest implements JmfTest {
         jdfValidator.setIgnorePrivate(false)
         jdfValidator.level = JDFElement.EnumValidationLevel.Complete
         jdfValidator.bValidate = true
-        jdfValidator.setJDFSchemaLocation(fileService.getJdfSchemaDir().resolve("JDF.xsd").toString())
+        jdfValidator.setJDFSchemaLocation(new File(fileService.getJdfSchemaDir().resolve("JDF.xsd").toString()));
 
         // run check jdf
         XMLDoc xmlDoc = jdfValidator.processSingleStream(
