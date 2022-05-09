@@ -37,13 +37,14 @@ class SettingsServiceImplTest {
         Path confFile = workDir.resolve("alces.conf");
 
         doReturn(confFile).when(fileServiceMock).getAlcesSettingsFile();
+        ReflectionTestUtils.setField(settingsService, "port", "8080");
 
         // act
         settingsService.init();
         String baseUrl = settingsService.getBaseUrl();
 
         // assert
-        assertEquals("http://localhost:9090", baseUrl, "BaseUrl is wrong.");
+        assertEquals("http://localhost:8080", baseUrl, "BaseUrl is wrong.");
         assertFalse(confFile.toFile().exists(), "Conf file does exist.");
     }
 
@@ -163,6 +164,56 @@ class SettingsServiceImplTest {
         assertEquals("2", addressHistory[0], "Value is wrong.");
         assertEquals("1", addressHistory[1], "Value is wrong.");
         assertEquals("3", addressHistory[2], "Value is wrong.");
+    }
+
+    @Test
+    public void getBaseUrl_1() throws Exception {
+
+        // arrange
+        Properties properties = new Properties();
+
+        ReflectionTestUtils.setField(settingsService, "properties", properties);
+        ReflectionTestUtils.setField(settingsService, "port", "9192");
+
+        // act
+        final String baseUrl = settingsService.getBaseUrl();
+
+        // assert
+        assertEquals("http://localhost:9192", baseUrl, "BaseUrl is wrong.");
+    }
+
+    @Test
+    public void getBaseUrl_2() throws Exception {
+
+        // arrange
+        Properties properties = new Properties();
+        properties.setProperty("base-url", "http://127.0.0.1:9199");
+
+        ReflectionTestUtils.setField(settingsService, "properties", properties);
+        ReflectionTestUtils.setField(settingsService, "port", "9192");
+
+        // act
+        final String baseUrl = settingsService.getBaseUrl();
+
+        // assert
+        assertEquals("http://127.0.0.1:9192", baseUrl, "BaseUrl is wrong.");
+    }
+
+    @Test
+    public void getBaseUrl_3() throws Exception {
+
+        // arrange
+        Properties properties = new Properties();
+        properties.setProperty("base-url", "http://127.0.0.1:91");
+
+        ReflectionTestUtils.setField(settingsService, "properties", properties);
+        ReflectionTestUtils.setField(settingsService, "port", "12345");
+
+        // act
+        final String baseUrl = settingsService.getBaseUrl();
+
+        // assert
+        assertEquals("http://127.0.0.1:12345", baseUrl, "BaseUrl is wrong.");
     }
 
     @Test

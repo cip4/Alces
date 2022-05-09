@@ -218,7 +218,7 @@ public class Alces extends JFrame {
             }));
 
         } catch (SocketException e) {
-            log.error("Error readng network interfaces", e);
+            log.error("Error reading network interfaces", e);
         }
 
         return baseUrlPopupMenu;
