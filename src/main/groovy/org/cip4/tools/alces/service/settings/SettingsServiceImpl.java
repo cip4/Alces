@@ -77,7 +77,8 @@ public class SettingsServiceImpl implements SettingsService {
 
 	@Override
 	public String getBaseUrl() {
-		return properties.getProperty(KEY_BASEURL, "http://localhost:9090");
+		String baseUrl = properties.getProperty(KEY_BASEURL, "http://localhost:" + port);
+		return baseUrl.replaceFirst(":[0-9]+", ":" + port);
 	}
 
 	@Override
