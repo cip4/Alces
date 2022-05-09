@@ -88,8 +88,7 @@ runtime {
             imageOptions += [
                     "--mac-sign",
                     "--mac-signing-key-user-name", "CIP4 Organization (4DL5XX9SG8)",
-                    "--mac-package-identifier", "org.cip4.alces",
-                    "--win-console"
+                    "--mac-package-identifier", "org.cip4.alces"
             ]
             icon = "src/main/dist/alces.icns"
         }
@@ -99,9 +98,6 @@ runtime {
                     "--win-menu",
                     "--win-upgrade-uuid", "12abef0e-2d7f-4c51-9c8b-72ecb743bddc",
                     "--vendor", "CIP4 Organization",
-            ]
-            imageOptions += [
-                    "--win-console"
             ]
         }
         imageOptions += ["--icon", icon]
