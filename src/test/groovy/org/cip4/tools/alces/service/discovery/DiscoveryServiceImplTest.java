@@ -2,10 +2,12 @@ package org.cip4.tools.alces.service.discovery;
 
 import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.tools.alces.service.discovery.model.*;
-import org.cip4.tools.alces.service.jmfmessage.old.JmfMessageService;
+import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
+import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -18,7 +20,9 @@ import java.util.List;
 import java.util.concurrent.Future;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 /**
  * JUnit test case for DiscoveryServiceImpl.
@@ -29,20 +33,32 @@ public class DiscoveryServiceImplTest {
     private static final String RES_ROOT = "/org/cip4/tools/alces/service/discovery/";
 
     @Mock
-    private JmfMessageService jmfMessageServiceMock;
+    private TestRunnerService testRunnerServiceMock;
 
     @Mock
-    private TestRunnerService testRunnerServiceMock;
+    private SettingsService settingsServiceMock;
 
     @InjectMocks
     private DiscoveryServiceImpl discoveryService;
+
+    @BeforeEach
+    public void setup() {
+        doReturn("ALC").when(settingsServiceMock).getAgentName();
+        doReturn("42").when(settingsServiceMock).getAgentVersion();
+        doReturn("SID").when(settingsServiceMock).getSenderId();
+    }
 
     @Test
     public void discover() throws Exception {
 
         // arrange
-        doReturn("KNOWN_DEVICES").when(jmfMessageServiceMock).createKnownDevicesQuery();
-        doReturn("KNOWN_MESSAGES").when(jmfMessageServiceMock).createKnownMessagesQuery();
+        JmfMessageService knownDevicesMessageServiceMock = mock(JmfMessageService.class);
+        ReflectionTestUtils.setField(discoveryService, "knownDevicesMessageService", knownDevicesMessageServiceMock);
+        doReturn("KNOWN_DEVICES").when(knownDevicesMessageServiceMock).createJmfMessage(any(), any());
+
+        JmfMessageService knownMessagesMessageServiceMock = mock(JmfMessageService.class);
+        ReflectionTestUtils.setField(discoveryService, "knownMessagesMessageService", knownMessagesMessageServiceMock);
+        doReturn("KNOWN_MESSAGES").when(knownMessagesMessageServiceMock).createJmfMessage(any(), any());
 
         byte[] jmfKnownDevices = DiscoveryServiceImplTest.class.getResourceAsStream(RES_ROOT + "bambi-response-knowndevices.jmf").readAllBytes();
         byte[] jmfKnownMessages = DiscoveryServiceImplTest.class.getResourceAsStream(RES_ROOT + "bambi-response-knownmessages.jmf").readAllBytes();
@@ -69,7 +85,10 @@ public class DiscoveryServiceImplTest {
     public void processKnownDevices_1() throws Exception {
 
         // arrange
-        doReturn("KNOWN_DEVICES").when(jmfMessageServiceMock).createKnownDevicesQuery();
+        JmfMessageService jmfMessageServiceMock = mock(JmfMessageService.class);
+        ReflectionTestUtils.setField(discoveryService, "knownDevicesMessageService", jmfMessageServiceMock);
+
+        doReturn("KNOWN_DEVICES").when(jmfMessageServiceMock).createJmfMessage(any(), any());
         byte[] jmfKnownDevices = DiscoveryServiceImplTest.class.getResourceAsStream(RES_ROOT + "bambi-response-knowndevices.jmf").readAllBytes();
 
         Future futureMock = Mockito.mock(Future.class);
@@ -96,7 +115,11 @@ public class DiscoveryServiceImplTest {
     public void processKnownMessages_1() throws Exception {
 
         // arrange
-        doReturn("KNOWN_MESSAGES").when(jmfMessageServiceMock).createKnownMessagesQuery();
+        JmfMessageService jmfMessageServiceMock = mock(JmfMessageService.class);
+        ReflectionTestUtils.setField(discoveryService, "knownMessagesMessageService", jmfMessageServiceMock);
+
+
+        doReturn("KNOWN_MESSAGES").when(jmfMessageServiceMock).createJmfMessage(any(), any());
         byte[] jmfKnownMessages = DiscoveryServiceImplTest.class.getResourceAsStream(RES_ROOT + "bambi-response-knownmessages.jmf").readAllBytes();
 
         Future futureMock = Mockito.mock(Future.class);
@@ -119,7 +142,10 @@ public class DiscoveryServiceImplTest {
     public void processQueueStatus_1() throws Exception {
 
         // arrange
-        doReturn("QUEUE_STATUS").when(jmfMessageServiceMock).createQueueStatusQuery();
+        JmfMessageService jmfMessageServiceMock = mock(JmfMessageService.class);
+        ReflectionTestUtils.setField(discoveryService, "queueStatusMessageService", jmfMessageServiceMock);
+
+        doReturn("QUEUE_STATUS").when(jmfMessageServiceMock).createJmfMessage(any(), any());
         byte[] jmfQueueStatus = DiscoveryServiceImplTest.class.getResourceAsStream(RES_ROOT + "bambi-response-queuestatus.jmf").readAllBytes();
 
         Future futureMock = Mockito.mock(Future.class);
