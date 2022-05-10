@@ -7,7 +7,7 @@ import org.cip4.jdflib.jmf.JDFQueue;
 import org.cip4.jdflib.jmf.JDFResponse;
 import org.cip4.jdflib.resource.JDFDeviceList;
 import org.cip4.tools.alces.service.discovery.model.*;
-import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
+import org.cip4.tools.alces.service.jmfmessage.old.JmfMessageService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

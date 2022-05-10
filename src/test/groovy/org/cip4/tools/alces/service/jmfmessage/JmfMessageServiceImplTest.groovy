@@ -2,6 +2,7 @@ package org.cip4.tools.alces.service.jmfmessage
 
 import groovy.xml.XmlSlurper
 import org.cip4.tools.alces.service.file.FileService
+import org.cip4.tools.alces.service.jmfmessage.old.JmfMessageServiceImpl
 import org.cip4.tools.alces.service.settings.SettingsService
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith

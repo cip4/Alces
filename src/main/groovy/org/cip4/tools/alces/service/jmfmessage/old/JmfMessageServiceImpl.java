@@ -1,4 +1,4 @@
-package org.cip4.tools.alces.service.jmfmessage;
+package org.cip4.tools.alces.service.jmfmessage.old;
 
 import org.cip4.jdflib.auto.JDFAutoDeviceFilter;
 import org.cip4.jdflib.jmf.JDFMessage;

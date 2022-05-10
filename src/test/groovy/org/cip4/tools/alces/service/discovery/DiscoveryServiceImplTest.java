@@ -2,7 +2,7 @@ package org.cip4.tools.alces.service.discovery;
 
 import org.cip4.jdflib.core.JDFConstants;
 import org.cip4.tools.alces.service.discovery.model.*;
-import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
+import org.cip4.tools.alces.service.jmfmessage.old.JmfMessageService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.cip4.tools.alces.service.testrunner.model.IncomingJmfMessage;
 import org.cip4.tools.alces.service.testrunner.model.TestSession;

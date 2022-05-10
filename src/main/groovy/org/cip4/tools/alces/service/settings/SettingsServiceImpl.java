@@ -33,6 +33,14 @@ public class SettingsServiceImpl implements SettingsService {
 	@Value("${server.port}")
 	private String port;
 
+	@Value("${app.name}")
+	private String agentName;
+
+	@Value("${app.version}")
+	private String agentVersion;
+
+	private static final String SENDER_ID = "ALCES";
+
 	private final static String KEY_BASEURL = "base-url";
 	private final static String KEY_LAST_SELECTED_DIR = "last-selected-dir";
 	private final static String KEY_ADDRESS_HISTORY = "address-history";
@@ -73,6 +81,21 @@ public class SettingsServiceImpl implements SettingsService {
 		} catch (IOException e) {
 			log.error("Error writing settings.");
 		}
+	}
+
+	@Override
+	public String getAgentName() {
+		return agentName;
+	}
+
+	@Override
+	public String getAgentVersion() {
+		return agentVersion;
+	}
+
+	@Override
+	public String getSenderId() {
+		return SENDER_ID;
 	}
 
 	@Override

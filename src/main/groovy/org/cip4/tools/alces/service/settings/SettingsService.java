@@ -6,6 +6,24 @@ package org.cip4.tools.alces.service.settings;
 public interface SettingsService {
 
     /**
+     * Returns Alces agent name.
+     * @return The agent name.
+     */
+    String getAgentName();
+
+    /**
+     * Returns Alces agent version.
+     * @return The agent version.
+     */
+    String getAgentVersion();
+
+    /**
+     * Returns Alces sender id.
+     * @return The sender id.
+     */
+    String getSenderId();
+
+    /**
      * Returns Alces configured base url.
      * @return Alces' base URL a String.
      */
