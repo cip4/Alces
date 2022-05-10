@@ -1,16 +1,20 @@
 package org.cip4.tools.alces.service.jmfmessage.cpp;
 
 import org.cip4.jdflib.auto.JDFAutoStatusQuParams;
+import org.cip4.tools.alces.service.discovery.model.MessageService;
 import org.cip4.tools.alces.service.jmfmessage.IntegrationUtils;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
+import org.cip4.tools.alces.service.jmfmessage.StateInfo;
 import org.springframework.stereotype.Service;
+
+import java.util.Objects;
 
 @Service
 public class AssignMediaToTrayMessageService implements JmfMessageService {
 
     @Override
-    public String getMessageType() {
-        return "oce:AssignMediaToTray";
+    public boolean accepts(MessageService messageService) {
+        return Objects.equals(messageService.getType(), "oce:AssignMediaToTray");
     }
 
     @Override
@@ -19,7 +23,7 @@ public class AssignMediaToTrayMessageService implements JmfMessageService {
     }
 
     @Override
-    public String createJmfMessage(IntegrationUtils integrationUtils) {
+    public String createJmfMessage(IntegrationUtils integrationUtils, StateInfo stateInfo) {
         return integrationUtils.getJmfBuilder()
                 .buildStatus(JDFAutoStatusQuParams.EnumDeviceDetails.Details, JDFAutoStatusQuParams.EnumJobDetails.Brief)
                 .toXML();

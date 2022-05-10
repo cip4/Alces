@@ -7,11 +7,14 @@ import org.cip4.jdflib.jmf.JDFQueue;
 import org.cip4.jdflib.jmf.JDFResponse;
 import org.cip4.jdflib.resource.JDFDeviceList;
 import org.cip4.tools.alces.service.discovery.model.*;
-import org.cip4.tools.alces.service.jmfmessage.old.JmfMessageService;
+import org.cip4.tools.alces.service.jmfmessage.IntegrationUtils;
+import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
+import org.cip4.tools.alces.service.settings.SettingsService;
 import org.cip4.tools.alces.service.testrunner.TestRunnerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -34,7 +37,19 @@ public class DiscoveryServiceImpl implements DiscoveryService {
     private List<QueueListener> queueListeners = new ArrayList<>();
 
     @Autowired
-    private JmfMessageService jmfMessageService;
+    @Qualifier("knownMessagesMessageService")
+    private JmfMessageService knownMessagesMessageService;
+
+    @Autowired
+    @Qualifier("knownDevicesMessageService")
+    private JmfMessageService knownDevicesMessageService;
+
+    @Autowired
+    @Qualifier("queueStatusMessageService")
+    private JmfMessageService queueStatusMessageService;
+
+    @Autowired
+    private SettingsService settingsService;
 
     @Autowired
     private TestRunnerService testRunnerService;
@@ -105,9 +120,12 @@ public class DiscoveryServiceImpl implements DiscoveryService {
      */
     private List<MessageService> processKnownMessages(String jmfEndpointUrl) throws ExecutionException, InterruptedException {
 
+        // prepare integration utils
+        IntegrationUtils integrationUtils = new IntegrationUtils(settingsService, null, null);
+
         // query target url
         String jmfResponseKnownDevices = testRunnerService
-                .startTestSession(jmfMessageService.createKnownMessagesQuery(), jmfEndpointUrl).get()
+                .startTestSession(knownMessagesMessageService.createJmfMessage(integrationUtils, null), jmfEndpointUrl).get()
                 .getIncomingJmfMessages().get(0)
                 .getBody();
 
@@ -125,7 +143,12 @@ public class DiscoveryServiceImpl implements DiscoveryService {
                 messageServices.add(
                         new MessageService(
                                 jdfMessageService.getType(),
-                                jdfMessageService.getAttribute(AttributeName.URLSCHEMES)
+                                jdfMessageService.getAttribute(AttributeName.URLSCHEMES),
+                                jdfMessageService.getAcknowledge(),
+                                jdfMessageService.getCommand(),
+                                jdfMessageService.getQuery(),
+                                jdfMessageService.getRegistration(),
+                                jdfMessageService.getSignal()
                         )
                 );
             });
@@ -143,9 +166,12 @@ public class DiscoveryServiceImpl implements DiscoveryService {
      */
     private List<JdfDevice> processKnownDevices(String jmfEndpointUrl) throws ExecutionException, InterruptedException {
 
+        // prepare integration utils
+        IntegrationUtils integrationUtils = new IntegrationUtils(settingsService, null, null);
+
         // query target url
         String jmfResponseKnownDevices = testRunnerService
-                .startTestSession(jmfMessageService.createKnownDevicesQuery(), jmfEndpointUrl).get()
+                .startTestSession(knownDevicesMessageService.createJmfMessage(integrationUtils, null), jmfEndpointUrl).get()
                 .getIncomingJmfMessages().get(0)
                 .getBody();
 
@@ -156,7 +182,7 @@ public class DiscoveryServiceImpl implements DiscoveryService {
         List<JdfDevice> jdfDevices = new ArrayList<>();
 
         if (deviceList != null) {
-            deviceList.getAllDeviceInfo().stream().forEach(jdfDeviceInfo -> {
+            deviceList.getAllDeviceInfo().forEach(jdfDeviceInfo -> {
 
                 // build jdf device
                 JdfDevice jdfDevice = new JdfDevice.Builder()
@@ -191,9 +217,12 @@ public class DiscoveryServiceImpl implements DiscoveryService {
      */
     private Queue processQueueStatus(String jmfEndpointUrl) throws ExecutionException, InterruptedException {
 
+        // prepare integration utils
+        IntegrationUtils integrationUtils = new IntegrationUtils(settingsService, null, null);
+
         // query target url
         String jmfResponseQueueStatus = testRunnerService
-                .startTestSession(jmfMessageService.createQueueStatusQuery(), jmfEndpointUrl).get()
+                .startTestSession(queueStatusMessageService.createJmfMessage(integrationUtils, null), jmfEndpointUrl).get()
                 .getIncomingJmfMessages().get(0)
                 .getBody();
 
