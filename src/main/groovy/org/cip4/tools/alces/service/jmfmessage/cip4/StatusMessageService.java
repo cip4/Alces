@@ -1,26 +1,27 @@
 package org.cip4.tools.alces.service.jmfmessage.cip4;
 
+import org.cip4.jdflib.auto.JDFAutoStatusQuParams;
 import org.cip4.tools.alces.service.jmfmessage.IntegrationUtils;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.springframework.stereotype.Service;
 
 @Service
-public class ResourceQueryMessageService implements JmfMessageService {
+public class StatusMessageService implements JmfMessageService {
 
     @Override
     public String getMessageType() {
-        return "Resource";
+        return "Status";
     }
 
     @Override
     public String getButtonTextExtension() {
-        return null;
+        return "";
     }
 
     @Override
     public String createJmfMessage(IntegrationUtils integrationUtils) {
         return integrationUtils.getJmfBuilder()
-                .buildResourceQuery(true)
+                .buildStatus(JDFAutoStatusQuParams.EnumDeviceDetails.Details, JDFAutoStatusQuParams.EnumJobDetails.Brief)
                 .toXML();
     }
 }

@@ -23,6 +23,7 @@ import org.cip4.tools.alces.Application;
 import org.cip4.tools.alces.service.about.AboutService;
 import org.cip4.tools.alces.service.discovery.DiscoveryService;
 import org.cip4.tools.alces.service.discovery.model.*;
+import org.cip4.tools.alces.service.file.FileService;
 import org.cip4.tools.alces.service.jmfmessage.IntegrationUtils;
 import org.cip4.tools.alces.service.jmfmessage.JmfMessageService;
 import org.cip4.tools.alces.service.settings.SettingsService;
@@ -75,6 +76,9 @@ public class Alces extends JFrame {
 
     @Autowired
     private SettingsService settingsService;
+
+    @Autowired
+    private FileService fileService;
 
     @Autowired
     private TestRunnerService testRunnerService;
@@ -499,7 +503,7 @@ public class Alces extends JFrame {
         List<MessageService> messageServices = jdfController.getJdfMessageServices();
 
         // create creation utils
-        final IntegrationUtils integrationUtils = new IntegrationUtils(settingsService);
+        final IntegrationUtils integrationUtils = new IntegrationUtils(settingsService, fileService, this);
 
         // create buttons
         messageServices.stream()
@@ -510,8 +514,22 @@ public class Alces extends JFrame {
                     jmfMessageServices.stream()
                             .filter(jmfMessageService -> Objects.equals(jmfMessageService.getMessageType(), messageService.getType()))
                             .forEach(jmfMessageService -> {
-                                JButton button = createButton(messageService.getType() + jmfMessageService.getButtonTextExtension());
-                                button.addActionListener(e -> startTestSession(jmfMessageService.createJmfMessage(integrationUtils)));
+
+                                // create button
+                                String buttonText = messageService.getType();
+
+                                if(StringUtils.isNotEmpty(jmfMessageService.getButtonTextExtension())) {
+                                    buttonText += jmfMessageService.getButtonTextExtension();
+                                }
+
+                                JButton button = createButton(buttonText);
+                                button.addActionListener(e -> {
+
+                                    // TBD: put queue entry id in state and provide it.
+
+                                    // create message and start test session
+                                    startTestSession(jmfMessageService.createJmfMessage(integrationUtils));
+                                });
                                 messagesPanel.add(button);
                             });
 
