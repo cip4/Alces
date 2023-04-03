@@ -51,7 +51,7 @@ dependencies {
     implementation 'org.codehaus.groovy:groovy:+'
     implementation 'org.codehaus.groovy:groovy-xml:+'
     implementation 'org.cip4.lib.jdf:JDFLibJ:2.1.7.+'
-    implementation 'com.formdev:flatlaf:2.+'
+    implementation 'com.formdev:flatlaf:3.+'
 
     implementation 'org.xhtmlrenderer:core-renderer:R8'
 
