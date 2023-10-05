@@ -1,0 +1,17 @@
+name: Pull-Request
+
+# This build process is triggered in case a new pull request on master has been created.
+# This process takes the latest changes of the branch, and build and test the new version. The process's aim is to
+# check validity of changes prior to merging to master.
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  call-workflow:
+    name: 🏭
+    uses: cip4/.github/.github/workflows/pull-request.yml@master
+    with:
+      java-version: 16
+      codecov-enabled: true
