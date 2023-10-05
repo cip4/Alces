@@ -1,4 +1,6 @@
 import org.apache.tools.ant.filters.ReplaceTokens
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
 
 plugins {
     id 'org.springframework.boot' version '2.7.0'
@@ -9,17 +11,23 @@ plugins {
     id 'jacoco'
 }
 
-mainClassName = 'org.cip4.tools.alces.Application'
 def simpleProjectName = "Alces"
+mainClassName = 'org.cip4.tools.alces.Application'
+group = 'org.cip4.tools.alces'
+description = 'CIP4 ' + simpleProjectName
+version = project.hasProperty('projectVersion') ? project.projectVersion : 'development'
 
-sourceCompatibility = 16
-targetCompatibility = 16
-
-if (project.hasProperty('projectVersion')) {
-    version = project.projectVersion
-} else {
-    version = 'development'
+java {
+    archivesBaseName = simpleProjectName
+    withJavadocJar()
+    withSourcesJar()
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
+
+compileJava.options.encoding = "UTF-8"
+compileTestJava.options.encoding = "UTF-8"
 
 repositories {
     mavenCentral()
@@ -30,9 +38,10 @@ repositories {
 
 processResources {
     filesMatching(['**/*.properties', '**/*.yml']) {
-        filter(ReplaceTokens, tokens:  [
+        filter(ReplaceTokens, tokens: [
                 'name': project.properties['name'],
                 'version': project.properties['version'],
+                'artifactId': project.properties['name'],
                 'timestamp': new Date().format('yyyy-MM-dd HH:mm:ss')
         ])
     }
@@ -40,10 +49,6 @@ processResources {
 
 application {
     mainClass = 'org.cip4.tools.alces.Application'
-}
-
-test {
-    useJUnitPlatform()
 }
 
 dependencies {
@@ -105,12 +110,6 @@ runtime {
     }
 }
 
-test {
-    dependsOn(jre)
-    useJUnitPlatform()
-    executable = jre.getJreDir().dir("bin").file("java").getAsFile().getAbsolutePath()
-}
-
 jacocoTestReport {
     dependsOn test
     reports {
@@ -118,10 +117,39 @@ jacocoTestReport {
         html.required = false
     }
 }
-
-java {
-    archivesBaseName = simpleProjectName
+test {
+    useJUnitPlatform()
+    dependsOn(jre)
+    if (GradleVersion.current() >= GradleVersion.version("8.0")) {
+        executable = jre.getJreDir().dir("bin").file("java").getAsFile().getAbsolutePath()
+    }
 }
+
+
+jar {
+    manifest {
+        attributes(
+                "Implementation-Title": project.description,
+                "Implementation-Version": project.version,
+                "Implementation-Vendor-Id": project.group,
+                "Specification-Title": project.description,
+                "Specification-Version": project.version,
+                "Build-Jdk": JavaVersion.current(),
+        )
+    }
+}
+
 startScripts {
     applicationName = simpleProjectName
+}
+
+tasks.withType(Test) {
+    testLogging {
+        events TestLogEvent.FAILED,
+               TestLogEvent.SKIPPED
+        exceptionFormat TestExceptionFormat.FULL
+        showExceptions true
+        showCauses true
+        showStackTraces true
+    }
 }

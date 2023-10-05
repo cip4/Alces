@@ -1,8 +1,15 @@
 version: 2
 updates:
   - directory: /
-    schedule:
-      interval: daily
     package-ecosystem: gradle
+    schedule:
+      interval: weekly
+    assignees:
+      - MichelHartmann
+      - meiXXI
+  - directory: /
+    package-ecosystem: github-actions
+    schedule:
+      interval: weekly
     assignees:
       - MichelHartmann

@@ -9,7 +9,7 @@ jobs:
     name: 🏭
     uses: cip4/.github/.github/workflows/tool-release.yml@master
     with:
-      java-version: 16
+      java-version: 17
       confluence-label: alces
       confluence-content-id: 1181122563
       apple-bundle-id: org.cip4.alces

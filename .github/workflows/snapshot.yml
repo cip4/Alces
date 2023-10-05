@@ -9,7 +9,8 @@ jobs:
     name: 🏭
     uses: cip4/.github/.github/workflows/tool-snapshot.yml@master
     with:
-      java-version: 16
+      java-version: 17
+      codecov-enabled: true
       confluence-label: alces
       confluence-content-id: 1457554021
       apple-bundle-id: org.cip4.alces
