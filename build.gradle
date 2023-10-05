@@ -117,12 +117,14 @@ jacocoTestReport {
         html.required = false
     }
 }
-
 test {
     useJUnitPlatform()
     dependsOn(jre)
-    executable = jre.getJreDir().dir("bin").file("java").getAsFile().getAbsolutePath()
+    if (GradleVersion.current() >= GradleVersion.version("8.0")) {
+        executable = jre.getJreDir().dir("bin").file("java").getAsFile().getAbsolutePath()
+    }
 }
+
 
 jar {
     manifest {
